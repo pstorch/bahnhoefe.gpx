@@ -76,7 +76,7 @@ public class BahnhoefeGpxResource {
 	protected void writeGpx(Stream<Bahnhof> bahnhoefeStream, OutputStream os) throws IOException {
 		XMLStreamWriter xmlw;
 		try {
-			xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(os);
+			xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8");
 			xmlw.writeStartDocument("UTF-8", "1.0");
 			xmlw.writeStartElement("gpx");
 			xmlw.writeDefaultNamespace("http://www.topografix.com/GPX/1/1");

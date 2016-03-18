@@ -1,6 +1,8 @@
 package github.pstorch.bahnhoefe.gpx;
 
 import io.dropwizard.Application;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
@@ -20,6 +22,9 @@ public class BahnhoefeGpxApp extends Application<BahnhoefeGpxConfiguration> {
 
 	@Override
 	public void initialize(Bootstrap<BahnhoefeGpxConfiguration> bootstrap) {
+		bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
+				bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
+
 	}
 
 	@Override
