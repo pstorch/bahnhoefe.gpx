@@ -12,7 +12,7 @@ public class BahnhoefeGpxConfiguration extends Configuration {
 		return bahnhoefeUrl;
 	}
 
-	public void setBahnhoefeUrl(String bahnhoefeUrl) {
+	public void setBahnhoefeUrl(final String bahnhoefeUrl) {
 		this.bahnhoefeUrl = bahnhoefeUrl;
 	}
 
@@ -20,7 +20,7 @@ public class BahnhoefeGpxConfiguration extends Configuration {
 		return photosUrl;
 	}
 
-	public void setPhotosUrl(String photosUrl) {
+	public void setPhotosUrl(final String photosUrl) {
 		this.photosUrl = photosUrl;
 	}
 

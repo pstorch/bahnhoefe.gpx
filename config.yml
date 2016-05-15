@@ -1,2 +1,3 @@
-bahnhoefeUrl: ${BAHNHOEFE_URL:-http://www.xn--deutschlands-bahnhfe-lbc.de/bahnhoefe/_search?size=6000}
+#bahnhoefeUrl: ${BAHNHOEFE_URL:-http://www.xn--deutschlands-bahnhfe-lbc.de/bahnhoefe/_search?size=6000}
+bahnhoefeUrl: ${BAHNHOEFE_URL:-http://94.136.168.53/bahnhoefe/_search?size=6000}
 photosUrl: ${PHOTOS_URL:-http://www.deutschlands-bahnhoefe.org/bahnhofsfotos.json}

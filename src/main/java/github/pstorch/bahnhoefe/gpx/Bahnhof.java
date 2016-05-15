@@ -9,26 +9,23 @@ public class Bahnhof {
 	private double lat;
 	
 	private double lon;
-	
-	private boolean hasPhoto = false;
 
-	public Bahnhof() {
-		super();
-	}
+	private boolean photo;
 
-	public Bahnhof(int id, String title, double lat, double lon) {
+	public Bahnhof(final int id, final String title, final double lat, final double lon) {
 		super();
 		this.id = id;
 		this.title = title;
 		this.lat = lat;
 		this.lon = lon;
+		this.photo = false;
 	}
 
 	public int getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(final int id) {
 		this.id = id;
 	}
 
@@ -36,7 +33,7 @@ public class Bahnhof {
 		return title;
 	}
 
-	public void setTitle(String title) {
+	public void setTitle(final String title) {
 		this.title = title;
 	}
 
@@ -44,7 +41,7 @@ public class Bahnhof {
 		return lat;
 	}
 
-	public void setLat(double lat) {
+	public void setLat(final double lat) {
 		this.lat = lat;
 	}
 
@@ -52,16 +49,16 @@ public class Bahnhof {
 		return lon;
 	}
 
-	public void setLon(double lon) {
+	public void setLon(final double lon) {
 		this.lon = lon;
 	}
 
 	public boolean hasPhoto() {
-		return hasPhoto;
+		return photo;
 	}
 
-	public void setHasPhoto(boolean hasPhoto) {
-		this.hasPhoto = hasPhoto;
+	public void setHasPhoto(final boolean hasPhoto) {
+		this.photo = hasPhoto;
 	}
 	
 }

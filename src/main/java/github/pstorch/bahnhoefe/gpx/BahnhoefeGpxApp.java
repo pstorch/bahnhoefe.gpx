@@ -1,5 +1,7 @@
 package github.pstorch.bahnhoefe.gpx;
 
+import java.net.MalformedURLException;
+
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -11,7 +13,7 @@ import io.dropwizard.setup.Environment;
  */
 public class BahnhoefeGpxApp extends Application<BahnhoefeGpxConfiguration> {
 
-	public static void main(String[] args) throws Exception {
+	public static void main(final String... args) throws Exception {
 		new BahnhoefeGpxApp().run(args);
 	}
 
@@ -21,16 +23,15 @@ public class BahnhoefeGpxApp extends Application<BahnhoefeGpxConfiguration> {
 	}
 
 	@Override
-	public void initialize(Bootstrap<BahnhoefeGpxConfiguration> bootstrap) {
+	public void initialize(final Bootstrap<BahnhoefeGpxConfiguration> bootstrap) {
 		bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
 				bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
 
 	}
 
 	@Override
-	public void run(BahnhoefeGpxConfiguration configuration, Environment environment) {
-		final BahnhoefeGpxResource resource = new BahnhoefeGpxResource(configuration.getBahnhoefeUrl(),
-				configuration.getPhotosUrl());
+	public void run(final BahnhoefeGpxConfiguration configuration, final Environment environment) throws MalformedURLException {
+		final BahnhoefeGpxResource resource = new BahnhoefeGpxResource(new BahnhoefeLoader(configuration.getBahnhoefeUrl(), configuration.getPhotosUrl()));
 		environment.jersey().register(resource);
 	}
 
