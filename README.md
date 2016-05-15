@@ -15,19 +15,21 @@ Run server:
 This project can also be run as a Docker container.
 
 - build the docker image: 
-  ```docer build .```
+  ```docker build .```
 - run image: 
-  ```docer run -d -p 8080:8080 <image-id>```
+  ```docker run -d -p 8080:8080 <image-id>```
   
 A ready to use image is available at https://hub.docker.com/r/pstorch/bahnhoefe-gpx/
 
 ## Use
 Point your browser to 
-- Export all trainstations as GPX:
-  http://localhost:8080/bahnhoefe.gpx
-- Export all trainstations with Photo as GPX
-  http://localhost:8080/bahnhoefe-withPhoto.gpx
-- Export all trainstations without Photo as GPX
-  http://localhost:8080/bahnhoefe-withoutPhoto.gpx
+- Export all trainstations:
+  http://localhost:8080/bahnhoefe
+- Export all trainstations with Photo
+  http://localhost:8080/bahnhoefe-withPhoto
+- Export all trainstations without Photo
+  http://localhost:8080/bahnhoefe-withoutPhoto
+
+The default output format is json. But you can get GPX and TXT as well. Either set the `Accept` header to `text/plain` or `application/gpx+xml` or simply add the extension `.txt` or `.gpx` to the end of the URL.
 
 Download the .gpx file and import it to your favourite Map application (e.g. Locus on Android).
