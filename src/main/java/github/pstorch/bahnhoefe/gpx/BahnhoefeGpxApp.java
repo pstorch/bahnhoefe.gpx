@@ -33,6 +33,9 @@ public class BahnhoefeGpxApp extends Application<BahnhoefeGpxConfiguration> {
 	public void run(final BahnhoefeGpxConfiguration configuration, final Environment environment) throws MalformedURLException {
 		final BahnhoefeGpxResource resource = new BahnhoefeGpxResource(new BahnhoefeLoader(configuration.getBahnhoefeUrl(), configuration.getPhotosUrl()));
 		environment.jersey().register(resource);
+		environment.jersey().register(new BahnhoefeGpxWriter());
+		environment.jersey().register(new BahnhoefeTxtWriter());
+		environment.jersey().property("jersey.config.server.mediaTypeMappings", "gpx : application/gpx+xml, json : application/json, txt : text/plain");
 	}
 
 }

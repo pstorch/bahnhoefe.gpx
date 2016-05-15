@@ -31,8 +31,28 @@ public class BahnhoefeLoader {
 		this.photosUrl = new URL(photosUrl);
 	}
 	
-	@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
 	public Map<Integer, Bahnhof> loadBahnhoefe() throws MalformedURLException, IOException, JsonProcessingException {
+		final Map<Integer, Bahnhof> bahnhoefe = loadAllBahnhoefe();
+		loadPhotoFlags(bahnhoefe);
+		return bahnhoefe;
+	}
+
+	private void loadPhotoFlags(final Map<Integer, Bahnhof> bahnhoefe) throws IOException, JsonProcessingException {
+		try (InputStream is = photosUrl.openStream()) {
+			final JsonNode tree = BahnhoefeLoader.MAPPER.readTree(is);
+			for (int i = 0; i < tree.size(); i++) {
+				final JsonNode bahnhofPhoto = tree.get(i);
+				final int bahnhofsNr = bahnhofPhoto.get("bahnhofsnr").asInt();
+				final Bahnhof bahnhof = bahnhoefe.get(bahnhofsNr);
+				if (bahnhof != null) {
+					bahnhof.setHasPhoto(true);
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+	private Map<Integer, Bahnhof> loadAllBahnhoefe() throws IOException, JsonProcessingException {
 		final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
 
 		try (InputStream is = bahnhoefeUrl.openStream()) {
@@ -44,18 +64,6 @@ public class BahnhoefeLoader {
 				final Bahnhof bahnhof = new Bahnhof(bahnhofJson.get("BahnhofNr").asInt(), bahnhofJson.get(BahnhoefeLoader.TITLE_ELEMENT).asText(),
 						bahnhofJson.get(BahnhoefeLoader.LAT_ELEMENT).asDouble(), bahnhofJson.get(BahnhoefeLoader.LON_ELEMENT).asDouble());
 				bahnhoefe.put(bahnhof.getId(), bahnhof);
-			}
-		}
-
-		try (InputStream is = photosUrl.openStream()) {
-			final JsonNode tree = BahnhoefeLoader.MAPPER.readTree(is);
-			for (int i = 0; i < tree.size(); i++) {
-				final JsonNode bahnhofPhoto = tree.get(i);
-				final int bahnhofsNr = bahnhofPhoto.get("bahnhofsnr").asInt();
-				final Bahnhof bahnhof = bahnhoefe.get(bahnhofsNr);
-				if (bahnhof != null) {
-					bahnhof.setHasPhoto(true);
-				}
 			}
 		}
 		return bahnhoefe;
