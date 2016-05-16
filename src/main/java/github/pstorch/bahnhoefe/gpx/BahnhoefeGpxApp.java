@@ -13,29 +13,32 @@ import io.dropwizard.setup.Environment;
  */
 public class BahnhoefeGpxApp extends Application<BahnhoefeGpxConfiguration> {
 
-	public static void main(final String... args) throws Exception {
-		new BahnhoefeGpxApp().run(args);
-	}
+    public static void main(final String... args) throws Exception {
+	new BahnhoefeGpxApp().run(args);
+    }
 
-	@Override
-	public String getName() {
-		return "Bahnhoefe GPX";
-	}
+    @Override
+    public String getName() {
+	return "Bahnhoefe GPX";
+    }
 
-	@Override
-	public void initialize(final Bootstrap<BahnhoefeGpxConfiguration> bootstrap) {
-		bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
-				bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
+    @Override
+    public void initialize(final Bootstrap<BahnhoefeGpxConfiguration> bootstrap) {
+	bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
+		bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
 
-	}
+    }
 
-	@Override
-	public void run(final BahnhoefeGpxConfiguration configuration, final Environment environment) throws MalformedURLException {
-		final BahnhoefeGpxResource resource = new BahnhoefeGpxResource(new BahnhoefeLoader(configuration.getBahnhoefeUrl(), configuration.getPhotosUrl()));
-		environment.jersey().register(resource);
-		environment.jersey().register(new BahnhoefeGpxWriter());
-		environment.jersey().register(new BahnhoefeTxtWriter());
-		environment.jersey().property("jersey.config.server.mediaTypeMappings", "gpx : application/gpx+xml, json : application/json, txt : text/plain");
-	}
+    @Override
+    public void run(final BahnhoefeGpxConfiguration configuration, final Environment environment)
+	    throws MalformedURLException {
+	final BahnhoefeGpxResource resource = new BahnhoefeGpxResource(
+		new BahnhoefeLoader(configuration.getBahnhoefeUrl(), configuration.getPhotosUrl()));
+	environment.jersey().register(resource);
+	environment.jersey().register(new BahnhoefeGpxWriter());
+	environment.jersey().register(new BahnhoefeTxtWriter());
+	environment.jersey().property("jersey.config.server.mediaTypeMappings",
+		"gpx : application/gpx+xml, json : application/json, txt : text/plain");
+    }
 
 }

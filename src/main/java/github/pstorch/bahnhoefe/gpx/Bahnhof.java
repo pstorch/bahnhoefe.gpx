@@ -2,63 +2,67 @@ package github.pstorch.bahnhoefe.gpx;
 
 public class Bahnhof {
 
-	private int id;
-	
-	private String title;
-	
-	private double lat;
-	
-	private double lon;
+    private int id;
 
-	private boolean photo;
+    private String title;
 
-	public Bahnhof(final int id, final String title, final double lat, final double lon) {
-		super();
-		this.id = id;
-		this.title = title;
-		this.lat = lat;
-		this.lon = lon;
-		this.photo = false;
-	}
+    private double lat;
 
-	public int getId() {
-		return id;
-	}
+    private double lon;
 
-	public void setId(final int id) {
-		this.id = id;
-	}
+    private boolean photo;
 
-	public String getTitle() {
-		return title;
-	}
+    public Bahnhof(final int id, final String title, final double lat, final double lon, final boolean photo) {
+	super();
+	this.id = id;
+	this.title = title;
+	this.lat = lat;
+	this.lon = lon;
+	this.photo = photo;
+    }
 
-	public void setTitle(final String title) {
-		this.title = title;
-	}
+    public Bahnhof(final int id, final String title, final double lat, final double lon) {
+	this(id, title, lat, lon, false);
+    }
 
-	public double getLat() {
-		return lat;
-	}
+    public int getId() {
+	return this.id;
+    }
 
-	public void setLat(final double lat) {
-		this.lat = lat;
-	}
+    public void setId(final int id) {
+	this.id = id;
+    }
 
-	public double getLon() {
-		return lon;
-	}
+    public String getTitle() {
+	return this.title;
+    }
 
-	public void setLon(final double lon) {
-		this.lon = lon;
-	}
+    public void setTitle(final String title) {
+	this.title = title;
+    }
 
-	public boolean hasPhoto() {
-		return photo;
-	}
+    public double getLat() {
+	return this.lat;
+    }
 
-	public void setHasPhoto(final boolean hasPhoto) {
-		this.photo = hasPhoto;
-	}
-	
+    public void setLat(final double lat) {
+	this.lat = lat;
+    }
+
+    public double getLon() {
+	return this.lon;
+    }
+
+    public void setLon(final double lon) {
+	this.lon = lon;
+    }
+
+    public boolean hasPhoto() {
+	return this.photo;
+    }
+
+    public void setHasPhoto(final boolean hasPhoto) {
+	this.photo = hasPhoto;
+    }
+
 }
