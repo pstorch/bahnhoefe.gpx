@@ -6,10 +6,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 public class BahnhoefeLoader {
 	
@@ -22,6 +28,10 @@ public class BahnhoefeLoader {
 	private static final String LAT_ELEMENT = "lat";
 
 	private static final String HITS_ELEMENT = "hits";
+	
+	private static final Logger LOG = LoggerFactory.getLogger(BahnhoefeLoader.class);
+	
+	private final Supplier<Map<Integer, Bahnhof>> cache;
 
 	public URL bahnhoefeUrl;
 	public URL photosUrl;
@@ -29,12 +39,29 @@ public class BahnhoefeLoader {
 	public BahnhoefeLoader(final String bahnhoefeUrl, final String photosUrl) throws MalformedURLException {
 		this.bahnhoefeUrl = new URL(bahnhoefeUrl);
 		this.photosUrl = new URL(photosUrl);
+		this.cache = Suppliers.memoizeWithExpiration(bahnhoefeSupplier(), 5, TimeUnit.MINUTES);
 	}
 	
-	public Map<Integer, Bahnhof> loadBahnhoefe() throws MalformedURLException, IOException, JsonProcessingException {
-		final Map<Integer, Bahnhof> bahnhoefe = loadAllBahnhoefe();
-		loadPhotoFlags(bahnhoefe);
-		return bahnhoefe;
+	@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
+    private Supplier<Map<Integer, Bahnhof>> bahnhoefeSupplier() {
+        return new Supplier<Map<Integer, Bahnhof>>() {
+            @Override
+			public Map<Integer, Bahnhof> get() {
+        		LOG.info("Loading Bahnhoefe from bahnhoefe={}, photos={}", bahnhoefeUrl, photosUrl);
+        		Map<Integer, Bahnhof> bahnhoefe = null;
+				try {
+					bahnhoefe = loadAllBahnhoefe();
+	        		loadPhotoFlags(bahnhoefe);
+				} catch (final IOException e) {
+					throw new RuntimeException("Unable to load all Bahnhoefe", e);
+				}
+        		return bahnhoefe;
+            }
+        };
+    }	
+
+	public Map<Integer, Bahnhof> loadBahnhoefe() {
+		return cache.get();
 	}
 
 	private void loadPhotoFlags(final Map<Integer, Bahnhof> bahnhoefe) throws IOException, JsonProcessingException {
