@@ -1,6 +1,8 @@
 # bahnhoefe.gpx
 GPX Exporter for the [Bahnhofsfotos opendata Project](http://www.deutschlands-bahnhoefe.de/)
 
+[![imagelayers](https://imagelayers.io/badge/pstorch/bahnhoefe-gpx:latest.svg)](https://imagelayers.io/?images=pstorch/bahnhoefe-gpx:latest)<br>
+
 ## build
 To build the project, you need Maven and Java 8.
 
