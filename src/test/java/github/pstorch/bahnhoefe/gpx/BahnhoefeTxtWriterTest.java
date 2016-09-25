@@ -1,5 +1,7 @@
 package github.pstorch.bahnhoefe.gpx;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,9 +10,9 @@ import java.util.List;
 import javax.ws.rs.WebApplicationException;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
+@SuppressWarnings({"PMD.JUnitTestContainsTooManyAsserts", "PMD.JUnitAssertionsShouldIncludeMessage", "PMD.ProhibitPlainJunitAssertionsRule"})
 public class BahnhoefeTxtWriterTest {
 
     @Test
@@ -25,9 +27,9 @@ public class BahnhoefeTxtWriterTest {
 
 	final String txt = entityStream.toString();
 	final String[] lines = txt.split("\n");
-	MatcherAssert.assertThat(lines[0], CoreMatchers.is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
-	MatcherAssert.assertThat(lines[1], CoreMatchers.is("50.0\t9.0\tTest\tTest\tgruenpunkt.png\t10,10\t0,-10"));
-	MatcherAssert.assertThat(lines[2], CoreMatchers.is("51.0\t8.0\tFoo\tFoo\trotpunkt.png\t10,10\t0,-10"));
+	assertThat(lines[0], CoreMatchers.is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
+	assertThat(lines[1], CoreMatchers.is("50.0\t9.0\tTest\tTest\tgruenpunkt.png\t10,10\t0,-10"));
+	assertThat(lines[2], CoreMatchers.is("51.0\t8.0\tFoo\tFoo\trotpunkt.png\t10,10\t0,-10"));
     }
 
 }

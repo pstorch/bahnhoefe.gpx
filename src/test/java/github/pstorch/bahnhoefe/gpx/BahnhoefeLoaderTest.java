@@ -1,16 +1,18 @@
 package github.pstorch.bahnhoefe.gpx;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.io.IOException;
 import java.util.Map;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
 import com.jcabi.http.mock.MkAnswer;
 import com.jcabi.http.mock.MkContainer;
 import com.jcabi.http.mock.MkGrizzlyContainer;
 
+@SuppressWarnings({"PMD.JUnitTestContainsTooManyAsserts", "PMD.JUnitAssertionsShouldIncludeMessage", "PMD.ProhibitPlainJunitAssertionsRule"})
 public class BahnhoefeLoaderTest {
 
 	@Test
@@ -28,18 +30,18 @@ public class BahnhoefeLoaderTest {
 			final Map<Integer, Bahnhof> bahnhoefe = loader.loadBahnhoefe();
 
 			final Bahnhof zweibruecken = bahnhoefe.get(7066);
-			MatcherAssert.assertThat(zweibruecken.getId(), CoreMatchers.is(7066));
-			MatcherAssert.assertThat(zweibruecken.getTitle(), CoreMatchers.is("Zweibrücken Hbf"));
-			MatcherAssert.assertThat(zweibruecken.getLat(), CoreMatchers.is(49.2467252285295));
-			MatcherAssert.assertThat(zweibruecken.getLon(), CoreMatchers.is(7.35692381858826));
-			MatcherAssert.assertThat(zweibruecken.hasPhoto(), CoreMatchers.is(true));
+			assertThat(zweibruecken.getId(), CoreMatchers.is(7066));
+			assertThat(zweibruecken.getTitle(), CoreMatchers.is("Zweibrücken Hbf"));
+			assertThat(zweibruecken.getLat(), CoreMatchers.is(49.2467252285295));
+			assertThat(zweibruecken.getLon(), CoreMatchers.is(7.35692381858826));
+			assertThat(zweibruecken.hasPhoto(), CoreMatchers.is(true));
 
 			final Bahnhof albersdorf = bahnhoefe.get(41);
-			MatcherAssert.assertThat(albersdorf.getId(), CoreMatchers.is(41));
-			MatcherAssert.assertThat(albersdorf.getTitle(), CoreMatchers.is("Albersdorf"));
-			MatcherAssert.assertThat(albersdorf.getLat(), CoreMatchers.is(54.1461697552048));
-			MatcherAssert.assertThat(albersdorf.getLon(), CoreMatchers.is(9.29245591163636));
-			MatcherAssert.assertThat(albersdorf.hasPhoto(), CoreMatchers.is(false));
+			assertThat(albersdorf.getId(), CoreMatchers.is(41));
+			assertThat(albersdorf.getTitle(), CoreMatchers.is("Albersdorf"));
+			assertThat(albersdorf.getLat(), CoreMatchers.is(54.1461697552048));
+			assertThat(albersdorf.getLon(), CoreMatchers.is(9.29245591163636));
+			assertThat(albersdorf.hasPhoto(), CoreMatchers.is(false));
 		}
 	}
 
