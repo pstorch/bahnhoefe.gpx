@@ -25,7 +25,15 @@ This project can also be run as a Docker container.
 A ready to use image is available at https://hub.docker.com/r/pstorch/bahnhoefe-gpx/
 
 ## Use
-Point your browser to 
+Point your browser to, where country can be "de" or "ch"
+- Export all trainstations:
+  http://localhost:8080/{country}/bahnhoefe
+- Export all trainstations with Photo
+  http://localhost:8080/{country}/bahnhoefe-withPhoto
+- Export all trainstations without Photo
+  http://localhost:8080/{country}/bahnhoefe-withoutPhoto
+
+Default country is germany ("de"):
 - Export all trainstations:
   http://localhost:8080/bahnhoefe
 - Export all trainstations with Photo
