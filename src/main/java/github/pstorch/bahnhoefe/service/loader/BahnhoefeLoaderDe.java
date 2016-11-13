@@ -18,6 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 public class BahnhoefeLoaderDe implements BahnhoefeLoader {
 
+    public static final String COUNTRY_CODE = "de";
+
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final String TITLE_ELEMENT = "title";
@@ -29,7 +31,6 @@ public class BahnhoefeLoaderDe implements BahnhoefeLoader {
     private static final String HITS_ELEMENT = "hits";
 
     private static final Logger LOG = LoggerFactory.getLogger(BahnhoefeLoaderDe.class);
-    public static final String COUNTRY_CODE = "de";
 
     private final Supplier<Map<Integer, Bahnhof>> cache;
 
