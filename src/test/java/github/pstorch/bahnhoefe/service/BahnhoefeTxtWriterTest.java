@@ -1,4 +1,4 @@
-package github.pstorch.bahnhoefe.gpx;
+package github.pstorch.bahnhoefe.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -18,7 +18,7 @@ public class BahnhoefeTxtWriterTest {
     @Test
     public void test() throws WebApplicationException, IOException {
 	final List<Bahnhof> bahnhoefe = new ArrayList<>();
-	bahnhoefe.add(new Bahnhof(4711, "Test", 50d, 9d, true));
+	bahnhoefe.add(new Bahnhof(4711, "Test", 50d, 9d, "@pstorch"));
 	bahnhoefe.add(new Bahnhof(4712, "Foo", 51d, 8d));
 
 	final BahnhoefeTxtWriter writer = new BahnhoefeTxtWriter();

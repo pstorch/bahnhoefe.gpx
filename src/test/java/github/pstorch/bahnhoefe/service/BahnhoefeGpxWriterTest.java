@@ -1,4 +1,4 @@
-package github.pstorch.bahnhoefe.gpx;
+package github.pstorch.bahnhoefe.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -27,7 +27,7 @@ public class BahnhoefeGpxWriterTest {
 		
 		final String gpx = entityStream.toString();
 		assertThat(gpx,
-				CoreMatchers.is("<?xml version=\"1.0\" encoding=\"UTF-8\"?><gpx xmlns=\"http://www.topografix.com/GPX/1/1\" version=\"1.1\"><wpt lat=\"50.0\" lon=\"9.0\"><name>Test</name></wpt><wpt lat=\"51.0\" lon=\"8.0\"><name>Foo</name></wpt></gpx>"));
+				CoreMatchers.is("<?xml version=\"1.0\" encoding=\"UTF-8\"?><service xmlns=\"http://www.topografix.com/GPX/1/1\" version=\"1.1\"><wpt lat=\"50.0\" lon=\"9.0\"><name>Test</name></wpt><wpt lat=\"51.0\" lon=\"8.0\"><name>Foo</name></wpt></service>"));
 	}
 
 }
