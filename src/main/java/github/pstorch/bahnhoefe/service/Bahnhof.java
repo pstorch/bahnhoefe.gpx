@@ -10,15 +10,15 @@ public class Bahnhof {
 
     private double lon;
 
-    private String fotograf;
+    private String photographer;
 
-    public Bahnhof(final int id, final String title, final double lat, final double lon, final String fotograf) {
+    public Bahnhof(final int id, final String title, final double lat, final double lon, final String photographer) {
         super();
         this.id = id;
         this.title = title;
         this.lat = lat;
         this.lon = lon;
-        this.fotograf = fotograf;
+        this.photographer = photographer;
     }
 
     public Bahnhof(final int id, final String title, final double lat, final double lon) {
@@ -58,12 +58,12 @@ public class Bahnhof {
     }
 
     public boolean hasPhoto() {
-        return this.fotograf != null;
+        return this.photographer != null;
     }
 
-    public void setFotograf(final String fotograf) {
-        this.fotograf = fotograf;
+    public void setPhotographer(final String photographer) {
+        this.photographer = photographer;
     }
 
-    public String getFotograf() { return this.fotograf; }
+    public String getPhotographer() { return this.photographer; }
 }

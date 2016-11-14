@@ -81,7 +81,7 @@ public class BahnhoefeLoaderCh implements BahnhoefeLoader {
                 final int bahnhofsNr = bahnhofPhoto.get("uic_ref").asInt();
                 final Bahnhof bahnhof = bahnhoefe.get(bahnhofsNr);
                 if (bahnhof != null) {
-                    bahnhof.setFotograf(bahnhofPhoto.get("fotograf-title").asText());
+                    bahnhof.setPhotographer(bahnhofPhoto.get("fotograf-title").asText());
                 }
             }
         }

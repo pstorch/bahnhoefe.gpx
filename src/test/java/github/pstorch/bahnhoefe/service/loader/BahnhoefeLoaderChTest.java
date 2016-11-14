@@ -42,7 +42,7 @@ public class BahnhoefeLoaderChTest {
 			assertThat(kuengoldingen.getLat(), CoreMatchers.is(47.30746905671105));
 			assertThat(kuengoldingen.getLon(), CoreMatchers.is(7.941984790513125));
 			assertThat(kuengoldingen.hasPhoto(), CoreMatchers.is(true));
-			assertThat(kuengoldingen.getFotograf(), CoreMatchers.is("@pokipsie"));
+			assertThat(kuengoldingen.getPhotographer(), CoreMatchers.is("@pokipsie"));
 		}
 	}
 

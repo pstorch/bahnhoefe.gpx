@@ -35,7 +35,7 @@ public class BahnhoefeLoaderDeTest {
 			assertThat(zweibruecken.getLat(), CoreMatchers.is(49.2467252285295));
 			assertThat(zweibruecken.getLon(), CoreMatchers.is(7.35692381858826));
 			assertThat(zweibruecken.hasPhoto(), CoreMatchers.is(true));
-			assertThat(zweibruecken.getFotograf(), CoreMatchers.is("@hessenpfaelzer"));
+			assertThat(zweibruecken.getPhotographer(), CoreMatchers.is("@hessenpfaelzer"));
 
 			final Bahnhof albersdorf = bahnhoefe.get(41);
 			assertThat(albersdorf.getId(), CoreMatchers.is(41));
