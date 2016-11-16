@@ -12,7 +12,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<dropwizard.version>0.9.2</dropwizard.version>
+		<dropwizard.version>1.0.4</dropwizard.version>
 	</properties>
 
 	<dependencies>
@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>com.sun.grizzly</groupId>
 			<artifactId>grizzly-servlet-webserver</artifactId>
-			<version>1.9.10</version>
+			<version>1.9.64</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>18.0</version>
+			<version>19.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -66,12 +66,12 @@
 		<dependency>
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-jersey</artifactId>
-			<version>0.9.2</version>
+			<version>${dropwizard.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-configuration</artifactId>
-			<version>0.9.2</version>
+			<version>${dropwizard.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
@@ -81,7 +81,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.6.3</version>
+			<version>2.7.8</version>
 		</dependency>
 
 	</dependencies>
