@@ -15,12 +15,12 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractBahnhoefeLoader.class);
-
     protected static final ObjectMapper MAPPER = new ObjectMapper();
     protected final Supplier<Map<Integer, Bahnhof>> cache;
     protected URL bahnhoefeUrl;
     protected URL photosUrl;
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractBahnhoefeLoader.class);
 
     protected AbstractBahnhoefeLoader(final URL photosUrl, final URL bahnhoefeUrl) {
         super();
