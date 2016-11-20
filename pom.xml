@@ -101,6 +101,17 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<optimize>true</optimize>
+					<showWarnings>true</showWarnings>
+					<showDeprecation>true</showDeprecation>
+					<compilerArgs>
+						<arg>-Xlint</arg>
+						<arg>-Werror</arg>
+						<arg>-Xlint:-path</arg>
+						<arg>-Xlint:-options</arg>
+						<arg>-Xlint:-classfile</arg>
+						<arg>-Xlint:-processing</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -139,27 +150,52 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>com.qulice</groupId>
-				<artifactId>qulice-maven-plugin</artifactId>
-				<version>0.16.4</version>
-				<configuration>
-					<excludes>
-						<exclude>checkstyle:.*</exclude>
-						<exclude>duplicatefinder:.*</exclude>
-					</excludes>
-					<license>file:${basedir}/LICENSE.txt</license>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.7</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                            <goal>cpd-check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>3.0.4</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                    <xmlOutput>true</xmlOutput>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.5</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.7</version>
+            </plugin>
+        </plugins>
+    </reporting>
 
 </project>

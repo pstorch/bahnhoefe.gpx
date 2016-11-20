@@ -16,7 +16,6 @@ import java.lang.reflect.Type;
 import java.util.Iterator;
 
 @Produces(BahnhoefeGpxWriter.APPLICATION_GPX_XML)
-@SuppressWarnings("PMD.LongVariable")
 public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> {
 
     public static final String APPLICATION_GPX_XML = "application/service+xml";
@@ -52,12 +51,6 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> 
     }
 
     @Override
-    public long getSize(final Iterator<Bahnhof> t, final Class<?> type, final Type genericType,
-                        final Annotation[] annotations, final MediaType mediaType) {
-        return -1;
-    }
-
-    @Override
     public void writeTo(final Iterator<Bahnhof> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
@@ -74,6 +67,12 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> 
         } catch (final XMLStreamException | FactoryConfigurationError e) {
             throw new WebApplicationException(e);
         }
+    }
+
+    @Override
+    public long getSize(final Iterator<Bahnhof> t, final Class<?> type, final Type genericType,
+                        final Annotation[] annotations, final MediaType mediaType) {
+        return -1;
     }
 
 }

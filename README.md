@@ -5,7 +5,7 @@ Backend Service for the https://play.google.com/store/apps/details?id=de.bahnhoe
 It started as a simple GPX Exporter to use the Waypoints in your favorite Map App or GPS Device.
 Later it was enhanced to export a txt list of the Waypoints for the online Map at: http://www.alsgefahn.de/bfmap/bhfueb.html.
 Then it returned the Waypoints as json for the Bahnhofsfotos App.
-The latest addition are the trainstations from Austria, via country code `ch`, see [Use](#use).
+The latest addition are the trainstations from switzerland, via country code `ch`, see [Use](#use).
 
 ## build
 To build the project, you need Maven and Java 8.

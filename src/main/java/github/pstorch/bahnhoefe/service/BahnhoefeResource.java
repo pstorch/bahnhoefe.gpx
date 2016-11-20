@@ -53,7 +53,7 @@ public class BahnhoefeResource {
         return getBahnhoefeLoader(country).loadBahnhoefe().values().stream().filter(bahnhof -> {
             boolean result = true;
             if (hasPhoto != null) {
-                result &= bahnhof.hasPhoto() == hasPhoto;
+                result = bahnhof.hasPhoto() == hasPhoto;
             }
             if (photographer != null) {
                 result &= StringUtils.equals(photographer, bahnhof.getPhotographer());
@@ -63,6 +63,7 @@ public class BahnhoefeResource {
             }
             return result;
         }).iterator();
+
     }
 
     @GET
