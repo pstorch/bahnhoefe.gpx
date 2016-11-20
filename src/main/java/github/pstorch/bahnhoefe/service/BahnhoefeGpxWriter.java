@@ -16,7 +16,6 @@ import java.lang.reflect.Type;
 import java.util.Iterator;
 
 @Produces(BahnhoefeGpxWriter.APPLICATION_GPX_XML)
-@SuppressWarnings("PMD.LongVariable")
 public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> {
 
     public static final String APPLICATION_GPX_XML = "application/service+xml";

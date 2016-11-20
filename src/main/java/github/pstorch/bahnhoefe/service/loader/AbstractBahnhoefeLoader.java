@@ -45,7 +45,6 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         return cache.get();
     }
 
-    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     private final Supplier<Map<Integer, Bahnhof>> bahnhoefeSupplier() {
         return () -> {
             LOG.info("Loading Bahnhoefe from bahnhoefe={}, photos={}", bahnhoefeUrl, photosUrl);

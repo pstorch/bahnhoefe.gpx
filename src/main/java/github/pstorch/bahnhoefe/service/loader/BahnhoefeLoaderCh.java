@@ -41,7 +41,6 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
         }
     }
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     @Override
     protected Map<Integer, Bahnhof> loadAllBahnhoefe() throws IOException {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();

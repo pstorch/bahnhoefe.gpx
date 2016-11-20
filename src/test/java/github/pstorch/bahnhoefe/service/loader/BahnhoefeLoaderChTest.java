@@ -12,7 +12,6 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@SuppressWarnings({"PMD.JUnitTestContainsTooManyAsserts", "PMD.JUnitAssertionsShouldIncludeMessage", "PMD.ProhibitPlainJunitAssertionsRule"})
 public class BahnhoefeLoaderChTest {
 
 	@Test
