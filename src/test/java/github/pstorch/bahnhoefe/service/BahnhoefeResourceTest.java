@@ -1,8 +1,6 @@
 package github.pstorch.bahnhoefe.service;
 
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -10,6 +8,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class BahnhoefeResourceTest {
@@ -26,11 +28,11 @@ public class BahnhoefeResourceTest {
 
         final Iterator<Bahnhof> result = resource.get(null, null, null, null, null);
         final Bahnhof bahnhof = result.next();
-        MatcherAssert.assertThat(bahnhof, CoreMatchers.notNullValue());
-        MatcherAssert.assertThat(bahnhof.getId(), CoreMatchers.equalTo(5));
-        MatcherAssert.assertThat(bahnhof.getTitle(), CoreMatchers.equalTo("Lummerland"));
-        MatcherAssert.assertThat(bahnhof.getLat(), CoreMatchers.equalTo(50.0));
-        MatcherAssert.assertThat(bahnhof.getLon(), CoreMatchers.equalTo(9.0));
-        MatcherAssert.assertThat(bahnhof.getPhotographer(), CoreMatchers.equalTo("Jim Knopf"));
+        assertThat(bahnhof, notNullValue());
+        assertThat(bahnhof.getId(), equalTo(5));
+        assertThat(bahnhof.getTitle(), equalTo("Lummerland"));
+        assertThat(bahnhof.getLat(), equalTo(50.0));
+        assertThat(bahnhof.getLon(), equalTo(9.0));
+        assertThat(bahnhof.getPhotographer(), equalTo("Jim Knopf"));
     }
 }
