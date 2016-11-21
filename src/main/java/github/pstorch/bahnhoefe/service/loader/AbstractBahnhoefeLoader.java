@@ -46,17 +46,16 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         return cache.get();
     }
 
-    private final Supplier<Map<Integer, Bahnhof>> bahnhoefeSupplier() {
+    private Supplier<Map<Integer, Bahnhof>> bahnhoefeSupplier() {
         return () -> {
             LOG.info("Loading Bahnhoefe from bahnhoefe={}, photos={}", bahnhoefeUrl, photosUrl);
-            Map<Integer, Bahnhof> bahnhoefe = null;
             try {
-                bahnhoefe = loadAllBahnhoefe();
+                final Map<Integer, Bahnhof> bahnhoefe = loadAllBahnhoefe();
                 loadPhotoFlags(bahnhoefe);
+                return bahnhoefe;
             } catch (final IOException e) {
-                throw new RuntimeException("Unable to load all Bahnhoefe", e);
+                throw new RuntimeException("Unable to load Bahnhoefe", e);
             }
-            return bahnhoefe;
         };
     }
 

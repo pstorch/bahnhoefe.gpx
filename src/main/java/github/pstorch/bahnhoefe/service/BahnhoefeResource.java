@@ -20,7 +20,6 @@ public class BahnhoefeResource {
     private static final String MAX_DISTANCE = "maxDistance";
     private static final String LAT = "lat";
     private static final String LON = "lon";
-    private static final int EARTH_RADIUS = 6371;
 
     private final Map<String, BahnhoefeLoader> loaderMap;
 
@@ -59,7 +58,7 @@ public class BahnhoefeResource {
                 result &= StringUtils.equals(photographer, bahnhof.getPhotographer());
             }
             if (maxDistance != null && lat != null && lon != null) {
-                result &= distance(lat, lon, bahnhof.getLat(), bahnhof.getLon()) < maxDistance;
+                result &= bahnhof.distanceTo(lat, lon) < maxDistance;
             }
             return result;
         }).iterator();
@@ -117,23 +116,6 @@ public class BahnhoefeResource {
             throw new WebApplicationException(404);
         }
         return loaderMap.get(country);
-    }
-
-    /*
-     * Calculate distance in km between two points in latitude and longitude. Uses Haversine method as its base.
-     * lat1, lon1 Start point lat2, lon2 End point.
-     *
-     * @returns Distance in Meters
-     */
-    private static double distance(final double lat1, final double lon1,
-                                   final double lat2, final double lon2) {
-        final Double latDistance = Math.toRadians(lat2 - lat1);
-        final Double lonDistance = Math.toRadians(lon2 - lon1);
-        final Double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        final Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return BahnhoefeResource.EARTH_RADIUS * c;
     }
 
 }

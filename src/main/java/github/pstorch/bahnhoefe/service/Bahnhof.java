@@ -2,6 +2,8 @@ package github.pstorch.bahnhoefe.service;
 
 public class Bahnhof {
 
+    private static final int EARTH_RADIUS = 6371;
+
     private int id;
 
     private String title;
@@ -66,4 +68,21 @@ public class Bahnhof {
     }
 
     public String getPhotographer() { return this.photographer; }
+
+    /*
+     * Calculate distance in km between this objects position and the given latitude and longitude.
+     * Uses Haversine method as its base.
+     *
+     * @returns Distance in Meters
+     */
+    public double distanceTo(final double latitude, final double longitude) {
+        final Double latDistance = Math.toRadians(latitude - this.lat);
+        final Double lonDistance = Math.toRadians(longitude - this.lon);
+        final Double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(this.lat)) * Math.cos(Math.toRadians(latitude))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        final Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return Bahnhof.EARTH_RADIUS * c;
+    }
+
 }
