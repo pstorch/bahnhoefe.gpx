@@ -10,8 +10,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
 
@@ -45,6 +47,12 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
     public Map<Integer, Bahnhof> loadBahnhoefe() {
         return cache.get();
     }
+
+    @Override
+    public Iterator<Bahnhof> filter(final Predicate<Bahnhof> predicate) {
+        return loadBahnhoefe().values().stream().filter(predicate).iterator();
+    }
+
 
     private Supplier<Map<Integer, Bahnhof>> bahnhoefeSupplier() {
         return () -> {

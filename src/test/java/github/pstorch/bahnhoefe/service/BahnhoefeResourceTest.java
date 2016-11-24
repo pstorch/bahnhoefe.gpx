@@ -13,7 +13,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class BahnhoefeResourceTest {
 
     @Test
@@ -24,7 +23,7 @@ public class BahnhoefeResourceTest {
         final BahnhoefeResource resource = new BahnhoefeResource(loaders);
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>(2);
         bahnhoefe.put(5, new Bahnhof(5, "Lummerland", 50.0, 9.0, "Jim Knopf"));
-        Mockito.when(loader.loadBahnhoefe()).thenReturn(bahnhoefe);
+        Mockito.when(loader.filter(Mockito.any())).thenReturn(bahnhoefe.values().iterator());
 
         final Iterator<Bahnhof> result = resource.get(null, null, null, null, null);
         final Bahnhof bahnhof = result.next();

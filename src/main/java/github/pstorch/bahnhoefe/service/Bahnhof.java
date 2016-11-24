@@ -73,7 +73,7 @@ public class Bahnhof {
      * Calculate distance in km between this objects position and the given latitude and longitude.
      * Uses Haversine method as its base.
      *
-     * @returns Distance in Meters
+     * @returns Distance in km
      */
     public double distanceTo(final double latitude, final double longitude) {
         final Double latDistance = Math.toRadians(latitude - this.lat);
@@ -85,4 +85,17 @@ public class Bahnhof {
         return Bahnhof.EARTH_RADIUS * c;
     }
 
+    public boolean appliesTo(final Boolean hasPhoto, final String photographer, final Integer maxDistance, final Double lat, final Double lon) {
+        boolean result = true;
+        if (hasPhoto != null) {
+            result = this.hasPhoto() == hasPhoto;
+        }
+        if (photographer != null) {
+            result &= photographer.equals(this.getPhotographer());
+        }
+        if (maxDistance != null && lat != null && lon != null) {
+            result &= this.distanceTo(lat, lon) < maxDistance;
+        }
+        return result;
+    }
 }

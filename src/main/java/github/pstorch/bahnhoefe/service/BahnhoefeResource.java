@@ -2,7 +2,6 @@ package github.pstorch.bahnhoefe.service;
 
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoaderDe;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.*;
 import java.io.IOException;
@@ -49,20 +48,8 @@ public class BahnhoefeResource {
                                  @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
                                  @QueryParam(BahnhoefeResource.LAT) final Double lat,
                                  @QueryParam(BahnhoefeResource.LON) final Double lon) throws IOException {
-        return getBahnhoefeLoader(country).loadBahnhoefe().values().stream().filter(bahnhof -> {
-            boolean result = true;
-            if (hasPhoto != null) {
-                result = bahnhof.hasPhoto() == hasPhoto;
-            }
-            if (photographer != null) {
-                result &= StringUtils.equals(photographer, bahnhof.getPhotographer());
-            }
-            if (maxDistance != null && lat != null && lon != null) {
-                result &= bahnhof.distanceTo(lat, lon) < maxDistance;
-            }
-            return result;
-        }).iterator();
-
+        return getBahnhoefeLoader(country)
+                .filter(bahnhof -> bahnhof.appliesTo(hasPhoto, photographer, maxDistance, lat, lon));
     }
 
     @GET
