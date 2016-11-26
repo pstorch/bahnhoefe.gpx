@@ -12,14 +12,13 @@ import javax.ws.rs.WebApplicationException;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
-@SuppressWarnings({"PMD.JUnitAssertionsShouldIncludeMessage", "PMD.ProhibitPlainJunitAssertionsRule"})
 public class BahnhoefeGpxWriterTest {
 
 	@Test
 	public void testWriteTo() throws WebApplicationException, IOException {
 		final List<Bahnhof> bahnhoefe = new ArrayList<>();
-		bahnhoefe.add(new Bahnhof(4711, "Test", 50d, 9d));
-		bahnhoefe.add(new Bahnhof(4712, "Foo", 51d, 8d));
+		bahnhoefe.add(new Bahnhof(4711, "Test", 50d, 9d, null));
+		bahnhoefe.add(new Bahnhof(4712, "Foo", 51d, 8d, null));
 		
 		final BahnhoefeGpxWriter writer = new BahnhoefeGpxWriter();
 		final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();

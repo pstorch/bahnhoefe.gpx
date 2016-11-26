@@ -27,24 +27,21 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
     }
 
     @Override
-    protected void loadPhotoFlags(final Map<Integer, Bahnhof> bahnhoefe) throws IOException {
+    protected Map<Integer, String> loadPhotoFlags() throws IOException {
+        final Map<Integer, String> photoFlags = new HashMap<>();
         try (InputStream is = photosUrl.openStream()) {
             final JsonNode tree = BahnhoefeLoaderCh.MAPPER.readTree(is);
             for (int i = 0; i < tree.size(); i++) {
                 final JsonNode bahnhofPhoto = tree.get(i);
-                final int bahnhofsNr = bahnhofPhoto.get("uic_ref").asInt();
-                final Bahnhof bahnhof = bahnhoefe.get(bahnhofsNr);
-                if (bahnhof != null) {
-                    bahnhof.setPhotographer(bahnhofPhoto.get("fotograf-title").asText());
-                }
+                photoFlags.put(bahnhofPhoto.get("uic_ref").asInt(), bahnhofPhoto.get("fotograf-title").asText());
             }
         }
+        return photoFlags;
     }
 
     @Override
-    protected Map<Integer, Bahnhof> loadAllBahnhoefe() throws IOException {
+    protected Map<Integer, Bahnhof> loadAllBahnhoefe(final Map<Integer, String> photoFlags) throws IOException {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
-
         try (InputStream is = bahnhoefeUrl.openStream()) {
             final JsonNode tree = BahnhoefeLoaderCh.MAPPER.readTree(is);
             final JsonNode hits = tree.get(BahnhoefeLoaderCh.HITS_ELEMENT).get(BahnhoefeLoaderCh.HITS_ELEMENT);
@@ -52,10 +49,12 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
                 final JsonNode hit = hits.get(i);
                 final JsonNode bahnhofJson = hit.get("_source").get("fields");
                 final JsonNode geopos = bahnhofJson.get("geopos");
-                final Bahnhof bahnhof = new Bahnhof(bahnhofJson.get("nummer").asInt(),
+                final Integer id = bahnhofJson.get("nummer").asInt();
+                final Bahnhof bahnhof = new Bahnhof(id,
                         bahnhofJson.get("name").asText(),
                         geopos.get(0).asDouble(),
-                        geopos.get(1).asDouble());
+                        geopos.get(1).asDouble(),
+                        photoFlags.get(id));
                 bahnhoefe.put(bahnhof.getId(), bahnhof);
             }
         }

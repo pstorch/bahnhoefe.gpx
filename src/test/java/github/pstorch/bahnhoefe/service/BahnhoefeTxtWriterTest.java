@@ -17,7 +17,7 @@ public class BahnhoefeTxtWriterTest {
     public void test() throws WebApplicationException, IOException {
         final List<Bahnhof> bahnhoefe = new ArrayList<>();
         bahnhoefe.add(new Bahnhof(4711, "Test", 50d, 9d, "@pstorch"));
-        bahnhoefe.add(new Bahnhof(4712, "Foo", 51d, 8d));
+        bahnhoefe.add(new Bahnhof(4712, "Foo", 51d, 8d, null));
 
         final BahnhoefeTxtWriter writer = new BahnhoefeTxtWriter();
         final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();

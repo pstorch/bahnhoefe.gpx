@@ -35,34 +35,33 @@ public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
     }
 
     @Override
-    protected void loadPhotoFlags(final Map<Integer, Bahnhof> bahnhoefe) throws IOException {
+    protected Map<Integer, String> loadPhotoFlags() throws IOException {
+        final Map<Integer, String> photoFlags = new HashMap<>();
         try (InputStream is = photosUrl.openStream()) {
             final JsonNode tree = BahnhoefeLoaderDe.MAPPER.readTree(is);
             for (int i = 0; i < tree.size(); i++) {
                 final JsonNode bahnhofPhoto = tree.get(i);
-                final int bahnhofsNr = bahnhofPhoto.get("bahnhofsnr").asInt();
-                final Bahnhof bahnhof = bahnhoefe.get(bahnhofsNr);
-                if (bahnhof != null) {
-                    bahnhof.setPhotographer(bahnhofPhoto.get("fotograf-title").asText());
-                }
+                photoFlags.put(bahnhofPhoto.get("bahnhofsnr").asInt(), bahnhofPhoto.get("fotograf-title").asText());
             }
         }
+        return photoFlags;
     }
 
     @Override
-    protected Map<Integer, Bahnhof> loadAllBahnhoefe() throws IOException {
+    protected Map<Integer, Bahnhof> loadAllBahnhoefe(final Map<Integer, String> photoFlags) throws IOException {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
-
         try (InputStream is = bahnhoefeUrl.openStream()) {
             final JsonNode tree = BahnhoefeLoaderDe.MAPPER.readTree(is);
             final JsonNode hits = tree.get(BahnhoefeLoaderDe.HITS_ELEMENT).get(BahnhoefeLoaderDe.HITS_ELEMENT);
             for (int i = 0; i < hits.size(); i++) {
                 final JsonNode hit = hits.get(i);
                 final JsonNode bahnhofJson = hit.get("_source");
-                final Bahnhof bahnhof = new Bahnhof(bahnhofJson.get("BahnhofNr").asInt(),
+                final Integer id = bahnhofJson.get("BahnhofNr").asInt();
+                final Bahnhof bahnhof = new Bahnhof(id,
                         bahnhofJson.get(BahnhoefeLoaderDe.TITLE_ELEMENT).asText(),
                         bahnhofJson.get(BahnhoefeLoaderDe.LAT_ELEMENT).asDouble(),
-                        bahnhofJson.get(BahnhoefeLoaderDe.LON_ELEMENT).asDouble());
+                        bahnhofJson.get(BahnhoefeLoaderDe.LON_ELEMENT).asDouble(),
+                        photoFlags.get(id));
                 bahnhoefe.put(bahnhof.getId(), bahnhof);
             }
         }
