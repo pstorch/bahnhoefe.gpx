@@ -27,7 +27,7 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
     }
 
     @Override
-    protected Map<Integer, String> loadPhotoFlags() throws IOException {
+    protected Map<Integer, String> loadPhotos() throws IOException {
         final Map<Integer, String> photoFlags = new HashMap<>();
         try (InputStream is = photosUrl.openStream()) {
             final JsonNode tree = BahnhoefeLoaderCh.MAPPER.readTree(is);
@@ -40,14 +40,14 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
     }
 
     @Override
-    protected Map<Integer, Bahnhof> loadAllBahnhoefe(final Map<Integer, String> photoFlags) throws IOException {
+    protected Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, String> photoFlags) throws IOException {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
-        try (InputStream is = bahnhoefeUrl.openStream()) {
-            final JsonNode tree = BahnhoefeLoaderCh.MAPPER.readTree(is);
-            final JsonNode hits = tree.get(BahnhoefeLoaderCh.HITS_ELEMENT).get(BahnhoefeLoaderCh.HITS_ELEMENT);
+        try (final InputStream is = bahnhoefeUrl.openStream()) {
+            final JsonNode hits = BahnhoefeLoaderCh.MAPPER.readTree(is)
+                                    .get(BahnhoefeLoaderCh.HITS_ELEMENT)
+                                    .get(BahnhoefeLoaderCh.HITS_ELEMENT);
             for (int i = 0; i < hits.size(); i++) {
-                final JsonNode hit = hits.get(i);
-                final JsonNode bahnhofJson = hit.get("_source").get("fields");
+                final JsonNode bahnhofJson = hits.get(i).get("_source").get("fields");
                 final JsonNode geopos = bahnhofJson.get("geopos");
                 final Integer id = bahnhofJson.get("nummer").asInt();
                 final Bahnhof bahnhof = new Bahnhof(id,

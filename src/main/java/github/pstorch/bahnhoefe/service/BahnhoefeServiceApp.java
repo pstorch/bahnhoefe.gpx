@@ -19,7 +19,7 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
 
     @Override
     public String getName() {
-        return "Bahnhoefe GPX";
+        return "Bahnhoefe Service App";
     }
 
     @Override

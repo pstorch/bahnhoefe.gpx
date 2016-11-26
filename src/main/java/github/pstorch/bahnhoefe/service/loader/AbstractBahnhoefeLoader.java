@@ -58,17 +58,15 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         return () -> {
             LOG.info("Loading Bahnhoefe from bahnhoefe={}, photos={}", bahnhoefeUrl, photosUrl);
             try {
-                final Map<Integer, String> photoFlags = loadPhotoFlags();
-                final Map<Integer, Bahnhof> bahnhoefe = loadAllBahnhoefe(photoFlags);
-                return bahnhoefe;
+                return loadBahnhoefe(loadPhotos());
             } catch (final IOException e) {
                 throw new RuntimeException("Unable to load Bahnhoefe", e);
             }
         };
     }
 
-    protected abstract Map<Integer, String> loadPhotoFlags() throws IOException;
+    protected abstract Map<Integer, String> loadPhotos() throws IOException;
 
-    protected abstract Map<Integer, Bahnhof> loadAllBahnhoefe(final Map<Integer, String> photoFlags) throws IOException;
+    protected abstract Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, String> photoFlags) throws IOException;
 
 }

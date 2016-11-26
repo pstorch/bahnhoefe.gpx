@@ -10,19 +10,13 @@ import java.util.Map;
 
 public class BahnhoefeServiceConfiguration extends Configuration {
 
-    private BahnhoefeLoaderDe loaderDe;
-    private BahnhoefeLoaderCh loaderCh;
+    private BahnhoefeLoaderDe loaderDe = new BahnhoefeLoaderDe();
+    private BahnhoefeLoaderCh loaderCh = new BahnhoefeLoaderCh();
 
-    public void setLoaderDe(final BahnhoefeLoaderDe loaderDe) {
-        this.loaderDe = loaderDe;
-    }
     public BahnhoefeLoaderDe getLoaderDe() {
         return loaderDe;
     }
 
-    public void setLoaderCh(final BahnhoefeLoaderCh loaderCh) {
-        this.loaderCh = loaderCh;
-    }
     public BahnhoefeLoaderCh getLoaderCh() {
         return loaderCh;
     }
