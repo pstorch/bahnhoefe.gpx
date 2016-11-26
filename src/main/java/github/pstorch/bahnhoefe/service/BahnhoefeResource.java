@@ -95,7 +95,7 @@ public class BahnhoefeResource {
                                              @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
                                              @QueryParam(BahnhoefeResource.LAT) final Double lat,
                                              @QueryParam(BahnhoefeResource.LON) final Double lon) throws IOException {
-        return get(BahnhoefeResource.DEFAULT_COUNTRY, false, photographer, maxDistance, lat, lon);
+        return get(country, false, photographer, maxDistance, lat, lon);
     }
 
     private BahnhoefeLoader getBahnhoefeLoader(@PathParam(BahnhoefeResource.COUNTRY) final String country) {
