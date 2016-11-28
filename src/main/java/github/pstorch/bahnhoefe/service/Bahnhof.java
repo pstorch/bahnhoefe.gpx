@@ -1,18 +1,29 @@
 package github.pstorch.bahnhoefe.service;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Bahnhof {
 
     private static final int EARTH_RADIUS = 6371;
 
+    @JsonProperty
     private final int id;
 
+    @JsonProperty
     private final String title;
 
+    @JsonProperty
     private final double lat;
 
+    @JsonProperty
     private final double lon;
 
+    @JsonProperty
     private final String photographer;
+
+    public Bahnhof() {
+        this(0, null, 0.0, 0.0, null);
+    }
 
     public Bahnhof(final int id, final String title, final double lat, final double lon, final String photographer) {
         super();
