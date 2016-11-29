@@ -1,7 +1,6 @@
 package github.pstorch.bahnhoefe.service;
 
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -15,11 +14,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BahnhoefeResourceTest {
-
-    @Before
-    public void setUp() {
-
-    }
 
     @Test
     public void testGet() throws IOException {
