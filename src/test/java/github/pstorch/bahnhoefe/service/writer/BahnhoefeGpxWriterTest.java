@@ -1,16 +1,16 @@
-package github.pstorch.bahnhoefe.service;
+package github.pstorch.bahnhoefe.service.writer;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import github.pstorch.bahnhoefe.service.Bahnhof;
+import org.junit.Test;
 
+import javax.ws.rs.WebApplicationException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.WebApplicationException;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BahnhoefeGpxWriterTest {
 
@@ -26,7 +26,7 @@ public class BahnhoefeGpxWriterTest {
 		
 		final String gpx = entityStream.toString();
 		assertThat(gpx,
-				CoreMatchers.is("<?xml version=\"1.0\" encoding=\"UTF-8\"?><service xmlns=\"http://www.topografix.com/GPX/1/1\" version=\"1.1\"><wpt lat=\"50.0\" lon=\"9.0\"><name>Test</name></wpt><wpt lat=\"51.0\" lon=\"8.0\"><name>Foo</name></wpt></service>"));
+				is("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<service xmlns=\"http://www.topografix.com/GPX/1/1\" version=\"1.1\">\n<wpt lat=\"50.0\" lon=\"9.0\"><name>Test</name></wpt>\n<wpt lat=\"51.0\" lon=\"8.0\"><name>Foo</name></wpt>\n</service>"));
 	}
 
 }

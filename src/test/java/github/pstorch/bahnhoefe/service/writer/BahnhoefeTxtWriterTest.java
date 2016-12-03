@@ -1,5 +1,6 @@
-package github.pstorch.bahnhoefe.service;
+package github.pstorch.bahnhoefe.service.writer;
 
+import github.pstorch.bahnhoefe.service.Bahnhof;
 import org.junit.Test;
 
 import javax.ws.rs.WebApplicationException;

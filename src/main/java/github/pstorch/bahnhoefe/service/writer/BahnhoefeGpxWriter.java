@@ -1,4 +1,7 @@
-package github.pstorch.bahnhoefe.service;
+package github.pstorch.bahnhoefe.service.writer;
+
+import github.pstorch.bahnhoefe.service.Bahnhof;
+import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -39,6 +42,7 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> 
             xmlw.writeCharacters(bahnhof.getTitle());
             xmlw.writeEndElement();
             xmlw.writeEndElement();
+            xmlw.writeCharacters("\n");
         } catch (final XMLStreamException e) {
             throw new WebApplicationException(e);
         }
@@ -54,25 +58,28 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> 
     public void writeTo(final Iterator<Bahnhof> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
-        XMLStreamWriter xmlw;
         try {
-            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(entityStream, BahnhoefeGpxWriter.UTF_8);
+            final XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(entityStream, BahnhoefeGpxWriter.UTF_8);
             xmlw.writeStartDocument(BahnhoefeGpxWriter.UTF_8, "1.0");
+            xmlw.writeCharacters("\n");
             xmlw.writeStartElement("service");
             xmlw.writeDefaultNamespace("http://www.topografix.com/GPX/1/1");
             xmlw.writeAttribute("version", "1.1");
+            xmlw.writeCharacters("\n");
             t.forEachRemaining(bahnhof -> bahnhofToXml(xmlw, bahnhof));
             xmlw.writeEndElement();
             xmlw.flush();
         } catch (final XMLStreamException | FactoryConfigurationError e) {
             throw new WebApplicationException(e);
+        } finally {
+            IOUtils.closeQuietly(entityStream);
         }
     }
 
     @Override
     public long getSize(final Iterator<Bahnhof> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType) {
-        return -1;
+        return 0;
     }
 
 }

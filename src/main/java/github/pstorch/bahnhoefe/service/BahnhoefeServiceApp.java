@@ -1,5 +1,7 @@
 package github.pstorch.bahnhoefe.service;
 
+import github.pstorch.bahnhoefe.service.writer.BahnhoefeGpxWriter;
+import github.pstorch.bahnhoefe.service.writer.BahnhoefeTxtWriter;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -38,7 +40,7 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
         environment.jersey().register(new BahnhoefeGpxWriter());
         environment.jersey().register(new BahnhoefeTxtWriter());
         environment.jersey().property("jersey.config.server.mediaTypeMappings",
-                "service : application/service+xml, json : application/json, txt : text/plain");
+                "gpx : application/service+xml, json : application/json, txt : text/plain");
     }
 
 }

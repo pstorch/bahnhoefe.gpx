@@ -1,17 +1,30 @@
 package github.pstorch.bahnhoefe.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -126,7 +139,64 @@ public class BahnhoefeServiceAppTest {
         assertThat(bahnhoefe.length, is(17));
     }
 
+    @Test
+    public void bahnhoefeJson() throws IOException {
+        final Response response = loadBahnhoefeRaw("/de/bahnhoefe.json", 200);
+        final ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        assertThat(jsonNode, notNullValue());
+        assertThat(jsonNode.isArray(), is(true));
+        assertThat(jsonNode.size(), is(5652));
+    }
+
+    @Test
+    public void bahnhoefeTxt() throws IOException {
+        final Response response = loadBahnhoefeRaw("/de/bahnhoefe.txt", 200);
+        final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity()));
+        final String header = br.readLine();
+        assertThat(header, is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
+        int count = 0;
+        Pattern p = Pattern.compile("[\\d\\.]*\t[\\d\\.]*\t[^\t]*\t[^\t]*\t(gruen|rot)punkt\\.png\t10,10\t0,-10");
+        while (br.ready()) {
+            final String line = br.readLine();
+            count++;
+            final Matcher m = p.matcher(line);
+            assertThat(m.matches(), is(true));
+        }
+        assertThat(count, is(5652));
+    }
+
+    @Test
+    public void bahnhoefeGpx() throws IOException, ParserConfigurationException, SAXException {
+        final Response response = loadBahnhoefeRaw("/ch/bahnhoefe.gpx?hasPhoto=true", 200);
+        final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        final String content = readSaveStringEntity(response);
+        final Document doc = builder.parse(new InputSource(new StringReader(content)));
+        final Element gpx = doc.getDocumentElement();
+        assertThat(gpx.getTagName(), is("service"));
+        assertThat(gpx.getAttribute("xmlns"), is("http://www.topografix.com/GPX/1/1"));
+        assertThat(gpx.getAttribute("version"), is("1.1"));
+        NodeList wpts = gpx.getElementsByTagName("wpt");
+        assertThat(wpts.getLength(), is(9));
+    }
+
+    private String readSaveStringEntity(final Response response) throws IOException {
+        final byte[] buffer = new byte[16000];
+        IOUtils.read((InputStream)response.getEntity(), buffer);
+        return new String(buffer, "UTF-8").trim();
+    }
+
     private Bahnhof[] loadBahnhoefe(final String path, final int expectedStatus) throws IOException {
+        final Response response = loadBahnhoefeRaw(path, expectedStatus);
+
+        if (response == null) {
+            return null;
+        }
+        return response.readEntity(Bahnhof[].class);
+    }
+
+    private Response loadBahnhoefeRaw(final String path, final int expectedStatus) throws IOException {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), path))
                 .request()
@@ -134,7 +204,7 @@ public class BahnhoefeServiceAppTest {
 
         assertThat(response.getStatus(), is(expectedStatus));
         if (expectedStatus == 200) {
-            return response.readEntity(Bahnhof[].class);
+            return response;
         }
         return null;
     }

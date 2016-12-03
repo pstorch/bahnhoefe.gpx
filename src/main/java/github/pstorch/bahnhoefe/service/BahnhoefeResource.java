@@ -2,6 +2,8 @@ package github.pstorch.bahnhoefe.service;
 
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoaderDe;
+import github.pstorch.bahnhoefe.service.writer.BahnhoefeGpxWriter;
+import github.pstorch.bahnhoefe.service.writer.BahnhoefeTxtWriter;
 
 import javax.ws.rs.*;
 import java.io.IOException;
