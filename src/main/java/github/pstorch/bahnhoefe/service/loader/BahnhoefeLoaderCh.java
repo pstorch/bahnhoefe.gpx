@@ -33,7 +33,7 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
             final JsonNode tree = BahnhoefeLoaderCh.MAPPER.readTree(is);
             for (int i = 0; i < tree.size(); i++) {
                 final JsonNode bahnhofPhoto = tree.get(i);
-                photoFlags.put(bahnhofPhoto.get("uic_ref").asInt(), bahnhofPhoto.get("fotograf-title").asText());
+                photoFlags.put(bahnhofPhoto.get("ibnr").asInt(), bahnhofPhoto.get("fotograf-title").asText());
             }
         }
         return photoFlags;

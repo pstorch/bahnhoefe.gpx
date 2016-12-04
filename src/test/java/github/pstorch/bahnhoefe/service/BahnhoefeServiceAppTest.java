@@ -178,7 +178,7 @@ public class BahnhoefeServiceAppTest {
         assertThat(gpx.getAttribute("xmlns"), is("http://www.topografix.com/GPX/1/1"));
         assertThat(gpx.getAttribute("version"), is("1.1"));
         NodeList wpts = gpx.getElementsByTagName("wpt");
-        assertThat(wpts.getLength(), is(9));
+        assertThat(wpts.getLength(), is(20));
     }
 
     private String readSaveStringEntity(final Response response) throws IOException {
