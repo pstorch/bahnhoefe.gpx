@@ -48,6 +48,7 @@ public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
     }
 
     @Override
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     protected Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, String> photoFlags) throws IOException {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
         try (final InputStream is = bahnhoefeUrl.openStream()) {

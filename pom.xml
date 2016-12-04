@@ -17,6 +17,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
@@ -30,7 +35,7 @@
 			<exclusions>
 				<exclusion>
 					<groupId>javax.servlet</groupId>
-					<artifactId>javax.servlet-api</artifactId>
+					<artifactId>servlet-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -194,6 +199,18 @@
                         </goals>
                     </execution>
                 </executions>
+				<configuration>
+					<includeTests>true</includeTests>
+					<rulesets>
+						<ruleset>/rulesets/java/braces.xml</ruleset>
+						<ruleset>/rulesets/java/empty.xml</ruleset>
+						<ruleset>/rulesets/java/imports.xml</ruleset>
+						<ruleset>/rulesets/java/unnecessary.xml</ruleset>
+						<ruleset>/rulesets/java/unusedcode.xml</ruleset>
+						<ruleset>pmd-naming.xml</ruleset>
+						<ruleset>/rulesets/java/optimizations.xml</ruleset>
+					</rulesets>
+				</configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -203,7 +220,8 @@
                     <effort>Max</effort>
                     <threshold>Low</threshold>
                     <xmlOutput>true</xmlOutput>
-                </configuration>
+					<includeTests>true</includeTests>
+				</configuration>
                 <executions>
                     <execution>
                         <goals>

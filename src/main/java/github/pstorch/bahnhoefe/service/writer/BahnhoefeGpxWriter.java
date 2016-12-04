@@ -18,10 +18,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Iterator;
 
-@Produces(BahnhoefeGpxWriter.APPLICATION_GPX_XML)
+@Produces(BahnhoefeGpxWriter.GPX_MIME_TYPE)
 public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> {
 
-    public static final String APPLICATION_GPX_XML = "application/service+xml";
+    public static final String GPX_MIME_TYPE = "application/service+xml";
 
     private static final String UTF_8 = "UTF-8";
 

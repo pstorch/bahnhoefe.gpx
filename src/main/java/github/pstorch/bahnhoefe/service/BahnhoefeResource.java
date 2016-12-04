@@ -30,7 +30,7 @@ public class BahnhoefeResource {
 
     @GET
     @Path("bahnhoefe")
-    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.APPLICATION_GPX_XML,
+    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN})
     public Iterator<Bahnhof> get(@QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
                                  @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
@@ -42,7 +42,7 @@ public class BahnhoefeResource {
 
     @GET
     @Path("{country}/bahnhoefe")
-    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.APPLICATION_GPX_XML,
+    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN})
     public Iterator<Bahnhof> get(@PathParam(BahnhoefeResource.COUNTRY) final String country,
                                  @QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
@@ -56,7 +56,7 @@ public class BahnhoefeResource {
 
     @GET
     @Path("bahnhoefe-withPhoto")
-    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.APPLICATION_GPX_XML,
+    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN})
     public Iterator<Bahnhof> getWithPhoto(@QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
                                           @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
@@ -67,7 +67,7 @@ public class BahnhoefeResource {
 
     @GET
     @Path("{country}/bahnhoefe-withPhoto")
-    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.APPLICATION_GPX_XML,
+    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN})
     public Iterator<Bahnhof> getWithPhoto(@PathParam(BahnhoefeResource.COUNTRY) final String country,
                                           @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
@@ -79,7 +79,7 @@ public class BahnhoefeResource {
 
     @GET
     @Path("bahnhoefe-withoutPhoto")
-    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.APPLICATION_GPX_XML,
+    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN})
     public Iterator<Bahnhof> getWithoutPhoto(@QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
                                              @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
@@ -90,7 +90,7 @@ public class BahnhoefeResource {
 
     @GET
     @Path("{country}/bahnhoefe-withoutPhoto")
-    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.APPLICATION_GPX_XML,
+    @Produces({BahnhoefeResource.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN})
     public Iterator<Bahnhof> getWithoutPhoto(@PathParam(BahnhoefeResource.COUNTRY) final String country,
                                              @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,

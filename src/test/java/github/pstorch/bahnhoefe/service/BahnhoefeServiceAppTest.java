@@ -143,7 +143,7 @@ public class BahnhoefeServiceAppTest {
     public void bahnhoefeJson() throws IOException {
         final Response response = loadBahnhoefeRaw("/de/bahnhoefe.json", 200);
         final ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isArray(), is(true));
         assertThat(jsonNode.size(), is(5652));
@@ -152,32 +152,33 @@ public class BahnhoefeServiceAppTest {
     @Test
     public void bahnhoefeTxt() throws IOException {
         final Response response = loadBahnhoefeRaw("/de/bahnhoefe.txt", 200);
-        final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity()));
-        final String header = br.readLine();
-        assertThat(header, is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
-        int count = 0;
-        Pattern p = Pattern.compile("[\\d\\.]*\t[\\d\\.]*\t[^\t]*\t[^\t]*\t(gruen|rot)punkt\\.png\t10,10\t0,-10");
-        while (br.ready()) {
-            final String line = br.readLine();
-            count++;
-            final Matcher m = p.matcher(line);
-            assertThat(m.matches(), is(true));
+        try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
+            final String header = br.readLine();
+            assertThat(header, is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
+            int count = 0;
+            final Pattern pattern = Pattern.compile("[\\d\\.]*\t[\\d\\.]*\t[^\t]*\t[^\t]*\t(gruen|rot)punkt\\.png\t10,10\t0,-10");
+            while (br.ready()) {
+                final String line = br.readLine();
+                count++;
+                final Matcher matcher = pattern.matcher(line);
+                assertThat(matcher.matches(), is(true));
+            }
+            assertThat(count, is(5652));
         }
-        assertThat(count, is(5652));
     }
 
     @Test
     public void bahnhoefeGpx() throws IOException, ParserConfigurationException, SAXException {
         final Response response = loadBahnhoefeRaw("/ch/bahnhoefe.gpx?hasPhoto=true", 200);
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        final DocumentBuilder builder = factory.newDocumentBuilder();
         final String content = readSaveStringEntity(response);
         final Document doc = builder.parse(new InputSource(new StringReader(content)));
         final Element gpx = doc.getDocumentElement();
         assertThat(gpx.getTagName(), is("service"));
         assertThat(gpx.getAttribute("xmlns"), is("http://www.topografix.com/GPX/1/1"));
         assertThat(gpx.getAttribute("version"), is("1.1"));
-        NodeList wpts = gpx.getElementsByTagName("wpt");
+        final NodeList wpts = gpx.getElementsByTagName("wpt");
         assertThat(wpts.getLength(), is(20));
     }
 
@@ -191,7 +192,7 @@ public class BahnhoefeServiceAppTest {
         final Response response = loadBahnhoefeRaw(path, expectedStatus);
 
         if (response == null) {
-            return null;
+            return new Bahnhof[0];
         }
         return response.readEntity(Bahnhof[].class);
     }
@@ -209,7 +210,7 @@ public class BahnhoefeServiceAppTest {
         return null;
     }
 
-    private Bahnhof findById(final Bahnhof[] bahnhoefe, int id) {
+    private Bahnhof findById(final Bahnhof[] bahnhoefe, final int id) {
         for (final Bahnhof bahnhof : bahnhoefe) {
             if (bahnhof.getId() == id) {
                 return bahnhof;

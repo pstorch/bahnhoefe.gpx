@@ -24,7 +24,7 @@ public class BahnhoefeTxtWriterTest {
         final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();
         writer.writeTo(bahnhoefe.iterator(), null, null, null, null, null, entityStream);
 
-        final String txt = entityStream.toString();
+        final String txt = entityStream.toString("UTF-8");
         final String[] lines = txt.split("\n");
         assertThat(lines[0], is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
         assertThat(lines[1], is("50.0\t9.0\tTest\tTest\tgruenpunkt.png\t10,10\t0,-10"));
