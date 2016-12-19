@@ -4,13 +4,18 @@
 
 	<groupId>github.pstorch</groupId>
 	<artifactId>bahnhoefe.service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>20161219.2320-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Bahnhoefe Service</name>
 	<url>http://maven.apache.org</url>
 
-	<properties>
+    <scm>
+        <connection>scm:git:git@github.com:pstorch/bahnhoefe.gpx.git</connection>
+        <url>scm:git:git@github.com:pstorch/bahnhoefe.gpx.git</url>
+    </scm>
+
+    <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dropwizard.version>1.0.5</dropwizard.version>
 	</properties>
@@ -259,6 +264,9 @@
 					<imageTags>
 						<imageTag>${project.version}</imageTag>
 					</imageTags>
+                    <buildArgs>
+                        <VERSION>${project.version}</VERSION>
+                    </buildArgs>
                     <serverId>docker-hub</serverId>
                     <registryUrl>https://index.docker.io/v1/</registryUrl>
 				</configuration>
@@ -279,7 +287,11 @@
 					</execution>
 				</executions>
 			</plugin>
-		</plugins>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+            </plugin>
+        </plugins>
 	</build>
 
     <reporting>
