@@ -18,17 +18,15 @@ Run server:
 ```java -jar target/bahnhoefe.gpx-0.0.1-SNAPSHOT.jar server config.yml```
 
 ## Docker
-This project can also be run as a Docker container.
+This project can also be run as a Docker container. The docker image is automatically built via maven.
 
-- build the docker image: 
-  ```docker build .```
 - run image: 
-  ```docker run -d -p 8080:8080 <image-id>```
+  ```docker run -d -p 8080:8080 pstorch/bahnhoefe-gpx```
   
 A ready to use image is available at https://hub.docker.com/r/pstorch/bahnhoefe-gpx/
 
 ## Use
-Point your browser to http://localhost:8080/{country}/bahnhoefe, where `country` can be "de" or "ch"
+Point your browser to http://localhost:8080/{country}/stations, where `country` can be "de" or "ch"
 
 With the following query parameter:
 - `hasPhoto`: boolean, indicates if only trainstations with or without a photo should be selected
@@ -36,12 +34,14 @@ With the following query parameter:
 - `maxDistance`, `lat`, `lon`: select trainstations within a max distance of km of the given reference point
 
 ### Examples
-- all german trainstations: http://localhost:8080/de/bahnhoefe
-- german trainstations without photo: http://localhost:8080/de/bahnhoefe&hasPhoto=false
-- austrian trainsations from photographer @android_oma: http://localhost:8080/ch/bahnhoefe&photographer=@android_oma
-- german trainsations within 20km from FFM mainstation: http://localhost:8080/de/bahnhoefe&maxDistance=20&lat=50.1060866&lon=8.6615762
+- all german trainstations: http://localhost:8080/de/stations
+- german trainstations without photo: http://localhost:8080/de/stations&hasPhoto=false
+- austrian trainsations from photographer @android_oma: http://localhost:8080/ch/stations&photographer=@android_oma
+- german trainsations within 20km from FFM mainstation: http://localhost:8080/de/stations&maxDistance=20&lat=50.1060866&lon=8.6615762
 
 ### Deprecated endpoints
+- Export trainstations
+  http://localhost:8080/{country}/bahnhoefe -> use: http://localhost:8080/{country}/stations&hasPhoto=true
 - Export trainstations with Photo
   http://localhost:8080/{country}/bahnhoefe-withPhoto -> use: http://localhost:8080/{country}/bahnhoefe&hasPhoto=true
 - Export trainstations without Photo
