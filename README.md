@@ -13,17 +13,20 @@ To build the project, you need Maven and Java 8.
 Run:
 ```mvn clean install```
 
-## Start
-Run server:
-```java -jar target/bahnhoefe.gpx-0.0.1-SNAPSHOT.jar server config.yml```
+Release:
+- `mvn release:prepare`
+- `mvn release:perform`
 
 ## Docker
-This project can also be run as a Docker container. The docker image is automatically built via maven.
+This project can be run as a Docker container. The docker image is automatically built via the above maven build command.
 
-- run image: 
-  ```docker run -d -p 8080:8080 pstorch/bahnhoefe-gpx```
+- run locally: 
+  ```docker run -it --rm -p 8080:8080 pstorch/bahnhoefe-gpx```
   
-A ready to use image is available at https://hub.docker.com/r/pstorch/bahnhoefe-gpx/
+- run on server: 
+  ```docker run -d --restart=always -p 8080:8080 pstorch/bahnhoefe-gpx:<version>```
+
+Ready to use images are published at https://hub.docker.com/r/pstorch/bahnhoefe-gpx/
 
 ## Use
 Point your browser to http://localhost:8080/{country}/stations, where `country` can be "de" or "ch"
