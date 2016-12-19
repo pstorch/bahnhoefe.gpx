@@ -3,7 +3,7 @@
 
 	<groupId>github.pstorch</groupId>
 	<artifactId>bahnhoefe.service</artifactId>
-	<version>20161219.2320</version>
+	<version>20161219.2321-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Bahnhoefe Service</name>
@@ -12,7 +12,7 @@
     <scm>
         <connection>scm:git:git@github.com:pstorch/bahnhoefe.gpx.git</connection>
         <url>scm:git:git@github.com:pstorch/bahnhoefe.gpx.git</url>
-      <tag>bahnhoefe.service-20161219.2320</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <properties>
