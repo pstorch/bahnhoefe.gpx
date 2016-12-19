@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>github.pstorch</groupId>
 	<artifactId>bahnhoefe.service</artifactId>
-	<version>20161219.2320-SNAPSHOT</version>
+	<version>20161219.2320</version>
 	<packaging>jar</packaging>
 
 	<name>Bahnhoefe Service</name>
@@ -13,7 +12,8 @@
     <scm>
         <connection>scm:git:git@github.com:pstorch/bahnhoefe.gpx.git</connection>
         <url>scm:git:git@github.com:pstorch/bahnhoefe.gpx.git</url>
-    </scm>
+      <tag>bahnhoefe.service-20161219.2320</tag>
+  </scm>
 
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -181,10 +181,8 @@
 						</goals>
 						<configuration>
 							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>github.pstorch.bahnhoefe.service.BahnhoefeServiceApp</mainClass>
 								</transformer>
 							</transformers>
