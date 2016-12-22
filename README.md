@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/pstorch/bahnhoefe.gpx.svg?branch=master)](https://travis-ci.org/pstorch/bahnhoefe.gpx) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e9be06b4e9944de1a24a37e3b26d3051)](https://www.codacy.com/app/peter-storch/bahnhoefe-gpx?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pstorch/bahnhoefe.gpx&amp;utm_campaign=Badge_Grade) [![Coverage Status](https://coveralls.io/repos/github/pstorch/bahnhoefe.gpx/badge.svg?branch=master)](https://coveralls.io/github/pstorch/bahnhoefe.gpx?branch=master)
 
-# bahnhoefe.gpx
+# Railway Stations API
 Backend Service for the https://play.google.com/store/apps/details?id=de.bahnhoefe.deutschlands.bahnhofsfotos App of the [Bahnhofsfotos opendata Project](http://www.deutschlands-bahnhoefe.de/).
 It started as a simple GPX Exporter to use the Waypoints in your favorite Map App or GPS Device.
 Later it was enhanced to export a txt list of the Waypoints for the online Map at: http://www.alsgefahn.de/bfmap/bhfueb.html.
