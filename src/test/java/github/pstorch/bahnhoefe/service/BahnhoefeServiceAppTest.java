@@ -52,78 +52,78 @@ public class BahnhoefeServiceAppTest {
         client.close();
     }
 
-    private void defaultCountry(final String path) throws IOException {
+    private void assertDefaultCountry(final String path) throws IOException {
         final Bahnhof[] bahnhoefe = loadBahnhoefe(path, 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
     }
 
     @Test
     public void stationsDefaultCountry() throws IOException {
-        defaultCountry("/stations");
+        assertDefaultCountry("/stations");
     }
 
     @Test
     public void bahnhoefeDefaultCountry() throws IOException {
-        defaultCountry("/bahnhoefe");
+        assertDefaultCountry("/bahnhoefe");
     }
 
-    private void countryDe(final String path) throws IOException {
+    private void assertCountryDe(final String path) throws IOException {
         final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/de/%s", path), 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
     }
 
     @Test
     public void stationsDe() throws IOException {
-        countryDe("stations");
+        assertCountryDe("stations");
     }
 
     @Test
     public void bahnhoefeDe() throws IOException {
-        countryDe("bahnhoefe");
+        assertCountryDe("bahnhoefe");
     }
 
-    private void dePhotograph(final String path) throws IOException {
+    private void assertDePhotograph(final String path) throws IOException {
         final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/de/%s?photographer=@hessenpfaelzer", path), 200);
         assertThat(findById(bahnhoefe, 7066), notNullValue());
     }
 
     @Test
     public void stationsDePhotograph() throws IOException {
-        dePhotograph("stations");
+        assertDePhotograph("stations");
     }
 
     @Test
     public void bahnhoefeDePhotograph() throws IOException {
-        dePhotograph("bahnhoefe");
+        assertDePhotograph("bahnhoefe");
     }
 
-    private void countryCh(final String path) throws IOException {
+    private void assertCountryCh(final String path) throws IOException {
         final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/ch/%s", path), 200);
         assertThat(findById(bahnhoefe, 8501042), notNullValue());
     }
 
     @Test
     public void stationsCh() throws IOException {
-        countryCh("stations");
+        assertCountryCh("stations");
     }
 
     @Test
     public void bahnhoefeCh() throws IOException {
-        countryCh("bahnhoefe");
+        assertCountryCh("bahnhoefe");
     }
 
-    private void unknownCountry(final String path) throws IOException {
+    private void assertUnknownCountry(final String path) throws IOException {
         loadBahnhoefe(String.format("/jp/%s", path), 404);
     }
 
     @Test
     public void stationsUnknownCountry() throws IOException {
-        unknownCountry("stations");
+        assertUnknownCountry("stations");
     }
 
     @Test
     public void bahnhoefeUnknownCountry() throws IOException {
-        unknownCountry("bahnhoefe");
+        assertUnknownCountry("bahnhoefe");
     }
 
     @Test
@@ -172,37 +172,37 @@ public class BahnhoefeServiceAppTest {
         loadBahnhoefe("/jp/bahnhoefe-withoutPhoto", 404);
     }
 
-    private void deFromAndroidOma(final String path) throws IOException {
+    private void assertDeFromAndroidOma(final String path) throws IOException {
         final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/de/%s?photographer=@android_oma", path), 200);
         assertThat(bahnhoefe.length, is(31));
     }
 
     @Test
     public void stationsDeFromAndroidOma() throws IOException {
-        deFromAndroidOma("stations");
+        assertDeFromAndroidOma("stations");
     }
 
     @Test
     public void bahnhoefeDeFromAndroidOma() throws IOException {
-        deFromAndroidOma("bahnhoefe");
+        assertDeFromAndroidOma("bahnhoefe");
     }
 
-    private void deFromAndroidOmaWithinMax30kmFromFfmHbf(final String path) throws IOException {
+    private void assertDeFromAndroidOmaWithinMax30kmFromFfmHbf(final String path) throws IOException {
         final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/de/%s?maxDistance=30&lat=50.1060866&lon=8.6615762&photographer=@android_oma", path), 200);
         assertThat(bahnhoefe.length, is(17));
     }
 
     @Test
     public void stationsDeFromAndroidOmaWithinMax30kmFromFfmHbf() throws IOException {
-        deFromAndroidOmaWithinMax30kmFromFfmHbf("stations");
+        assertDeFromAndroidOmaWithinMax30kmFromFfmHbf("stations");
     }
 
     @Test
     public void bahnhoefeDeFromAndroidOmaWithinMax30kmFromFfmHbf() throws IOException {
-        deFromAndroidOmaWithinMax30kmFromFfmHbf("bahnhoefe");
+        assertDeFromAndroidOmaWithinMax30kmFromFfmHbf("bahnhoefe");
     }
 
-    private void json(final String path) throws IOException {
+    private void assertJson(final String path) throws IOException {
         final Response response = loadBahnhoefeRaw(String.format("/de/%s.json", path), 200);
         final ObjectMapper mapper = new ObjectMapper();
         final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
@@ -213,15 +213,15 @@ public class BahnhoefeServiceAppTest {
 
     @Test
     public void stationsJson() throws IOException {
-        json("stations");
+        assertJson("stations");
     }
 
     @Test
     public void bahnhoefeJson() throws IOException {
-        json("bahnhoefe");
+        assertJson("bahnhoefe");
     }
 
-    private void txt(final String path) throws IOException {
+    private void assertTxt(final String path) throws IOException {
         final Response response = loadBahnhoefeRaw(String.format("/de/%s.txt", path), 200);
         try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
             final String header = br.readLine();
@@ -240,15 +240,15 @@ public class BahnhoefeServiceAppTest {
 
     @Test
     public void stationsTxt() throws IOException {
-        txt("stations");
+        assertTxt("stations");
     }
 
     @Test
     public void bahnhoefeTxt() throws IOException {
-        txt("bahnhoefe");
+        assertTxt("bahnhoefe");
     }
 
-    private void gpx(final String path) throws IOException, ParserConfigurationException, SAXException {
+    private void assertGpx(final String path) throws IOException, ParserConfigurationException, SAXException {
         final Response response = loadBahnhoefeRaw(String.format("/ch/%s.gpx?hasPhoto=true", path), 200);
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         final DocumentBuilder builder = factory.newDocumentBuilder();
@@ -264,12 +264,12 @@ public class BahnhoefeServiceAppTest {
 
     @Test
     public void stationsGpx() throws IOException, ParserConfigurationException, SAXException {
-        gpx("stations");
+        assertGpx("stations");
     }
 
     @Test
     public void bahnhoefeGpx() throws IOException, ParserConfigurationException, SAXException {
-        gpx("bahnhoefe");
+        assertGpx("bahnhoefe");
     }
 
     private String readSaveStringEntity(final Response response) throws IOException {
