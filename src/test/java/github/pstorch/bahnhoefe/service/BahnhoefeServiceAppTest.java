@@ -53,7 +53,7 @@ public class BahnhoefeServiceAppTest {
     }
 
     private void assertDefaultCountry(final String path) throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe(path, 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(path, 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
     }
 
@@ -68,7 +68,7 @@ public class BahnhoefeServiceAppTest {
     }
 
     private void assertCountryDe(final String path) throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/de/%s", path), 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s", path), 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
     }
 
@@ -83,7 +83,7 @@ public class BahnhoefeServiceAppTest {
     }
 
     private void assertDePhotograph(final String path) throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/de/%s?photographer=@hessenpfaelzer", path), 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=@hessenpfaelzer", path), 200);
         assertThat(findById(bahnhoefe, 7066), notNullValue());
     }
 
@@ -98,7 +98,7 @@ public class BahnhoefeServiceAppTest {
     }
 
     private void assertCountryCh(final String path) throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/ch/%s", path), 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/ch/%s", path), 200);
         assertThat(findById(bahnhoefe, 8501042), notNullValue());
     }
 
@@ -113,7 +113,7 @@ public class BahnhoefeServiceAppTest {
     }
 
     private void assertUnknownCountry(final String path) throws IOException {
-        loadBahnhoefe(String.format("/jp/%s", path), 404);
+        assertLoadBahnhoefe(String.format("/jp/%s", path), 404);
     }
 
     @Test
@@ -128,52 +128,52 @@ public class BahnhoefeServiceAppTest {
 
     @Test
     public void bahnhoefeWithPhotoDefaultCountry() throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe("/bahnhoefe-withPhoto", 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe("/bahnhoefe-withPhoto", 200);
         assertThat(findById(bahnhoefe, 7066), notNullValue());
     }
 
     @Test
     public void bahnhoefeWithPhotoDe() throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe("/de/bahnhoefe-withPhoto", 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe("/de/bahnhoefe-withPhoto", 200);
         assertThat(findById(bahnhoefe, 7066), notNullValue());
     }
 
     @Test
     public void bahnhoefeWithPhotoCh() throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe("/ch/bahnhoefe-withPhoto", 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe("/ch/bahnhoefe-withPhoto", 200);
         assertThat(findById(bahnhoefe, 8509195), notNullValue());
     }
 
     @Test
     public void bahnhoefeWithPhotoUnknownCountry() throws IOException {
-        loadBahnhoefe("/jp/bahnhoefe-withPhoto", 404);
+        assertLoadBahnhoefe("/jp/bahnhoefe-withPhoto", 404);
     }
 
     @Test
     public void bahnhoefeWithoutPhotoDefaultCountry() throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe("/bahnhoefe-withoutPhoto", 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe("/bahnhoefe-withoutPhoto", 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
     }
 
     @Test
     public void bahnhoefeWithoutPhotoDe() throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe("/de/bahnhoefe-withoutPhoto", 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe("/de/bahnhoefe-withoutPhoto", 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
     }
 
     @Test
     public void bahnhoefeWithoutPhotoCh() throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe("/ch/bahnhoefe-withoutPhoto", 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe("/ch/bahnhoefe-withoutPhoto", 200);
         assertThat(findById(bahnhoefe, 8501042), notNullValue());
     }
 
     @Test
     public void bahnhoefeWithoutPhotoUnknownCountry() throws IOException {
-        loadBahnhoefe("/jp/bahnhoefe-withoutPhoto", 404);
+        assertLoadBahnhoefe("/jp/bahnhoefe-withoutPhoto", 404);
     }
 
     private void assertDeFromAndroidOma(final String path) throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/de/%s?photographer=@android_oma", path), 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=@android_oma", path), 200);
         assertThat(bahnhoefe.length, is(31));
     }
 
@@ -188,7 +188,7 @@ public class BahnhoefeServiceAppTest {
     }
 
     private void assertDeFromAndroidOmaWithinMax30kmFromFfmHbf(final String path) throws IOException {
-        final Bahnhof[] bahnhoefe = loadBahnhoefe(String.format("/de/%s?maxDistance=30&lat=50.1060866&lon=8.6615762&photographer=@android_oma", path), 200);
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?maxDistance=30&lat=50.1060866&lon=8.6615762&photographer=@android_oma", path), 200);
         assertThat(bahnhoefe.length, is(17));
     }
 
@@ -278,7 +278,7 @@ public class BahnhoefeServiceAppTest {
         return new String(buffer, "UTF-8").trim();
     }
 
-    private Bahnhof[] loadBahnhoefe(final String path, final int expectedStatus) throws IOException {
+    private Bahnhof[] assertLoadBahnhoefe(final String path, final int expectedStatus) throws IOException {
         final Response response = loadBahnhoefeRaw(path, expectedStatus);
 
         if (response == null) {
