@@ -10,8 +10,8 @@
 	<url>http://maven.apache.org</url>
 
     <scm>
-        <connection>scm:git:git@github.com:pstorch/bahnhoefe.gpx.git</connection>
-        <url>scm:git:git@github.com:pstorch/bahnhoefe.gpx.git</url>
+        <connection>scm:git:git@github.com:RailwayStations/RSAPI.git</connection>
+        <url>scm:git:git@github.com:RailwayStations/RSAPI.git</url>
       <tag>HEAD</tag>
   </scm>
 
