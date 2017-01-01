@@ -1,6 +1,5 @@
 package github.pstorch.bahnhoefe.service;
 
-import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoaderDe;
 import github.pstorch.bahnhoefe.service.writer.BahnhoefeGpxWriter;
 import github.pstorch.bahnhoefe.service.writer.BahnhoefeTxtWriter;
@@ -22,10 +21,10 @@ public class BahnhoefeResource {
     private static final String LAT = "lat";
     private static final String LON = "lon";
 
-    private final Map<String, BahnhoefeLoader> loaderMap;
+    private final BahnhoefeRepository repository;
 
-    public BahnhoefeResource(final Map<String, BahnhoefeLoader> loaders) {
-        this.loaderMap = loaders;
+    public BahnhoefeResource(final BahnhoefeRepository repository) {
+        this.repository = repository;
     }
 
     @GET
@@ -50,8 +49,8 @@ public class BahnhoefeResource {
                                  @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
                                  @QueryParam(BahnhoefeResource.LAT) final Double lat,
                                  @QueryParam(BahnhoefeResource.LON) final Double lon) throws IOException {
-        return getBahnhoefeLoader(country)
-                .filter(bahnhof -> bahnhof.appliesTo(hasPhoto, photographer, maxDistance, lat, lon));
+        return getBahnhoefeMap(country)
+                .values().stream().filter(bahnhof -> bahnhof.appliesTo(hasPhoto, photographer, maxDistance, lat, lon)).iterator();
     }
 
     @GET
@@ -104,11 +103,12 @@ public class BahnhoefeResource {
         return get(country, false, photographer, maxDistance, lat, lon);
     }
 
-    private BahnhoefeLoader getBahnhoefeLoader(@PathParam(BahnhoefeResource.COUNTRY) final String country) {
-        if (!loaderMap.containsKey(country)) {
+    private Map<Integer, Bahnhof> getBahnhoefeMap(@PathParam(BahnhoefeResource.COUNTRY) final String country) {
+        final Map<Integer, Bahnhof> bahnhofMap = repository.get(country);
+        if (bahnhofMap.isEmpty()) {
             throw new WebApplicationException(404);
         }
-        return loaderMap.get(country);
+        return bahnhofMap;
     }
 
 }
