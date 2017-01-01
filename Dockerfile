@@ -1,4 +1,4 @@
-FROM anapsix/alpine-java:jre8
+FROM java:8-jre
 
 ARG VERSION
 
