@@ -1,7 +1,6 @@
 loaderDe:
-  #bahnhoefeUrl: ${BAHNHOEFE_URL:-http://www.xn--deutschlands-bahnhfe-lbc.de/bahnhoefe/_search?size=6000}
   bahnhoefeUrl: ${BAHNHOEFE_DE_URL:-http://94.136.168.53/bahnhoefe/_search?size=6000}
-  photosUrl: ${PHOTOS_DE_URL:-http://www.deutschlands-bahnhoefe.org/bahnhoefe/de/bahnhofsfotos.json}
+  photosUrl: ${PHOTOS_DE_URL:-https://railway-stations.org/bahnhoefe/de/bahnhofsfotos.json}
 loaderCh:
   bahnhoefeUrl: ${BAHNHOEFE_CH_URL:-http://94.136.168.53/bahnhoefech/_search?size=6000}
-  photosUrl: ${PHOTOS_CH_URL:-http://www.deutschlands-bahnhoefe.org/bahnhoefe/ch/bahnhofsfotos.json}
+  photosUrl: ${PHOTOS_CH_URL:-https://railway-stations.org/bahnhoefe/ch/bahnhofsfotos.json}

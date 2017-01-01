@@ -1,35 +1,45 @@
 package github.pstorch.bahnhoefe.service.loader;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import github.pstorch.bahnhoefe.service.Bahnhof;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
 
-    protected static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final JsonFactory FACTORY = MAPPER.getFactory();
+
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBahnhoefeLoader.class);
 
-    protected final Supplier<Map<Integer, Bahnhof>> cache;
     protected URL bahnhoefeUrl;
     protected URL photosUrl;
+
+    private final CloseableHttpClient httpclient;
 
 
     protected AbstractBahnhoefeLoader(final URL photosUrl, final URL bahnhoefeUrl) {
         super();
         this.photosUrl = photosUrl;
         this.bahnhoefeUrl = bahnhoefeUrl;
-        this.cache = Suppliers.memoizeWithExpiration(bahnhoefeSupplier(), 5, TimeUnit.MINUTES);
+        this.httpclient = HttpClients.custom().setDefaultRequestConfig(
+                RequestConfig.custom()
+                        .setSocketTimeout(5000)
+                        .setConnectTimeout(5000)
+                        .setConnectionRequestTimeout(5000).build()
+        ).build();
     }
 
     public final void setBahnhoefeUrl(final String bahnhoefeUrl) throws MalformedURLException {
@@ -45,28 +55,35 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
 
     @Override
     public Map<Integer, Bahnhof> loadBahnhoefe() {
-        return cache.get();
+        try {
+            return loadBahnhoefe(loadPhotos());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @Override
-    public Iterator<Bahnhof> filter(final Predicate<Bahnhof> predicate) {
-        return loadBahnhoefe().values().stream().filter(predicate).iterator();
-    }
+    protected JsonNode readJsonFromUrl(final URL url) throws Exception {
+        // shortcut for testing, need to find a better way
+        if ("file".equals(url.getProtocol())) {
+            return MAPPER.readTree(url);
+        }
 
-
-    private Supplier<Map<Integer, Bahnhof>> bahnhoefeSupplier() {
-        return () -> {
-            LOG.info("Loading Bahnhoefe from bahnhoefe={}, photos={}", bahnhoefeUrl, photosUrl);
-            try {
-                return loadBahnhoefe(loadPhotos());
-            } catch (final IOException e) {
-                throw new RuntimeException("Unable to load Bahnhoefe", e);
+        // use Apache HTTP Client to retrieve remote content
+        final HttpGet httpGet = new HttpGet(url.toURI());
+        return httpclient.execute(httpGet, response -> {
+            final int status = response.getStatusLine().getStatusCode();
+            if (status >= 200 && status < 300) {
+                LOG.info("Got json response from {}", url);
+                return MAPPER.readTree(FACTORY.createParser(EntityUtils.toString(response.getEntity(), "UTF-8")));
+            } else {
+                LOG.error("Error reading json from {}", url);
+                throw new ClientProtocolException(String.format("Unexpected response status: %d", status));
             }
-        };
+        });
     }
 
-    protected abstract Map<Integer, String> loadPhotos() throws IOException;
+    protected abstract Map<Integer, String> loadPhotos() throws Exception;
 
-    protected abstract Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, String> photoFlags) throws IOException;
+    protected abstract Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, String> photoFlags) throws Exception;
 
 }

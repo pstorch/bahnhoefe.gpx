@@ -17,15 +17,14 @@ public class BahnhoefeResourceTest {
 
     @Test
     public void testGet() throws IOException {
-        final Map<String, BahnhoefeLoader> loaders = new HashMap<>(2);
         final BahnhoefeLoader loader = Mockito.mock(BahnhoefeLoader.class);
-        loaders.put("de", loader);
-        final BahnhoefeResource resource = new BahnhoefeResource(loaders);
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>(2);
-        bahnhoefe.put(5, new Bahnhof(5, "Lummerland", 50.0, 9.0, "Jim Knopf"));
-        Mockito.when(loader.filter(Mockito.any())).thenReturn(bahnhoefe.values().iterator());
+        bahnhoefe.put(5, new Bahnhof(5, "xy", "Lummerland", 50.0, 9.0, "Jim Knopf"));
+        Mockito.when(loader.loadBahnhoefe()).thenReturn(bahnhoefe);
+        Mockito.when(loader.getCountryCode()).thenReturn("xy");
 
-        final Iterator<Bahnhof> result = resource.get(null, null, null, null, null);
+        final BahnhoefeResource resource = new BahnhoefeResource(new BahnhoefeRepository(loader));
+        final Iterator<Bahnhof> result = resource.get("xy", null, null, null, null, null);
         final Bahnhof bahnhof = result.next();
         assertThat(bahnhof, notNullValue());
         assertThat(bahnhof.getId(), equalTo(5));
