@@ -33,6 +33,7 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
     @Override
     public void run(final BahnhoefeServiceConfiguration configuration, final Environment environment)
             throws MalformedURLException {
+        configuration.getMonitor().sendMessage("RSAPI starting up");
         final BahnhoefeResource resource = new BahnhoefeResource(
                 configuration.getRepository());
         environment.jersey().register(resource);

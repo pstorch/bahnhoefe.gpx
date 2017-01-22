@@ -1,6 +1,7 @@
 package github.pstorch.bahnhoefe.service;
 
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
+import github.pstorch.bahnhoefe.service.monitoring.LoggingMonitor;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -23,7 +24,7 @@ public class BahnhoefeResourceTest {
         Mockito.when(loader.loadBahnhoefe()).thenReturn(bahnhoefe);
         Mockito.when(loader.getCountryCode()).thenReturn("xy");
 
-        final BahnhoefeResource resource = new BahnhoefeResource(new BahnhoefeRepository(loader));
+        final BahnhoefeResource resource = new BahnhoefeResource(new BahnhoefeRepository(new LoggingMonitor(), loader));
         final Iterator<Bahnhof> result = resource.get("xy", null, null, null, null, null);
         final Bahnhof bahnhof = result.next();
         assertThat(bahnhof, notNullValue());
