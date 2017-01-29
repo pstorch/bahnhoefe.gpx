@@ -6,8 +6,6 @@ import com.google.common.cache.LoadingCache;
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
 import github.pstorch.bahnhoefe.service.monitoring.Monitor;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -43,10 +41,7 @@ public class BahnhoefeRepository {
                     }
                 }
             } catch (final Exception e) {
-                final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                final PrintStream writer = new PrintStream(stream, true, "UTF-8");
-                e.printStackTrace(writer);
-                monitor.sendMessage(stream.toString("UTF-8"));
+                monitor.sendMessage(e.getMessage());
                 throw e;
             }
             return Collections.emptyMap();
