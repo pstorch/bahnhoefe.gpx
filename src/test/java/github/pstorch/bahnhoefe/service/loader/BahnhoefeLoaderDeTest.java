@@ -41,6 +41,7 @@ public class BahnhoefeLoaderDeTest {
 			assertThat(zweibruecken.getLon(), CoreMatchers.is(7.35692381858826));
 			assertThat(zweibruecken.hasPhoto(), CoreMatchers.is(true));
 			assertThat(zweibruecken.getPhotographer(), CoreMatchers.is("@hessenpfaelzer"));
+			assertThat(zweibruecken.getDS100(), CoreMatchers.is("SZW"));
 
 			final Bahnhof albersdorf = bahnhoefe.get(41);
 			assertThat(albersdorf.getId(), CoreMatchers.is(41));
@@ -48,6 +49,7 @@ public class BahnhoefeLoaderDeTest {
 			assertThat(albersdorf.getLat(), CoreMatchers.is(54.1461697552048));
 			assertThat(albersdorf.getLon(), CoreMatchers.is(9.29245591163636));
 			assertThat(albersdorf.hasPhoto(), CoreMatchers.is(false));
+			assertThat(albersdorf.getDS100(), CoreMatchers.is("AAL"));
 		}
 	}
 

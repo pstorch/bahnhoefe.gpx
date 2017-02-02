@@ -20,7 +20,7 @@ public class BahnhoefeResourceTest {
     public void testGet() throws IOException {
         final BahnhoefeLoader loader = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>(2);
-        bahnhoefe.put(5, new Bahnhof(5, "xy", "Lummerland", 50.0, 9.0, "Jim Knopf"));
+        bahnhoefe.put(5, new Bahnhof(5, "xy", "Lummerland", 50.0, 9.0, "Jim Knopf", "XYZ"));
         Mockito.when(loader.loadBahnhoefe()).thenReturn(bahnhoefe);
         Mockito.when(loader.getCountryCode()).thenReturn("xy");
 
@@ -33,5 +33,6 @@ public class BahnhoefeResourceTest {
         assertThat(bahnhof.getLat(), equalTo(50.0));
         assertThat(bahnhof.getLon(), equalTo(9.0));
         assertThat(bahnhof.getPhotographer(), equalTo("Jim Knopf"));
+        assertThat(bahnhof.getDS100(), equalTo("XYZ"));
     }
 }

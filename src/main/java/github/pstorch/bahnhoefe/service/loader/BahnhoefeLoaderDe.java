@@ -19,6 +19,8 @@ public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
 
     private static final String HITS_ELEMENT = "hits";
 
+    private static final String DS100_ELEMENT = "DS100";
+
     public BahnhoefeLoaderDe() {
         this(null, null);
     }
@@ -58,7 +60,8 @@ public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
                     bahnhofJson.get(BahnhoefeLoaderDe.TITLE_ELEMENT).asText(),
                     bahnhofJson.get(BahnhoefeLoaderDe.LAT_ELEMENT).asDouble(),
                     bahnhofJson.get(BahnhoefeLoaderDe.LON_ELEMENT).asDouble(),
-                    photoFlags.get(id));
+                    photoFlags.get(id),
+                    bahnhofJson.get(BahnhoefeLoaderDe.DS100_ELEMENT).asText());
             bahnhoefe.put(bahnhof.getId(), bahnhof);
         }
         return bahnhoefe;
