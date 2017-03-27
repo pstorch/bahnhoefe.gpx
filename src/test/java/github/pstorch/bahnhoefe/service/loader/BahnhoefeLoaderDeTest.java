@@ -23,6 +23,11 @@ public class BahnhoefeLoaderDeTest {
 				).withHeader("Content-Type", "application/json; charset=UTF-8")
 			);
 			container.next(
+					new MkAnswer.Simple(
+							"[]"
+					).withHeader("Content-Type", "application/json; charset=UTF-8")
+			);
+			container.next(
 				new MkAnswer.Simple(
 					"{\"took\":2,\"timed_out\":false,\"_shards\":{\"total\":5,\"successful\":5,\"failed\":0},\"hits\":{\"total\":5652,\"max_score\":1.0,\"hits\":[{\"_index\":\"bahnhoefe\",\"_type\":\"bahnhof\",\"_id\":\"AVLb3n3hwbtQZche7aaV\",\"_score\":1.0,\"_source\":{\"Bundesland\":\"Schleswig-Holstein\",\"Bahnhofsmanagement\":\"Schleswig-Holstein\",\"BahnhofNr\":41,\"title\":\"Albersdorf\",\"DS100\":\"AAL\",\"Bahnhofskategorie\":7,\"Strasse\":\"Bahnhofstr. 1\",\"PLZ\":25767,\"Ort\":\"Albersdorf\",\"Aufgabenträger\":\"LVS Schleswig-Holstein Landesweite Verkehrsservicegesellschaft mbH\",\"Verkehrsverb\":\"0\",\"Fernverkehr\":\"nein\",\"Nahverkehr\":\"ja\",\"lat\":54.1461697552048,\"lon\":9.29245591163636}},{\"_index\":\"bahnhoefe\",\"_type\":\"bahnhof\",\"_id\":\"AVLb3n5QwbtQZche7bja\",\"_score\":1.0,\"_source\":{\"Bundesland\":\"Rheinland-Pfalz\",\"Bahnhofsmanagement\":\"Kaiserslautern\",\"BahnhofNr\":7066,\"title\":\"Zweibrücken Hbf\",\"DS100\":\"SZW\",\"Bahnhofskategorie\":5,\"Strasse\":\"Poststr. 37\",\"PLZ\":66482,\"Ort\":\"Zweibrücken\",\"Aufgabenträger\":\"Zweckverband Schienenpersonennahverkehr Rheinland-Pfalz Süd\",\"Verkehrsverb\":\"VRN\",\"Fernverkehr\":\"nein\",\"Nahverkehr\":\"ja\",\"lat\":49.2467252285295,\"lon\":7.35692381858826}}]}}"
 				).withHeader("Content-Type", "application/json; charset=UTF-8")

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import github.pstorch.bahnhoefe.service.Bahnhof;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
@@ -56,7 +58,7 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
     @Override
     public Map<Integer, Bahnhof> loadBahnhoefe() {
         try {
-            return loadBahnhoefe(loadPhotos());
+            return loadBahnhoefe(loadPhotos(new HashMap<>(), 0));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -82,7 +84,21 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         });
     }
 
-    protected abstract Map<Integer, String> loadPhotos() throws Exception;
+    private Map<Integer, String> loadPhotos(final Map<Integer, String> photoFlags, final int page) throws Exception {
+        final JsonNode tree = readJsonFromUrl(photosUrl.getProtocol().startsWith("http")?new URL(photosUrl.toString() + "?page=" + page):photosUrl);
+        for (int i = 0; i < tree.size(); i++) {
+            final JsonNode bahnhofPhoto = tree.get(i);
+            JsonNode id = bahnhofPhoto.get("ibnr");
+            if (id == null || StringUtils.isBlank(id.asText())) {
+                id = bahnhofPhoto.get("bahnhofsnr");
+            }
+            photoFlags.put(id.asInt(), bahnhofPhoto.get("fotograf-title").asText());
+        }
+        if (photosUrl.getProtocol().startsWith("http") && tree.size() > 0) {
+            loadPhotos(photoFlags, page + 1);
+        }
+        return photoFlags;
+    }
 
     protected abstract Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, String> photoFlags) throws Exception;
 

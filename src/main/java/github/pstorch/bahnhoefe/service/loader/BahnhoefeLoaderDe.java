@@ -35,17 +35,6 @@ public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
     }
 
     @Override
-    protected Map<Integer, String> loadPhotos() throws Exception {
-        final Map<Integer, String> photoFlags = new HashMap<>();
-        final JsonNode tree = readJsonFromUrl(photosUrl);
-        for (int i = 0; i < tree.size(); i++) {
-            final JsonNode bahnhofPhoto = tree.get(i);
-            photoFlags.put(bahnhofPhoto.get("bahnhofsnr").asInt(), bahnhofPhoto.get("fotograf-title").asText());
-        }
-        return photoFlags;
-    }
-
-    @Override
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     protected Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, String> photoFlags) throws Exception {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
