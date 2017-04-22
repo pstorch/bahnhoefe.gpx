@@ -7,7 +7,7 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -25,8 +25,8 @@ public class BahnhoefeResourceTest {
         Mockito.when(loader.getCountryCode()).thenReturn("xy");
 
         final BahnhoefeResource resource = new BahnhoefeResource(new BahnhoefeRepository(new LoggingMonitor(), loader));
-        final Iterator<Bahnhof> result = resource.get("xy", null, null, null, null, null);
-        final Bahnhof bahnhof = result.next();
+        final List<Bahnhof> result = resource.get("xy", null, null, null, null, null);
+        final Bahnhof bahnhof = result.get(0);
         assertThat(bahnhof, notNullValue());
         assertThat(bahnhof.getId(), equalTo(5));
         assertThat(bahnhof.getTitle(), equalTo("Lummerland"));

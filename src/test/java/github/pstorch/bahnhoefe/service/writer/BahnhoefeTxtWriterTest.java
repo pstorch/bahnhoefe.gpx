@@ -22,7 +22,7 @@ public class BahnhoefeTxtWriterTest {
 
         final BahnhoefeTxtWriter writer = new BahnhoefeTxtWriter();
         final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();
-        writer.writeTo(bahnhoefe.iterator(), null, null, null, null, null, entityStream);
+        writer.writeTo(bahnhoefe, null, null, null, null, null, entityStream);
 
         final String txt = entityStream.toString("UTF-8");
         final String[] lines = txt.split("\n");

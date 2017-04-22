@@ -22,7 +22,7 @@ public class BahnhoefeGpxWriterTest {
 		
 		final BahnhoefeGpxWriter writer = new BahnhoefeGpxWriter();
 		final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();
-		writer.writeTo(bahnhoefe.iterator(), null, null, null, null, null, entityStream);
+		writer.writeTo(bahnhoefe, null, null, null, null, null, entityStream);
 		
 		final String gpx = entityStream.toString("UTF-8");
 		assertThat(gpx,

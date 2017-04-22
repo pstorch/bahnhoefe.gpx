@@ -16,10 +16,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Iterator;
+import java.util.List;
 
 @Produces(BahnhoefeGpxWriter.GPX_MIME_TYPE)
-public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> {
+public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Bahnhof>> {
 
     public static final String GPX_MIME_TYPE = "application/service+xml";
 
@@ -55,7 +55,7 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> 
     }
 
     @Override
-    public void writeTo(final Iterator<Bahnhof> t, final Class<?> type, final Type genericType,
+    public void writeTo(final List<Bahnhof> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
         try {
@@ -66,7 +66,7 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> 
             xmlw.writeDefaultNamespace("http://www.topografix.com/GPX/1/1");
             xmlw.writeAttribute("version", "1.1");
             xmlw.writeCharacters("\n");
-            t.forEachRemaining(bahnhof -> bahnhofToXml(xmlw, bahnhof));
+            t.forEach(bahnhof -> bahnhofToXml(xmlw, bahnhof));
             xmlw.writeEndElement();
             xmlw.flush();
         } catch (final XMLStreamException | FactoryConfigurationError e) {
@@ -77,7 +77,7 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<Iterator<Bahnhof>> 
     }
 
     @Override
-    public long getSize(final Iterator<Bahnhof> t, final Class<?> type, final Type genericType,
+    public long getSize(final List<Bahnhof> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType) {
         return 0;
     }

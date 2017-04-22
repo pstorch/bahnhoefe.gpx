@@ -13,10 +13,10 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Iterator;
+import java.util.List;
 
 @Produces(BahnhoefeTxtWriter.TEXT_PLAIN)
-public class BahnhoefeTxtWriter implements MessageBodyWriter<Iterator<Bahnhof>> {
+public class BahnhoefeTxtWriter implements MessageBodyWriter<List<Bahnhof>> {
 
     public static final String TEXT_PLAIN = "text/plain";
 
@@ -33,18 +33,18 @@ public class BahnhoefeTxtWriter implements MessageBodyWriter<Iterator<Bahnhof>> 
     }
 
     @Override
-    public long getSize(final Iterator<Bahnhof> t, final Class<?> type, final Type genericType,
+    public long getSize(final List<Bahnhof> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType) {
         return -1;
     }
 
     @Override
-    public void writeTo(final Iterator<Bahnhof> t, final Class<?> type, final Type genericType,
+    public void writeTo(final List<Bahnhof> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
         final PrintWriter pw = new PrintWriter(new OutputStreamWriter(entityStream, "UTF-8"));
         pw.println("lat	lon	title	description	icon	iconSize	iconOffset");
-        t.forEachRemaining(bahnhof -> bahnhofToTxt(pw, bahnhof));
+        t.forEach(bahnhof -> bahnhofToTxt(pw, bahnhof));
         pw.flush();
     }
 
