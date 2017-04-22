@@ -3,6 +3,7 @@ package github.pstorch.bahnhoefe.service;
 import github.pstorch.bahnhoefe.service.writer.BahnhoefeGpxWriter;
 import github.pstorch.bahnhoefe.service.writer.BahnhoefeTxtWriter;
 import github.pstorch.bahnhoefe.service.writer.PhotographersTxtWriter;
+import github.pstorch.bahnhoefe.service.writer.StatisticTxtWriter;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -35,12 +36,12 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
     public void run(final BahnhoefeServiceConfiguration configuration, final Environment environment)
             throws MalformedURLException {
         configuration.getMonitor().sendMessage("RSAPI starting up");
-        environment.jersey().register(new BahnhoefeResource(
-                configuration.getRepository()));
-        environment.jersey().register(new PhotographersResource(
-                configuration.getRepository()));
+        environment.jersey().register(new BahnhoefeResource(configuration.getRepository()));
+        environment.jersey().register(new PhotographersResource(configuration.getRepository()));
+        environment.jersey().register(new StatisticResource(configuration.getRepository()));
         environment.jersey().register(new BahnhoefeGpxWriter());
         environment.jersey().register(new BahnhoefeTxtWriter());
+        environment.jersey().register(new StatisticTxtWriter());
         environment.jersey().register(new PhotographersTxtWriter());
         environment.jersey().property("jersey.config.server.mediaTypeMappings",
                 "gpx : application/service+xml, json : application/json, txt : text/plain");

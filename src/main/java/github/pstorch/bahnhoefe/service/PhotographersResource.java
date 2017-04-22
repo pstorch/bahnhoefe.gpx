@@ -1,9 +1,10 @@
 package github.pstorch.bahnhoefe.service;
 
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoaderDe;
-import github.pstorch.bahnhoefe.service.writer.BahnhoefeTxtWriter;
+import github.pstorch.bahnhoefe.service.writer.PhotographersTxtWriter;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -14,7 +15,6 @@ import java.util.stream.Collectors;
 @Path("/")
 public class PhotographersResource {
 
-    private static final String APPLICATION_JSON = "application/json";
     private static final String DEFAULT_COUNTRY = BahnhoefeLoaderDe.COUNTRY_CODE;
     private static final String COUNTRY = "country";
 
@@ -26,14 +26,14 @@ public class PhotographersResource {
 
     @GET
     @Path("photographers")
-    @Produces({PhotographersResource.APPLICATION_JSON, BahnhoefeTxtWriter.TEXT_PLAIN})
+    @Produces({MediaType.APPLICATION_JSON, PhotographersTxtWriter.TEXT_PLAIN})
     public Map<String, Long> get() throws IOException {
         return get(PhotographersResource.DEFAULT_COUNTRY);
     }
 
     @GET
     @Path("{country}/photographers")
-    @Produces({PhotographersResource.APPLICATION_JSON, BahnhoefeTxtWriter.TEXT_PLAIN})
+    @Produces({MediaType.APPLICATION_JSON, PhotographersTxtWriter.TEXT_PLAIN})
     public Map<String, Long> get(@PathParam(PhotographersResource.COUNTRY) final String country) throws IOException {
         return getPhotographerMap(country);
     }
