@@ -1,6 +1,6 @@
 package github.pstorch.bahnhoefe.service.loader;
 
-import github.pstorch.bahnhoefe.service.Bahnhof;
+import github.pstorch.bahnhoefe.service.model.Bahnhof;
 
 import java.net.MalformedURLException;
 import java.util.Map;

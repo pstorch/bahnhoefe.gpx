@@ -1,5 +1,7 @@
-package github.pstorch.bahnhoefe.service;
+package github.pstorch.bahnhoefe.service.resources;
 
+import github.pstorch.bahnhoefe.service.BahnhoefeRepository;
+import github.pstorch.bahnhoefe.service.model.Statistic;
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoaderDe;
 import github.pstorch.bahnhoefe.service.writer.StatisticTxtWriter;
 
@@ -44,16 +46,16 @@ public class StatisticResource {
         final AtomicInteger withPhoto = new AtomicInteger();
         final AtomicInteger withoutPhoto = new AtomicInteger();
         final Set<String> photographers = new HashSet<>();
-        repository.get(country).values().stream()
-                .forEach(b -> {
-                    total.incrementAndGet();
-                    if (b.hasPhoto()) {
-                        withPhoto.incrementAndGet();
-                        photographers.add(b.getPhotographer());
-                    } else {
-                        withoutPhoto.incrementAndGet();
-                    }
-                });
+        repository.get(country).values()
+            .forEach(b -> {
+                total.incrementAndGet();
+                if (b.hasPhoto()) {
+                    withPhoto.incrementAndGet();
+                    photographers.add(b.getPhotographer());
+                } else {
+                    withoutPhoto.incrementAndGet();
+                }
+            });
 
         return new Statistic(total.intValue(), withPhoto.intValue(), withoutPhoto.intValue(), photographers.size());
     }

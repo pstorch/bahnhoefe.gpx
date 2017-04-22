@@ -1,6 +1,6 @@
 package github.pstorch.bahnhoefe.service.writer;
 
-import github.pstorch.bahnhoefe.service.Bahnhof;
+import github.pstorch.bahnhoefe.service.model.Bahnhof;
 import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.Produces;

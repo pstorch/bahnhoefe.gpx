@@ -3,7 +3,7 @@ package github.pstorch.bahnhoefe.service.loader;
 import com.jcabi.http.mock.MkAnswer;
 import com.jcabi.http.mock.MkContainer;
 import com.jcabi.http.mock.MkGrizzlyContainer;
-import github.pstorch.bahnhoefe.service.Bahnhof;
+import github.pstorch.bahnhoefe.service.model.Bahnhof;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 

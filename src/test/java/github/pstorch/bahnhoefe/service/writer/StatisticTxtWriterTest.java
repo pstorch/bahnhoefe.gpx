@@ -1,6 +1,6 @@
 package github.pstorch.bahnhoefe.service.writer;
 
-import github.pstorch.bahnhoefe.service.Statistic;
+import github.pstorch.bahnhoefe.service.model.Statistic;
 import org.junit.Test;
 
 import javax.ws.rs.WebApplicationException;

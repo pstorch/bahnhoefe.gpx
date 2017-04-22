@@ -1,6 +1,8 @@
-package github.pstorch.bahnhoefe.service;
+package github.pstorch.bahnhoefe.service.resources;
 
+import github.pstorch.bahnhoefe.service.BahnhoefeRepository;
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
+import github.pstorch.bahnhoefe.service.model.Bahnhof;
 import github.pstorch.bahnhoefe.service.monitoring.LoggingMonitor;
 import org.junit.Test;
 import org.mockito.Mockito;

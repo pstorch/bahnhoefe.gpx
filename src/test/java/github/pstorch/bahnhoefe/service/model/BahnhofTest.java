@@ -1,4 +1,4 @@
-package github.pstorch.bahnhoefe.service;
+package github.pstorch.bahnhoefe.service.model;
 
 import org.junit.Test;
 

@@ -1,5 +1,8 @@
 package github.pstorch.bahnhoefe.service;
 
+import github.pstorch.bahnhoefe.service.resources.BahnhoefeResource;
+import github.pstorch.bahnhoefe.service.resources.PhotographersResource;
+import github.pstorch.bahnhoefe.service.resources.StatisticResource;
 import github.pstorch.bahnhoefe.service.writer.BahnhoefeGpxWriter;
 import github.pstorch.bahnhoefe.service.writer.BahnhoefeTxtWriter;
 import github.pstorch.bahnhoefe.service.writer.PhotographersTxtWriter;

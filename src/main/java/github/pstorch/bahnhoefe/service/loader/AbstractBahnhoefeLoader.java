@@ -3,7 +3,7 @@ package github.pstorch.bahnhoefe.service.loader;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import github.pstorch.bahnhoefe.service.Bahnhof;
+import github.pstorch.bahnhoefe.service.model.Bahnhof;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;

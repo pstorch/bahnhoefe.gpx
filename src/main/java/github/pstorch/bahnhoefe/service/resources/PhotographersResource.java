@@ -1,5 +1,7 @@
-package github.pstorch.bahnhoefe.service;
+package github.pstorch.bahnhoefe.service.resources;
 
+import github.pstorch.bahnhoefe.service.BahnhoefeRepository;
+import github.pstorch.bahnhoefe.service.model.Bahnhof;
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoaderDe;
 import github.pstorch.bahnhoefe.service.writer.PhotographersTxtWriter;
 

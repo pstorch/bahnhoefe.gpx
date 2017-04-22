@@ -1,7 +1,7 @@
 package github.pstorch.bahnhoefe.service.loader;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import github.pstorch.bahnhoefe.service.Bahnhof;
+import github.pstorch.bahnhoefe.service.model.Bahnhof;
 
 import java.net.URL;
 import java.util.HashMap;

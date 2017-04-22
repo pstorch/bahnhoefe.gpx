@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
+import github.pstorch.bahnhoefe.service.model.Bahnhof;
 import github.pstorch.bahnhoefe.service.monitoring.Monitor;
 
 import java.util.Collections;

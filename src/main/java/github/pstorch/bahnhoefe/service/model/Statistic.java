@@ -1,4 +1,4 @@
-package github.pstorch.bahnhoefe.service;
+package github.pstorch.bahnhoefe.service.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
