@@ -7,21 +7,30 @@ import github.pstorch.bahnhoefe.service.loader.BahnhoefeLoader;
 import github.pstorch.bahnhoefe.service.model.Bahnhof;
 import github.pstorch.bahnhoefe.service.monitoring.Monitor;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class BahnhoefeRepository {
 
     private final LoadingCache<String, Map<Integer, Bahnhof>> cache;
+    private final Set<String> countries;
 
     public BahnhoefeRepository(final Monitor monitor, final BahnhoefeLoader ... loaders) {
         super();
         this.cache = CacheBuilder.newBuilder().refreshAfterWrite(5, TimeUnit.MINUTES).build(
                 new BahnhoefeCacheLoader(monitor, loaders));
+        this.countries = Arrays.stream(loaders).map(BahnhoefeLoader::getCountryCode).collect(Collectors.toSet());
     }
 
     public Map<Integer, Bahnhof> get(final String country) {
+        if (country == null) {
+            final Map<Integer, Bahnhof> map = new HashMap<>();
+            for (final String aCountry : countries) {
+                map.putAll(cache.getUnchecked(aCountry));
+            }
+            return map;
+        }
         return cache.getUnchecked(country);
     }
 

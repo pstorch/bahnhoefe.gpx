@@ -30,7 +30,7 @@ public class PhotographersResource {
     @Path("photographers")
     @Produces({MediaType.APPLICATION_JSON, PhotographersTxtWriter.TEXT_PLAIN})
     public Map<String, Long> get() throws IOException {
-        return get(PhotographersResource.DEFAULT_COUNTRY);
+        return get(null);
     }
 
     @GET

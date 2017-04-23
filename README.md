@@ -42,20 +42,7 @@ With the following query parameter:
 - austrian trainsations from photographer @android_oma: http://localhost:8080/ch/stations&photographer=@android_oma
 - german trainsations within 20km from FFM mainstation: http://localhost:8080/de/stations&maxDistance=20&lat=50.1060866&lon=8.6615762
 - photographers: http://localhost:8080/de/photographers.txt
-
-### Deprecated endpoints
-- Export trainstations
-  http://localhost:8080/{country}/bahnhoefe -> use: http://localhost:8080/{country}/stations&hasPhoto=true
-- Export trainstations with Photo
-  http://localhost:8080/{country}/bahnhoefe-withPhoto -> use: http://localhost:8080/{country}/bahnhoefe&hasPhoto=true
-- Export trainstations without Photo
-  http://localhost:8080/{country}/bahnhoefe-withoutPhoto -> use: http://localhost:8080/{country}/bahnhoefe&hasPhoto=false
-- Export trainstations in `country` = `de`:
-  http://localhost:8080/bahnhoefe -> use: http://localhost:8080/de/bahnhoefe
-- Export trainstations in `country` = `de` with Photo
-  http://localhost:8080/bahnhoefe-withPhoto -> use: http://localhost:8080/de/bahnhoefe&hasPhoto=true
-- Export trainstations in `country` = `de` without Photo
-  http://localhost:8080/bahnhoefe-withoutPhoto -> use: http://localhost:8080/de/bahnhoefe&hasPhoto=false
+- statistic: http://localhost:8080/de/stats.txt
 
 The default output format is json. But can easily be changed to GPX or TXT. Either set the `Accept` header to `text/plain` or `application/gpx+xml` or simply add the extension `.txt` or `.gpx` to the end of the URL.
 

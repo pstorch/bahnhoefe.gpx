@@ -31,7 +31,7 @@ public class StatisticResource {
     @Path("stats")
     @Produces({MediaType.APPLICATION_JSON, StatisticTxtWriter.TEXT_PLAIN})
     public Statistic get() throws IOException {
-        return get(StatisticResource.DEFAULT_COUNTRY);
+        return get(null);
     }
 
     @GET
