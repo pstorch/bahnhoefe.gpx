@@ -29,18 +29,18 @@ public class PhotographersResource {
     @GET
     @Path("photographers")
     @Produces({MediaType.APPLICATION_JSON, PhotographersTxtWriter.TEXT_PLAIN})
-    public Map<String, Long> get() throws IOException {
-        return get(null);
+    public Map<String, Long> get(@QueryParam(PhotographersResource.COUNTRY) final String country) throws IOException {
+        return getWithCountry(country);
     }
 
     @GET
     @Path("{country}/photographers")
     @Produces({MediaType.APPLICATION_JSON, PhotographersTxtWriter.TEXT_PLAIN})
-    public Map<String, Long> get(@PathParam(PhotographersResource.COUNTRY) final String country) throws IOException {
+    public Map<String, Long> getWithCountry(@PathParam(PhotographersResource.COUNTRY) final String country) throws IOException {
         return getPhotographerMap(country);
     }
 
-    private Map<String, Long> getPhotographerMap(@PathParam(PhotographersResource.COUNTRY) final String country) {
+    private Map<String, Long> getPhotographerMap(final String country) {
         final Map<String, Long> photographerMap = repository.get(country).values().stream()
                 .filter(Bahnhof::hasPhoto)
                 .map(Bahnhof::getPhotographer)

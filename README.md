@@ -35,13 +35,15 @@ With the following query parameter:
 - `hasPhoto`: boolean, indicates if only trainstations with or without a photo should be selected
 - `photographer`: (nick)name of a photographer, select only trainstations with photos from her
 - `maxDistance`, `lat`, `lon`: select trainstations within a max distance of km of the given reference point
+- `country`: select trainstations from a given country, this parameter is an alternative to the `{country}` path
 
 ### Examples
 - all german trainstations: http://localhost:8080/de/stations
 - german trainstations without photo: http://localhost:8080/de/stations&hasPhoto=false
 - austrian trainsations from photographer @android_oma: http://localhost:8080/ch/stations&photographer=@android_oma
 - german trainsations within 20km from FFM mainstation: http://localhost:8080/de/stations&maxDistance=20&lat=50.1060866&lon=8.6615762
-- photographers: http://localhost:8080/de/photographers.txt
+- photographers: http://localhost:8080/photographers.txt
+- german photographers: http://localhost:8080/de/photographers.txt
 - statistic: http://localhost:8080/de/stats.txt
 
 The default output format is json. But can easily be changed to GPX or TXT. Either set the `Accept` header to `text/plain` or `application/gpx+xml` or simply add the extension `.txt` or `.gpx` to the end of the URL.

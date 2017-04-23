@@ -33,19 +33,20 @@ public class BahnhoefeResource {
     @Path("stations")
     @Produces({MediaType.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN})
-    public List<Bahnhof> get(@QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
+    public List<Bahnhof> get(@QueryParam(BahnhoefeResource.COUNTRY) final String country,
+                             @QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
                              @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
                              @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
                              @QueryParam(BahnhoefeResource.LAT) final Double lat,
                              @QueryParam(BahnhoefeResource.LON) final Double lon) throws IOException {
-        return get(null, hasPhoto, photographer, maxDistance, lat, lon);
+        return getWithCountry(country, hasPhoto, photographer, maxDistance, lat, lon);
     }
 
     @GET
     @Path("{country}/stations")
     @Produces({MediaType.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN})
-    public List<Bahnhof> get(@PathParam(BahnhoefeResource.COUNTRY) final String country,
+    public List<Bahnhof> getWithCountry(@PathParam(BahnhoefeResource.COUNTRY) final String country,
                              @QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
                              @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
                              @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
@@ -55,7 +56,7 @@ public class BahnhoefeResource {
                 .values().stream().filter(bahnhof -> bahnhof.appliesTo(hasPhoto, photographer, maxDistance, lat, lon)).collect(Collectors.toList());
     }
 
-    private Map<Integer, Bahnhof> getBahnhoefeMap(@PathParam(BahnhoefeResource.COUNTRY) final String country) {
+    private Map<Integer, Bahnhof> getBahnhoefeMap(final String country) {
         final Map<Integer, Bahnhof> bahnhofMap = repository.get(country);
         if (bahnhofMap.isEmpty()) {
             throw new WebApplicationException(404);

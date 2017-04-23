@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BahnhoefeServiceAppTest {
@@ -64,6 +65,14 @@ public class BahnhoefeServiceAppTest {
     public void stationsDe() throws IOException {
         final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s", "stations"), 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
+        assertThat(findById(bahnhoefe, 8501042), nullValue());
+    }
+
+    @Test
+    public void stationsDeQueryParam() throws IOException {
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/%s?country=de", "stations"), 200);
+        assertThat(findById(bahnhoefe, 41), notNullValue());
+        assertThat(findById(bahnhoefe, 8501042), nullValue());
     }
 
     @Test
@@ -76,6 +85,7 @@ public class BahnhoefeServiceAppTest {
     public void stationsCh() throws IOException {
         final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/ch/%s", "stations"), 200);
         assertThat(findById(bahnhoefe, 8501042), notNullValue());
+        assertThat(findById(bahnhoefe, 41), nullValue());
     }
 
     @Test
@@ -112,7 +122,7 @@ public class BahnhoefeServiceAppTest {
             final String header = br.readLine();
             assertThat(header, is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
             int count = 0;
-            final Pattern pattern = Pattern.compile("[\\d\\.]*\t[\\d\\.]*\t[^\t]*\t[^\t]*\t(gruen|rot)punkt\\.png\t10,10\t0,-10");
+            final Pattern pattern = Pattern.compile("[\\d.]*\t[\\d.]*\t[^\t]*\t[^\t]*\t(gruen|rot)punkt\\.png\t10,10\t0,-10");
             while (br.ready()) {
                 final String line = br.readLine();
                 count++;
