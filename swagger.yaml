@@ -1,0 +1,216 @@
+swagger: '2.0'
+info:
+  description: >-
+    Backend Service for the
+    https://play.google.com/store/apps/details?id=de.bahnhoefe.deutschlands.bahnhofsfotos
+    App of the Bahnhofsfotos opendata Project http://www.railway-stations.org/.
+  version: '20170423.1448'
+  title: RSAPI
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: peter.storch@gmail.com
+  license:
+    name: MIT
+    url: 'https://github.com/RailwayStations/RSAPI/blob/master/LICENSE.txt'
+host: api.railway-stations.org
+basePath: /
+tags:
+  - name: bahnhofsfotos
+    description: Photos of railway stations
+    externalDocs:
+      description: Find out more
+      url: 'http://www.railway-stations.org'
+schemes:
+  - https
+paths:
+  '/{country}/stations':
+    get:
+      summary: Finds railway stations by various query criteria
+      produces:
+        - application/service+xml
+        - application/json
+        - text/plain
+      parameters:
+        - name: country
+          in: path
+          description: filter by country code
+          required: true
+          type: string
+        - name: hasPhoto
+          in: query
+          description: filter by photo availalbe/missing
+          required: false
+          type: boolean
+        - name: photographer
+          in: query
+          description: filter by nickname of a photographer
+          required: false
+          type: string
+        - name: maxDistance
+          in: query
+          description: filter by max distance from the coordinates given by lat and lon
+          required: false
+          type: integer
+          format: int64
+        - name: lat
+          in: query
+          description: latitute of the coordinates to filter by max distance
+          required: false
+          type: number
+          format: double
+        - name: lon
+          in: query
+          description: longitude of the coordinates to filter by max distance
+          required: false
+          type: number
+          format: double
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Station'
+        '404':
+          description: Country not found
+  /stations:
+    get:
+      summary: Finds railway stations by various query criteria
+      produces:
+        - application/xml
+        - application/json
+        - text/plain
+      parameters:
+        - name: country
+          in: query
+          description: filter by country code
+          required: false
+          type: string
+        - name: hasPhoto
+          in: query
+          description: filter by photo availalbe/missing
+          required: false
+          type: boolean
+        - name: photographer
+          in: query
+          description: filter by nickname of a photographer
+          required: false
+          type: string
+        - name: maxDistance
+          in: query
+          description: filter by max distance from the coordinates given by lat and lon
+          required: false
+          type: integer
+          format: int64
+        - name: lat
+          in: query
+          description: latitute of the coordinates to filter by max distance
+          required: false
+          type: number
+          format: double
+        - name: lon
+          in: query
+          description: longitude of the coordinates to filter by max distance
+          required: false
+          type: number
+          format: double
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Station'
+  '/{country}/photographers':
+    get:
+      summary: >-
+        List of all photographers of a given country with their number of photos
+        taken
+      produces:
+        - text/plain
+        - application/json
+      parameters:
+        - name: country
+          in: path
+          description: filter by country code
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Photographers'
+        '404':
+          description: Country not found
+  /photographers:
+    get:
+      summary: List of all photographers with their number of photos taken
+      produces:
+        - text/plain
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Photographers'
+  '/{country}/stats':
+    get:
+      summary: Statistic of photos with and without photos by country
+      produces:
+        - text/plain
+        - application/json
+      parameters:
+        - name: country
+          in: path
+          description: filter by country code
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Statistic'
+        '404':
+          description: Country not found
+definitions:
+  Station:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      country:
+        type: string
+      title:
+        type: string
+      photographer:
+        type: string
+      lat:
+        type: number
+        format: double
+      lon:
+        type: number
+        format: double
+      DS100:
+        type: string
+  Photographers:
+    type: object
+    description: >-
+      JSON Object with photographers nickname as parameter and number of photos
+      as their value
+  Statistic:
+    type: object
+    description: Statistic of number of stations with and without photos
+    properties:
+      total:
+        type: integer
+        format: int64
+      withPhoto:
+        type: integer
+        format: int64
+      withoutPhoto:
+        type: integer
+        format: int64
+      photographers:
+        type: integer
+        format: int64
