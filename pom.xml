@@ -3,7 +3,7 @@
 
 	<groupId>github.pstorch</groupId>
 	<artifactId>bahnhoefe.service</artifactId>
-	<version>20170513.1120</version>
+	<version>20170513.1121-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Bahnhoefe Service</name>
@@ -12,7 +12,7 @@
     <scm>
         <connection>scm:git:git@github.com:RailwayStations/RSAPI.git</connection>
         <url>scm:git:git@github.com:RailwayStations/RSAPI.git</url>
-      <tag>bahnhoefe.service-20170513.1120</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <properties>
