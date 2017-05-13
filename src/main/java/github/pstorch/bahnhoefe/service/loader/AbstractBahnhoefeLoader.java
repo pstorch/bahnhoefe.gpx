@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import github.pstorch.bahnhoefe.service.model.Bahnhof;
+import github.pstorch.bahnhoefe.service.model.Photo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -40,7 +41,7 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
                 RequestConfig.custom()
                         .setSocketTimeout(5000)
                         .setConnectTimeout(5000)
-                        .setConnectionRequestTimeout(5000).build()
+                        .setConnectionRequestTimeout(15000).build()
         ).build();
     }
 
@@ -59,7 +60,7 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
     public Map<Integer, Bahnhof> loadBahnhoefe() {
         try {
             return loadBahnhoefe(loadPhotos(new HashMap<>(), 0));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -84,7 +85,7 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         });
     }
 
-    private Map<Integer, String> loadPhotos(final Map<Integer, String> photoFlags, final int page) throws Exception {
+    private Map<Integer, Photo> loadPhotos(final Map<Integer, Photo> photos, final int page) throws Exception {
         final JsonNode tree = readJsonFromUrl(photosUrl.getProtocol().startsWith("http")?new URL(photosUrl.toString() + "?page=" + page):photosUrl);
         for (int i = 0; i < tree.size(); i++) {
             final JsonNode bahnhofPhoto = tree.get(i);
@@ -96,14 +97,15 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
             if ("1".equals(bahnhofPhoto.get("flagr").asText())) {
                 photograph = "@RecumbentTravel";
             }
-            photoFlags.put(id.asInt(), photograph);
+            final String url = bahnhofPhoto.get("bahnhofsfoto").asText();
+            photos.put(id.asInt(), new Photo(id.asInt(), photograph, url));
         }
         if (photosUrl.getProtocol().startsWith("http") && tree.size() > 0) {
-            loadPhotos(photoFlags, page + 1);
+            loadPhotos(photos, page + 1);
         }
-        return photoFlags;
+        return photos;
     }
 
-    protected abstract Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, String> photoFlags) throws Exception;
+    protected abstract Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, Photo> photos) throws Exception;
 
 }

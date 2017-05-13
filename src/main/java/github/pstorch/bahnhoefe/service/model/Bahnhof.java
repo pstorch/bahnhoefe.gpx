@@ -27,23 +27,32 @@ public class Bahnhof {
     @JsonProperty("DS100")
     private final String ds100;
 
+    @JsonProperty
+    private final String photoUrl;
+
     public Bahnhof() {
         this(0, null, null, 0.0, 0.0, null);
     }
 
-    public Bahnhof(final int id, final String country, final String title, final double lat, final double lon, final String photographer) {
-        this(id, country, title, lat, lon, photographer, null);
+    public Bahnhof(final int id, final String country, final String title, final double lat, final double lon, final Photo photo) {
+        this(id, country, title, lat, lon, null, photo);
     }
 
-    public Bahnhof(final int id, final String country, final String title, final double lat, final double lon, final String photographer, final String ds100) {
+    public Bahnhof(final int id, final String country, final String title, final double lat, final double lon, final String ds100, final Photo photo) {
         super();
         this.id = id;
         this.country = country;
         this.title = title;
         this.lat = lat;
         this.lon = lon;
-        this.photographer = photographer;
         this.ds100 = ds100;
+        if (photo != null) {
+            this.photographer = photo.getPhotographer();
+            this.photoUrl = photo.getUrl();
+        } else {
+            this.photographer = null;
+            this.photoUrl = null;
+        }
     }
 
     public int getId() {
@@ -104,4 +113,7 @@ public class Bahnhof {
         return ds100;
     }
 
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
 }

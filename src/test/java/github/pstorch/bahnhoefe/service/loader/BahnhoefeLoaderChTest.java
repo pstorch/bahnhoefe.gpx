@@ -53,6 +53,7 @@ public class BahnhoefeLoaderChTest {
 			assertThat(kuengoldingen.getLon(), CoreMatchers.is(7.941984790513125));
 			assertThat(kuengoldingen.hasPhoto(), CoreMatchers.is(true));
 			assertThat(kuengoldingen.getPhotographer(), CoreMatchers.is("@pokipsie"));
+			assertThat(kuengoldingen.getPhotoUrl(), CoreMatchers.is("http://www.deutschlands-bahnhoefe.org/sites/default/files/previewbig/8503006.jpg"));
 		}
 	}
 

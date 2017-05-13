@@ -19,7 +19,7 @@ public class BahnhoefeLoaderDeTest {
 		try (final MkContainer container = new MkGrizzlyContainer()) {
 			container.next(
 				new MkAnswer.Simple(
-					"[{\"bahnhofsname\":\"Zweibr\\u00fccken Hbf\",\"bahnhofsnr\":\"7066\",\"bahnhofsfoto\":\" http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/previewbig\\/7066_1.jpg\",\"fotograf\":\"http:\\/\\/www.deutschlands-bahnhoefe.org\\/node\\/278 \",\"lizenz\":\"CC0 1.0 Universell (CC0 1.0) \",\"bahnhofsfoto480\":\"  http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/styles\\/large\\/public\\/previewbig\\/7066_1.jpg?itok=1zGEsvom\\n\",\"flagr\":\"0\", \"fotograf-title\": \"@hessenpfaelzer\"},{\"bahnhofsname\":\"Z\\u00fcssow\",\"bahnhofsnr\":\"7063\",\"bahnhofsfoto\":\" http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/previewbig\\/7063_0.jpg\",\"fotograf\":\"http:\\/\\/www.deutschlands-bahnhoefe.org\\/node\\/157 \",\"lizenz\":\"CC0 1.0 Universell (CC0 1.0)\",\"bahnhofsfoto480\":\"  http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/styles\\/large\\/public\\/previewbig\\/7063_0.jpg?itok=PG48v2wy\\n\",\"flagr\":\"0\", \"fotograf-title\": \"@android_oma\"}]"
+					"[{\"bahnhofsname\":\"Zweibr\\u00fccken Hbf\",\"bahnhofsnr\":\"7066\",\"bahnhofsfoto\":\"http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/previewbig\\/7066_1.jpg\",\"fotograf\":\"http:\\/\\/www.deutschlands-bahnhoefe.org\\/node\\/278 \",\"lizenz\":\"CC0 1.0 Universell (CC0 1.0) \",\"bahnhofsfoto480\":\"  http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/styles\\/large\\/public\\/previewbig\\/7066_1.jpg?itok=1zGEsvom\\n\",\"flagr\":\"0\", \"fotograf-title\": \"@hessenpfaelzer\"},{\"bahnhofsname\":\"Z\\u00fcssow\",\"bahnhofsnr\":\"7063\",\"bahnhofsfoto\":\" http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/previewbig\\/7063_0.jpg\",\"fotograf\":\"http:\\/\\/www.deutschlands-bahnhoefe.org\\/node\\/157 \",\"lizenz\":\"CC0 1.0 Universell (CC0 1.0)\",\"bahnhofsfoto480\":\"  http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/styles\\/large\\/public\\/previewbig\\/7063_0.jpg?itok=PG48v2wy\\n\",\"flagr\":\"0\", \"fotograf-title\": \"@android_oma\"}]"
 				).withHeader("Content-Type", "application/json; charset=UTF-8")
 			);
 			container.next(
@@ -47,6 +47,7 @@ public class BahnhoefeLoaderDeTest {
 			assertThat(zweibruecken.hasPhoto(), CoreMatchers.is(true));
 			assertThat(zweibruecken.getPhotographer(), CoreMatchers.is("@hessenpfaelzer"));
 			assertThat(zweibruecken.getDS100(), CoreMatchers.is("SZW"));
+			assertThat(zweibruecken.getPhotoUrl(), CoreMatchers.is("http://www.deutschlands-bahnhoefe.org/sites/default/files/previewbig/7066_1.jpg"));
 
 			final Bahnhof albersdorf = bahnhoefe.get(41);
 			assertThat(albersdorf.getId(), CoreMatchers.is(41));

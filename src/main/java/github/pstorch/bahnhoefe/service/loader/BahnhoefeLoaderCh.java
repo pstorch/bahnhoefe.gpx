@@ -2,6 +2,7 @@ package github.pstorch.bahnhoefe.service.loader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import github.pstorch.bahnhoefe.service.model.Bahnhof;
+import github.pstorch.bahnhoefe.service.model.Photo;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
 
     @Override
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    protected Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, String> photoFlags) throws Exception {
+    protected Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, Photo> photos) throws Exception {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
 
         final JsonNode hits = readJsonFromUrl(bahnhoefeUrl)
@@ -41,7 +42,7 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
                     bahnhofJson.get("name").asText(),
                     geopos.get(0).asDouble(),
                     geopos.get(1).asDouble(),
-                    photoFlags.get(id));
+                    photos.get(id));
             bahnhoefe.put(bahnhof.getId(), bahnhof);
         }
         return bahnhoefe;
