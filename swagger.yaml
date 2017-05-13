@@ -6,9 +6,6 @@ info:
     App of the Bahnhofsfotos opendata Project http://www.railway-stations.org/.
   version: '20170423.1448'
   title: RSAPI
-  termsOfService: 'http://swagger.io/terms/'
-  contact:
-    email: peter.storch@gmail.com
   license:
     name: MIT
     url: 'https://github.com/RailwayStations/RSAPI/blob/master/LICENSE.txt'
@@ -165,6 +162,19 @@ paths:
           description: filter by country code
           required: true
           type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Statistic'
+        '404':
+          description: Country not found
+  /stats:
+    get:
+      summary: Overall statistic of photos with and without photos
+      produces:
+        - text/plain
+        - application/json
       responses:
         '200':
           description: successful operation

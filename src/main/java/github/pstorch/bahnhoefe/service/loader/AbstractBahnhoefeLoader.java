@@ -92,7 +92,11 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
             if (id == null || StringUtils.isBlank(id.asText())) {
                 id = bahnhofPhoto.get("bahnhofsnr");
             }
-            photoFlags.put(id.asInt(), bahnhofPhoto.get("fotograf-title").asText());
+            String photograph = bahnhofPhoto.get("fotograf-title").asText();
+            if ("1".equals(bahnhofPhoto.get("flagr").asText())) {
+                photograph = "@RecumbentTravel";
+            }
+            photoFlags.put(id.asInt(), photograph);
         }
         if (photosUrl.getProtocol().startsWith("http") && tree.size() > 0) {
             loadPhotos(photoFlags, page + 1);

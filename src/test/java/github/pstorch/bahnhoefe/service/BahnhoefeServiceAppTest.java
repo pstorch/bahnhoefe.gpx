@@ -192,7 +192,7 @@ public class BahnhoefeServiceAppTest {
         final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
-        assertThat(jsonNode.size(), is(114));
+        assertThat(jsonNode.size(), is(115));
     }
 
     @Test
@@ -209,7 +209,7 @@ public class BahnhoefeServiceAppTest {
                 final Matcher matcher = pattern.matcher(line);
                 assertThat(matcher.matches(), is(true));
             }
-            assertThat(count, is(114));
+            assertThat(count, is(115));
         }
     }
 

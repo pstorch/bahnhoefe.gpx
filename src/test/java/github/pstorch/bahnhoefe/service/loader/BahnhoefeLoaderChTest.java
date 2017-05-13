@@ -19,7 +19,7 @@ public class BahnhoefeLoaderChTest {
 		try (final MkContainer container = new MkGrizzlyContainer()) {
 			container.next(
 				new MkAnswer.Simple(
-					"[{\"bahnhofsname\":\"Küngoldingen\",\"ibnr\":\"8502120\",\"bahnhofsfoto\":\"http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/previewbig\\/8503006.jpg\",\"fotograf\":\"http:\\/\\/www.deutschlands-bahnhoefe.org\\/node\\/1473 \",\"lizenz\":\"CC0 1.0 Universell (CC0 1.0) \",\"bahnhofsfoto480\":\"\\/sites\\/default\\/files\\/styles\\/large\\/public\\/previewbig\\/8503006.jpg?itok=cGcfrbBm\",\"fotograf-title\":\"@pokipsie\"}]}"
+					"[{\"bahnhofsname\":\"Küngoldingen\",\"ibnr\":\"8502120\",\"bahnhofsfoto\":\"http:\\/\\/www.deutschlands-bahnhoefe.org\\/sites\\/default\\/files\\/previewbig\\/8503006.jpg\",\"fotograf\":\"http:\\/\\/www.deutschlands-bahnhoefe.org\\/node\\/1473 \",\"lizenz\":\"CC0 1.0 Universell (CC0 1.0) \",\"bahnhofsfoto480\":\"\\/sites\\/default\\/files\\/styles\\/large\\/public\\/previewbig\\/8503006.jpg?itok=cGcfrbBm\",\"flagr\":\"0\",\"fotograf-title\":\"@pokipsie\"}]}"
 				).withHeader("Content-Type", "application/json; charset=UTF-8")
 			);
 			container.next(
