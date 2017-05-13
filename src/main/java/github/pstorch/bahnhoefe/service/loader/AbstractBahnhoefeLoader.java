@@ -85,6 +85,7 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         });
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private Map<Integer, Photo> loadPhotos(final Map<Integer, Photo> photos, final int page) throws Exception {
         final JsonNode tree = readJsonFromUrl(photosUrl.getProtocol().startsWith("http")?new URL(photosUrl.toString() + "?page=" + page):photosUrl);
         for (int i = 0; i < tree.size(); i++) {
