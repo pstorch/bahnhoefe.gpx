@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/RailwayStations/RSAPI.svg?branch=master)](https://travis-ci.org/RailwayStations/RSAPI) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f28660e9e90e4549871fe8c35fe7bd2d)](https://www.codacy.com/app/peter-storch/RSAPI?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=RailwayStations/RSAPI&amp;utm_campaign=Badge_Grade) [![Coverage Status](https://coveralls.io/repos/github/RailwayStations/RSAPI/badge.svg?branch=master)](https://coveralls.io/github/RailwayStations/RSAPI?branch=master) [![Dependency Status](https://www.versioneye.com/user/projects/586139b4ce9f89003d7ffb91/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/586139b4ce9f89003d7ffb91)
 
 # Railway Stations API
-Backend Service for the https://play.google.com/store/apps/details?id=de.bahnhoefe.deutschlands.bahnhofsfotos App of the [Bahnhofsfotos opendata Project](http://www.deutschlands-bahnhoefe.de/).
+Backend Service for the https://play.google.com/store/apps/details?id=de.bahnhoefe.deutschlands.bahnhofsfotos App of the [Bahnhofsfotos opendata Project](http://www.railway-stations.org/).
 It started as a simple GPX Exporter to use the Waypoints in your favorite Map App or GPS Device.
 Later it was enhanced to export a txt list of the Waypoints for the online Map at: http://www.alsgefahn.de/bfmap/bhfueb.html.
 Then it returned the Waypoints as json for the Bahnhofsfotos App.
@@ -20,10 +20,10 @@ Release:
 ## Docker
 This project can be run as a Docker container. The docker image is automatically built via the above maven build command.
 
-- run locally: 
+- run locally:
   ```docker run -it --rm -p 8080:8080 pstorch/bahnhoefe-gpx```
-  
-- run on server: 
+
+- run on server:
   ```docker run -d --restart=always -p 8080:8080 pstorch/bahnhoefe-gpx:<version>```
 
 Ready to use images are published at https://hub.docker.com/r/pstorch/bahnhoefe-gpx/
