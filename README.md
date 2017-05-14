@@ -7,6 +7,8 @@ Later it was enhanced to export a txt list of the Waypoints for the online Map a
 Then it returned the Waypoints as json for the Bahnhofsfotos App.
 The latest addition are the trainstations from switzerland, via country code `ch`, see [Use](#use).
 
+This API is hosted at https://api.railway-stations.org or at the Deutsche Bahn developer site: https://developer.deutschebahn.com/store/apis/list where you can also find an online and executable version of the swagger documentation.
+
 ## build
 To build the project, you need Maven and Java 8.
 
@@ -36,6 +38,8 @@ With the following query parameter:
 - `photographer`: (nick)name of a photographer, select only trainstations with photos from her
 - `maxDistance`, `lat`, `lon`: select trainstations within a max distance of km of the given reference point
 - `country`: select trainstations from a given country, this parameter is an alternative to the `{country}` path
+
+A more detailed API documentation can be found in the [swagger](swagger.yml) file or online at [developer.deutschebahn.com](https://developer.deutschebahn.com/store/apis/list).
 
 ### Examples
 - all german trainstations: http://localhost:8080/de/stations
