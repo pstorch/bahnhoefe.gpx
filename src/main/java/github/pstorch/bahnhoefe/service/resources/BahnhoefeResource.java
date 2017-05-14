@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Path("/")
-@Produces(MediaType.APPLICATION_JSON)
 public class BahnhoefeResource {
 
     private static final String COUNTRY = "country";
@@ -31,8 +30,8 @@ public class BahnhoefeResource {
 
     @GET
     @Path("stations")
-    @Produces({MediaType.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
-            BahnhoefeTxtWriter.TEXT_PLAIN})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", BahnhoefeGpxWriter.GPX_MIME_TYPE,
+            BahnhoefeTxtWriter.TEXT_PLAIN + ";charset=UTF-8"})
     public List<Bahnhof> get(@QueryParam(BahnhoefeResource.COUNTRY) final String country,
                              @QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
                              @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
@@ -44,8 +43,8 @@ public class BahnhoefeResource {
 
     @GET
     @Path("{country}/stations")
-    @Produces({MediaType.APPLICATION_JSON, BahnhoefeGpxWriter.GPX_MIME_TYPE,
-            BahnhoefeTxtWriter.TEXT_PLAIN})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", BahnhoefeGpxWriter.GPX_MIME_TYPE,
+            BahnhoefeTxtWriter.TEXT_PLAIN + ";charset=UTF-8"})
     public List<Bahnhof> getWithCountry(@PathParam(BahnhoefeResource.COUNTRY) final String country,
                              @QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
                              @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
