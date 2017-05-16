@@ -4,7 +4,7 @@ info:
     Backend Service for the
     https://play.google.com/store/apps/details?id=de.bahnhoefe.deutschlands.bahnhofsfotos
     App of the Bahnhofsfotos opendata Project http://www.railway-stations.org/.
-  version: '20170514.2225'
+  version: '20170516.2250'
   title: RSAPI
   license:
     name: MIT
@@ -196,6 +196,8 @@ definitions:
       photographer:
         type: string
       photoUrl:
+        type: string
+      license:
         type: string
       lat:
         type: number

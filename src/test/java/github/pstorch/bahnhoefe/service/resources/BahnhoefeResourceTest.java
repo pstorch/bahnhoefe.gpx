@@ -23,13 +23,13 @@ public class BahnhoefeResourceTest {
     public void testGet() throws IOException {
         final BahnhoefeLoader loaderXY = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> bahnhoefeXY = new HashMap<>(2);
-        bahnhoefeXY.put(5, new Bahnhof(5, "xy", "Lummerland", 50.0, 9.0, "XYZ", new Photo(5, "Jim Knopf", "URL")));
+        bahnhoefeXY.put(5, new Bahnhof(5, "xy", "Lummerland", 50.0, 9.0, "XYZ", new Photo(5, "Jim Knopf", "URL", "CC0")));
         Mockito.when(loaderXY.loadBahnhoefe()).thenReturn(bahnhoefeXY);
         Mockito.when(loaderXY.getCountryCode()).thenReturn("xy");
 
         final BahnhoefeLoader loaderAB = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>(2);
-        bahnhoefe.put(3, new Bahnhof(3, "ab", "Nimmerland", 40.0, 6.0, "ABC", new Photo(3, "Peter Pan", "URL2")));
+        bahnhoefe.put(3, new Bahnhof(3, "ab", "Nimmerland", 40.0, 6.0, "ABC", new Photo(3, "Peter Pan", "URL2", "CC0 by SA")));
         Mockito.when(loaderAB.loadBahnhoefe()).thenReturn(bahnhoefe);
         Mockito.when(loaderAB.getCountryCode()).thenReturn("ab");
 
@@ -45,6 +45,7 @@ public class BahnhoefeResourceTest {
         assertThat(bahnhofXY.getPhotographer(), equalTo("Jim Knopf"));
         assertThat(bahnhofXY.getDS100(), equalTo("XYZ"));
         assertThat(bahnhofXY.getPhotoUrl(), equalTo("URL"));
+        assertThat(bahnhofXY.getLicense(), equalTo("CC0"));
 
         final List<Bahnhof> resultAB = resource.get("ab", null, null, null, null, null);
         final Bahnhof bahnhof = resultAB.get(0);
@@ -56,6 +57,7 @@ public class BahnhoefeResourceTest {
         assertThat(bahnhof.getPhotographer(), equalTo("Peter Pan"));
         assertThat(bahnhof.getPhotoUrl(), equalTo("URL2"));
         assertThat(bahnhof.getDS100(), equalTo("ABC"));
+        assertThat(bahnhof.getLicense(), equalTo("CC0 by SA"));
 
         final List<Bahnhof> resultAll = resource.get(null, null, null, null, null, null);
         assertThat(resultAll.size(), equalTo(2));

@@ -18,7 +18,7 @@ public class BahnhoefeTxtWriterTest {
     @Test
     public void test() throws WebApplicationException, IOException {
         final List<Bahnhof> bahnhoefe = new ArrayList<>();
-        bahnhoefe.add(new Bahnhof(4711, "", "Test", 50d, 9d, new Photo(4711, "@pstorch", null)));
+        bahnhoefe.add(new Bahnhof(4711, "", "Test", 50d, 9d, new Photo(4711, "@pstorch", null, null)));
         bahnhoefe.add(new Bahnhof(4712, "", "Foo", 51d, 8d, null, null));
 
         final BahnhoefeTxtWriter writer = new BahnhoefeTxtWriter();

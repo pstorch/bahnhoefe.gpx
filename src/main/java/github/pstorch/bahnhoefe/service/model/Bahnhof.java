@@ -30,6 +30,9 @@ public class Bahnhof {
     @JsonProperty
     private final String photoUrl;
 
+    @JsonProperty
+    private final String license;
+
     public Bahnhof() {
         this(0, null, null, 0.0, 0.0, null);
     }
@@ -49,9 +52,11 @@ public class Bahnhof {
         if (photo != null) {
             this.photographer = photo.getPhotographer();
             this.photoUrl = photo.getUrl();
+            this.license = photo.getLicense();
         } else {
             this.photographer = null;
             this.photoUrl = null;
+            this.license = null;
         }
     }
 
@@ -115,5 +120,9 @@ public class Bahnhof {
 
     public String getPhotoUrl() {
         return photoUrl;
+    }
+
+    public String getLicense() {
+        return license;
     }
 }
