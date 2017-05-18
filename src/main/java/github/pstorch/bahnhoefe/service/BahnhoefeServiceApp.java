@@ -1,6 +1,7 @@
 package github.pstorch.bahnhoefe.service;
 
 import github.pstorch.bahnhoefe.service.resources.BahnhoefeResource;
+import github.pstorch.bahnhoefe.service.resources.PhotoUploadResource;
 import github.pstorch.bahnhoefe.service.resources.PhotographersResource;
 import github.pstorch.bahnhoefe.service.resources.StatisticResource;
 import github.pstorch.bahnhoefe.service.writer.BahnhoefeGpxWriter;
@@ -16,7 +17,7 @@ import io.dropwizard.setup.Environment;
 import java.net.MalformedURLException;
 
 /**
- * BahnhoefeRepository GPX Dropwizard App
+ * RailwayStations API Dropwizard App
  */
 public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfiguration> {
 
@@ -36,12 +37,15 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
     }
 
     @Override
-    public void run(final BahnhoefeServiceConfiguration configuration, final Environment environment)
+    public void run(final BahnhoefeServiceConfiguration config, final Environment environment)
             throws MalformedURLException {
-        configuration.getMonitor().sendMessage("RSAPI starting up");
-        environment.jersey().register(new BahnhoefeResource(configuration.getRepository()));
-        environment.jersey().register(new PhotographersResource(configuration.getRepository()));
-        environment.jersey().register(new StatisticResource(configuration.getRepository()));
+        config.getMonitor().sendMessage("RSAPI starting up");
+        environment.jersey().register(new BahnhoefeResource(config.getRepository()));
+        environment.jersey().register(new PhotographersResource(config.getRepository()));
+        environment.jersey().register(new StatisticResource(config.getRepository()));
+        environment.jersey().register(new PhotoUploadResource(
+                config.getApiKey(), config.getUploadDir(),
+                config.getRepository().getCountries(), config.getMonitor()));
         environment.jersey().register(new BahnhoefeGpxWriter());
         environment.jersey().register(new BahnhoefeTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());

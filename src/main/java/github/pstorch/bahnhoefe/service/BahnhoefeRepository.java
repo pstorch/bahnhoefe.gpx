@@ -34,6 +34,10 @@ public class BahnhoefeRepository {
         return cache.getUnchecked(country);
     }
 
+    public Set<String> getCountries() {
+        return Collections.unmodifiableSet(countries);
+    }
+
     private static class BahnhoefeCacheLoader extends CacheLoader<String, Map<Integer, Bahnhof>> {
         private final Monitor monitor;
         private final BahnhoefeLoader[] loaders;

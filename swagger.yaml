@@ -182,6 +182,56 @@ paths:
             $ref: '#/definitions/Statistic'
         '404':
           description: Country not found
+  /photoUpload:
+    post:
+      summary: Upload a new Photo
+      consumes:
+        - image/jpeg
+        - image/png
+      produces:
+        - application/json
+      parameters:
+        - name: image
+          in: body
+          description: image
+          required: true
+          schema:
+            type: string
+            format: byte
+        - name: API-Key
+          in: header
+          description: API Key
+          required: true
+          type: string
+        - name: User-Name
+          in: header
+          description: nickname of the user
+          required: true
+          type: string
+        - name: Country
+          in: header
+          description: country code
+          required: true
+          type: string
+        - name: Station-Id
+          in: header
+          description: id of the railwaystation
+          required: true
+          type: string
+        - name: Content-Type
+          in: header
+          description: mime type of the image, "image/png" or "image/jpeg"
+          required: true
+          type: string
+      responses:
+        '202':
+          description: upload successful
+        '400':
+          description: wrong request
+        '403':
+          description: wrong apiKey
+        '413':
+          description: image too large (maximum 20 MB)
 definitions:
   Station:
     type: object

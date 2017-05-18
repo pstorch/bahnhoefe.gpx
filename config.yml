@@ -1,3 +1,5 @@
+uploadDir: ${UPLOAD_DIR:-/tmp/rsapi}
+apiKey: ${API_KEY:-dummy}
 loaderDe:
   bahnhoefeUrl: ${BAHNHOEFE_DE_URL:-http://94.136.168.53/bahnhoefe/_search?size=6000}
   photosUrl: ${PHOTOS_DE_URL:-https://railway-stations.org/bahnhoefepager/de/bahnhofsfotos.json}
