@@ -43,9 +43,9 @@ A more detailed API documentation can be found in the [swagger](swagger.yml) fil
 
 ### Examples
 - all german trainstations: http://localhost:8080/de/stations
-- german trainstations without photo: http://localhost:8080/de/stations&hasPhoto=false
-- austrian trainsations from photographer @android_oma: http://localhost:8080/ch/stations&photographer=@android_oma
-- german trainsations within 20km from FFM mainstation: http://localhost:8080/de/stations&maxDistance=20&lat=50.1060866&lon=8.6615762
+- german trainstations without photo: http://localhost:8080/de/stations?hasPhoto=false
+- austrian trainsations from photographer @android_oma: http://localhost:8080/ch/stations?photographer=@android_oma
+- german trainsations within 20km from FFM mainstation: http://localhost:8080/de/stations?maxDistance=20&lat=50.1060866&lon=8.6615762
 - photographers: http://localhost:8080/photographers.txt
 - german photographers: http://localhost:8080/de/photographers.txt
 - statistic: http://localhost:8080/de/stats.txt
