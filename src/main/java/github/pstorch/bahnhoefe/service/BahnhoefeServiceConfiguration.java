@@ -15,6 +15,10 @@ public class BahnhoefeServiceConfiguration extends Configuration {
 
     private Monitor monitor = new LoggingMonitor();
 
+    private String apiKey;
+
+    private String uploadDir;
+
     public BahnhoefeLoaderDe getLoaderDe() {
         return loaderDe;
     }
@@ -26,10 +30,6 @@ public class BahnhoefeServiceConfiguration extends Configuration {
     public BahnhoefeRepository getRepository() {
         return new BahnhoefeRepository(monitor, loaderDe, loaderCh);
     }
-
-    private String apiKey;
-
-    private String uploadDir;
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
         if (StringUtils.isNotBlank(slackMonitorUrl)) {
