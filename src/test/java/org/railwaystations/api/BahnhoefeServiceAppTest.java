@@ -2,7 +2,6 @@ package org.railwaystations.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.railwaystations.api.model.Bahnhof;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
@@ -11,6 +10,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.railwaystations.api.mail.MockMailer;
+import org.railwaystations.api.model.Bahnhof;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -19,6 +20,7 @@ import org.xml.sax.SAXException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,9 +29,7 @@ import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BahnhoefeServiceAppTest {
@@ -239,6 +239,86 @@ public class BahnhoefeServiceAppTest {
             }
             assertThat(count, is(4));
         }
+    }
+
+    @Test
+    public void register() {
+        final MockMailer mailer = (MockMailer)RULE.getConfiguration().getMailer();
+
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
+                .request()
+                .header("API-Key", "dummy")
+                .post(Entity.entity("{\n" +
+                        "\t\"nickname\": \"nickname\", \n" +
+                        "\t\"email\": \"nick.name@example.com\", \n" +
+                        "\t\"license\": \"license\",\n" +
+                        "\t\"photoOwner\": true, \n" +
+                        "\t\"linking\": \"linking\", \n" +
+                        "\t\"link\": \"link\"\n" +
+                        "}", "application/json"));
+
+        assertThat(response.getStatus(), is(202));
+        assertThat(mailer.getTo(), is("nick.name@example.com"));
+        assertThat(mailer.getSubject(), is("Bahnhofsfotos upload token"));
+        assertThat(mailer.getText(), is("Hallo nickname,\n\n" +
+                "vielen Dank für Deine Registrierung.\n" +
+                "Dein Upload Token lautet: e0365631b58cee86711cf35c5d00bed37df926b6\n" +
+                "Klicke bitte auf http://railway-stations.org/uploadToken/e0365631b58cee86711cf35c5d00bed37df926b6 um ihn in die App zu übernehmen.\n" +
+                "Alternativ kannst Du ihn auch manuell in der Bahnhofsfoto App unter Meine Daten eintragen.\n\n" +
+                "Viele Grüße\n" +
+                "Dein Bahnhofsfoto-Team"));
+    }
+
+    @Test
+    public void registerForbidden() {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
+                .request()
+                .header("API-Key", "yummy")
+                .post(Entity.entity("{\n" +
+                        "\t\"nickname\": \"nickname\", \n" +
+                        "\t\"email\": \"nick.name@example.com\", \n" +
+                        "\t\"license\": \"license\",\n" +
+                        "\t\"photoOwner\": true, \n" +
+                        "\t\"linking\": \"linking\", \n" +
+                        "\t\"link\": \"link\"\n" +
+                        "}", "application/json"));
+
+        assertThat(response.getStatus(), is(403));
+    }
+
+    @Test
+    public void registerInvalid() {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
+                .request()
+                .header("API-Key", "dummy")
+                .post(Entity.entity("{\n" +
+                        "\t\"nickname\": \"nickname\", \n" +
+                        "\t\"email\": \"invalid email\", \n" +
+                        "\t\"license\": \"license\",\n" +
+                        "\t\"photoOwner\": true, \n" +
+                        "\t\"linking\": \"linking\", \n" +
+                        "\t\"link\": \"link\"\n" +
+                        "}", "application/json"));
+
+        assertThat(response.getStatus(), is(422));
+    }
+
+    @Test
+    public void photoUploadForbidden() {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload"))
+                .request()
+                .header("API-Key", "yummy")
+                .header("Upload-Token", "737ce3f3")
+                .header("Nickname", "nickname")
+                .header("Station-Id", "4711")
+                .header("Country", "de")
+                .post(Entity.entity("", "image/png"));
+
+        assertThat(response.getStatus(), is(403));
     }
 
 }

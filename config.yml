@@ -1,5 +1,12 @@
 uploadDir: ${UPLOAD_DIR:-/tmp/rsapi}
 apiKey: ${API_KEY:-dummy}
+salt: ${SALT:-dummy}
+mailer:
+  "@class": org.railwaystations.api.mail.SmtpMailer
+  host: ${SMTP_HOST:-}
+  user: ${SMTP_USER:-}
+  passwd: ${SMTP_PASSWD:-}
+  from: ${SMTP_FROM:-}
 loaderDe:
   bahnhoefeUrl: ${BAHNHOEFE_DE_URL:-http://94.136.168.53/bahnhoefe/_search?size=6000}
   photosUrl: ${PHOTOS_DE_URL:-https://railway-stations.org/bahnhoefepager/de/bahnhofsfotos.json}

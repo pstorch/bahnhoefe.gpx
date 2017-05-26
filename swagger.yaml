@@ -4,7 +4,7 @@ info:
     Backend Service for the
     https://play.google.com/store/apps/details?id=de.bahnhoefe.deutschlands.bahnhofsfotos
     App of the Bahnhofsfotos opendata Project http://www.railway-stations.org/.
-  version: '20170516.2250'
+  version: '20170521.2231-SNAPSHOT'
   title: RSAPI
   license:
     name: MIT
@@ -203,7 +203,12 @@ paths:
           description: API Key
           required: true
           type: string
-        - name: User-Name
+        - name: Upload-Token
+          in: header
+          description: Upload Token
+          required: true
+          type: string
+        - name: Nickname
           in: header
           description: nickname of the user
           required: true
@@ -232,6 +237,34 @@ paths:
           description: wrong apiKey
         '413':
           description: image too large (maximum 20 MB)
+  /registration:
+    post:
+      summary: Register for an upload token
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: registration
+          in: body
+          description: Registration information
+          required: true
+          schema:
+            $ref: '#/definitions/Registration'
+        - name: API-Key
+          in: header
+          description: API Key
+          required: true
+          type: string
+      responses:
+        '202':
+          description: registration accepted
+        '400':
+          description: wrong request
+        '403':
+          description: wrong apiKey
+        '422':
+          description: unprocessable entity, Registration input document error
 definitions:
   Station:
     type: object
@@ -278,3 +311,20 @@ definitions:
       photographers:
         type: integer
         format: int64
+  Registration:
+    type: object
+    description: Registration information to apply for an upload token
+    properties:
+      nickname:
+        type: string
+      email:
+        type: string
+        format: email
+      license:
+        type: string
+      photoOwner:
+        type: boolean
+      linking:
+        type: string
+      link:
+        type: string

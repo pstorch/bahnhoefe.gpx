@@ -26,13 +26,18 @@ This project can be run as a Docker container. The docker image is automatically
   ```docker run -it --rm -p 8080:8080 pstorch/bahnhoefe-gpx```
 
 - run on server:
-  ```docker run -d -p 8080:8080 --restart always --name bahnhoefe-service -e API_KEY=<api-key> -e SLACK_MONITOR_URL=<slack-url> -v <photo-upload-dir>:/tmp/rsapi pstorch/bahnhoefe-gpx:<version>```
+  ```docker run -d -p 8080:8080 --restart always --name bahnhoefe-service -e API_KEY=<api-key> -e SLACK_MONITOR_URL=<slack-url> -e SMTP_HOST=<smtp-host> -e SMTP_USER=<smtp-user> -e SMTP_PASSWD=<smtp-passwd> -e SMTP_FROM=<smtp-from> -v <photo-upload-dir>:/tmp/rsapi pstorch/bahnhoefe-gpx:<version>```
   
   Replace the following placeholders:
   - api-key: api key for mobile apps, which is needed for write access, e.g. photo upload
+  - salt: salt to generate upload tokens
   - slack-url: the Slack URL for the monitoring channel
   - photo-upload-dir: the photo upload directory
   - version: the version tag of the docker image
+  - smtp-host: hostname for the smtp server
+  - smtp-user: smtp user name
+  - smtp-passwd: smtp password
+  - smtp-from: smtp from address
 
 Ready to use images are published at https://hub.docker.com/r/pstorch/bahnhoefe-gpx/
 

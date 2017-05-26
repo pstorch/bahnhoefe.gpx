@@ -1,5 +1,6 @@
 package org.railwaystations.api.resources;
 
+import org.railwaystations.api.UploadTokenGenerator;
 import org.railwaystations.api.monitoring.Monitor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -21,12 +22,14 @@ public class PhotoUploadResource {
     private static final long MAX_SIZE = 20_000_000L;
 
     private final String apiKey;
+    private final UploadTokenGenerator uploadTokenGenerator;
     private final File uploadDir;
     private final Monitor monitor;
     private final Set<String> countries;
 
-    public PhotoUploadResource(final String apiKey, final String uploadDir, final Set<String> countries, final Monitor monitor) {
+    public PhotoUploadResource(final String apiKey, final UploadTokenGenerator uploadTokenGenerator, final String uploadDir, final Set<String> countries, final Monitor monitor) {
         this.apiKey = apiKey;
+        this.uploadTokenGenerator = uploadTokenGenerator;
         this.uploadDir = new File(uploadDir);
         this.countries = countries;
         this.monitor = monitor;
@@ -36,19 +39,29 @@ public class PhotoUploadResource {
     @Consumes({"image/png", "image/jpeg"})
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(final InputStream body,
-                         @HeaderParam("API-Key") final String apiKey,
-                         @NotNull @HeaderParam("User-Name") final String userName,
+                         @NotNull @HeaderParam("API-Key") final String apiKey,
+                         @NotNull @HeaderParam("Upload-Token") final String uploadToken,
+                         @NotNull @HeaderParam("Nickname") final String nickname,
                          @NotNull @HeaderParam("Station-Id") final String stationId,
                          @NotNull @HeaderParam("Country") final String country,
                          @HeaderParam("Content-Type") final String contentType)
             throws UnsupportedEncodingException {
-        LOG.info("User-Name: {}, Country: {}, Station-Id: {}, Content-Type: {}", userName, country, stationId, contentType);
+        LOG.info("Nickname: {}, Country: {}, Station-Id: {}, Content-Type: {}", nickname, country, stationId, contentType);
+
+        // TODO: add upload-token and verify
+
         if (!this.apiKey.equals(apiKey)) {
+            LOG.info("invalid API key");
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        if (userName.contains("/")) {
+        if (nickname.contains("/")) {
             return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (!uploadTokenGenerator.buildFor(nickname).equals(uploadToken)) {
+            LOG.info("invalid upload token");
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         if (!countries.contains(country)) {
@@ -56,7 +69,7 @@ public class PhotoUploadResource {
         }
 
         final File uploadCountryDir = new File(uploadDir, country);
-        final String fileName = String.format("%s-%s.%s", userName, stationId, mimeToExtension(contentType));
+        final String fileName = String.format("%s-%s.%s", nickname, stationId, mimeToExtension(contentType));
         final File file = new File(uploadCountryDir, fileName);
         LOG.info("Writing photo to {}", file);
         try {

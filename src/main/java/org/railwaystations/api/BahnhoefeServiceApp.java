@@ -1,6 +1,6 @@
 package org.railwaystations.api;
 
-import org.railwaystations.api.resources.BahnhoefeResource;
+import org.railwaystations.api.resources.*;
 import org.railwaystations.api.writer.BahnhoefeGpxWriter;
 import org.railwaystations.api.writer.BahnhoefeTxtWriter;
 import org.railwaystations.api.writer.PhotographersTxtWriter;
@@ -10,9 +10,6 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.railwaystations.api.resources.PhotoUploadResource;
-import org.railwaystations.api.resources.PhotographersResource;
-import org.railwaystations.api.resources.StatisticResource;
 
 import java.net.MalformedURLException;
 
@@ -44,8 +41,10 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
         environment.jersey().register(new PhotographersResource(config.getRepository()));
         environment.jersey().register(new StatisticResource(config.getRepository()));
         environment.jersey().register(new PhotoUploadResource(
-                config.getApiKey(), config.getUploadDir(),
+                config.getApiKey(), config.getUploadTokenGenerator(), config.getUploadDir(),
                 config.getRepository().getCountries(), config.getMonitor()));
+        environment.jersey().register(new RegistrationResource(
+                config.getApiKey(), config.getUploadTokenGenerator(), config.getMonitor(), config.getMailer()));
         environment.jersey().register(new BahnhoefeGpxWriter());
         environment.jersey().register(new BahnhoefeTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());
