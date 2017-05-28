@@ -42,11 +42,12 @@ public class PhotoUploadResource {
                          @NotNull @HeaderParam("API-Key") final String apiKey,
                          @NotNull @HeaderParam("Upload-Token") final String uploadToken,
                          @NotNull @HeaderParam("Nickname") final String nickname,
+                         @NotNull @HeaderParam("Email") final String email,
                          @NotNull @HeaderParam("Station-Id") final String stationId,
                          @NotNull @HeaderParam("Country") final String country,
                          @HeaderParam("Content-Type") final String contentType)
             throws UnsupportedEncodingException {
-        LOG.info("Nickname: {}, Country: {}, Station-Id: {}, Content-Type: {}", nickname, country, stationId, contentType);
+        LOG.info("Nickname: {}, Email: {}, Country: {}, Station-Id: {}, Content-Type: {}", nickname, email, country, stationId, contentType);
 
         // TODO: add upload-token and verify
 
@@ -59,9 +60,9 @@ public class PhotoUploadResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        if (!tokenGenerator.buildFor(nickname).equals(uploadToken)) {
-            LOG.info("invalid upload token");
-            return Response.status(Response.Status.FORBIDDEN).build();
+        if (!tokenGenerator.buildFor(nickname, email).equals(uploadToken)) {
+            LOG.info("Token doesn't fit to nickname {} and email {}", nickname, email);
+            return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
         if (!countries.contains(country)) {

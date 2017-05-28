@@ -30,7 +30,7 @@ public class PhotoUploadResourceTest {
         final byte[] inputBytes = "image-content".getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
 
-        final Response response = resource.post(is, "apiKey", "e0365631b58cee86711cf35c5d00bed37df926b6", "nickname", "4711", "de", "image/jpeg");
+        final Response response = resource.post(is, "apiKey", "d3d0f89efee21abcaaa58900ede61ab805ffba34", "nickname", "nickname@example.com","4711", "de", "image/jpeg");
 
         assertThat(response.getStatus(), equalTo(202));
 
@@ -48,15 +48,23 @@ public class PhotoUploadResourceTest {
     public void testPostInvalidAPIKey() throws IOException {
         final Path tempDir = Files.createTempDirectory("rsapi");
         final PhotoUploadResource photoUpload = new PhotoUploadResource("wrongApiKey", tokenGenerator, tempDir.toString(), countries, null);
-        final Response response = photoUpload.post(null, "apiKey", "737ce3f3", "nickname", "4711", "de", "image/jpeg");
+        final Response response = photoUpload.post(null, "apiKey", "d3d0f89efee21abcaaa58900ede61ab805ffba34", "nickname", "nickname@example.com", "4711", "de", "image/jpeg");
         assertThat(response.getStatus(), equalTo(403));
+    }
+
+    @Test
+    public void testPostInvalidToken() throws IOException {
+        final Path tempDir = Files.createTempDirectory("rsapi");
+        final PhotoUploadResource photoUpload = new PhotoUploadResource("apiKey", tokenGenerator, tempDir.toString(), countries, null);
+        final Response response = photoUpload.post(null, "apiKey", "edbfc44727a6fd4f5b029aff21861a667a6b4195", "nickname", "nickname@example.com", "4711", "de", "image/jpeg");
+        assertThat(response.getStatus(), equalTo(401));
     }
 
     @Test
     public void testPostInvalidUserName() throws IOException {
         final Path tempDir = Files.createTempDirectory("rsapi");
         final PhotoUploadResource photoUpload = new PhotoUploadResource("apiKey", tokenGenerator, tempDir.toString(), countries, null);
-        final Response response = photoUpload.post(null, "apiKey", "e0365631b58cee86711cf35c5d00bed37df926b6", "../../nickname", "4711", "de", "image/jpeg");
+        final Response response = photoUpload.post(null, "apiKey", "d3d0f89efee21abcaaa58900ede61ab805ffba34", "../../nickname", "nickname@example.com", "4711", "de", "image/jpeg");
         assertThat(response.getStatus(), equalTo(400));
     }
 
@@ -65,7 +73,7 @@ public class PhotoUploadResourceTest {
         final Path tempDir = Files.createTempDirectory("rsapi");
         countries.add("de");
         final PhotoUploadResource photoUpload = new PhotoUploadResource("apiKey", tokenGenerator, tempDir.toString(), countries, null);
-        final Response response = photoUpload.post(null, "apiKey", "e0365631b58cee86711cf35c5d00bed37df926b6", "nickname", "4711", "xy", "image/jpeg");
+        final Response response = photoUpload.post(null, "apiKey", "d3d0f89efee21abcaaa58900ede61ab805ffba34", "nickname", "nickname@example.com", "4711", "xy", "image/jpeg");
         assertThat(response.getStatus(), equalTo(400));
     }
 

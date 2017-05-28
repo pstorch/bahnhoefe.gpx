@@ -20,16 +20,16 @@ public class RegistrationResourceTest {
         final MockMonitor monitor = new MockMonitor();
         final MockMailer mailer = new MockMailer();
         final RegistrationResource resource = new RegistrationResource("apiKey", new TokenGenerator("dummy"), monitor, mailer);
-        final Registration registration = new Registration("nickname", "email", "license", true, "linking", "link");
+        final Registration registration = new Registration("nickname", "nickname@example.com", "license", true, "linking", "link");
 
         final Response response = resource.post("apiKey", registration);
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='email', license='license', photoOwner=true, linking='linking', link='link'}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, linking='linking', link='link'}"));
         assertThat(mailer.getText(), is("Hallo nickname,\n\n" +
                 "vielen Dank für Deine Registrierung.\n" +
-                "Dein Upload Token lautet: e0365631b58cee86711cf35c5d00bed37df926b6\n" +
-                "Klicke bitte auf http://railway-stations.org/uploadToken/e0365631b58cee86711cf35c5d00bed37df926b6 um ihn in die App zu übernehmen.\n" +
+                "Dein Upload Token lautet: d3d0f89efee21abcaaa58900ede61ab805ffba34\n" +
+                "Klicke bitte auf http://railway-stations.org/uploadToken/d3d0f89efee21abcaaa58900ede61ab805ffba34 um ihn in die App zu übernehmen.\n" +
                 "Alternativ kannst Du ihn auch manuell in der Bahnhofsfoto App unter Meine Daten eintragen.\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"));

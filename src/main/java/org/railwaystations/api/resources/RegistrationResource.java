@@ -41,7 +41,7 @@ public class RegistrationResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        final String token = tokenGenerator.buildFor(registration.getNickname());
+        final String token = tokenGenerator.buildFor(registration.getNickname(), registration.getEmail());
         LOG.info("Token " + token);
 
         final String text = String.format("Hallo %1s,%n%n" +

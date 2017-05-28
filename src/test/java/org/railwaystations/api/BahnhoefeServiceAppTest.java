@@ -265,8 +265,8 @@ public class BahnhoefeServiceAppTest {
         assertThat(mailer.getSubject(), is("Bahnhofsfotos upload token"));
         assertThat(mailer.getText(), is("Hallo nickname,\n\n" +
                 "vielen Dank für Deine Registrierung.\n" +
-                "Dein Upload Token lautet: e0365631b58cee86711cf35c5d00bed37df926b6\n" +
-                "Klicke bitte auf http://railway-stations.org/uploadToken/e0365631b58cee86711cf35c5d00bed37df926b6 um ihn in die App zu übernehmen.\n" +
+                "Dein Upload Token lautet: edbfc44727a6fd4f5b029aff21861a667a6b4195\n" +
+                "Klicke bitte auf http://railway-stations.org/uploadToken/edbfc44727a6fd4f5b029aff21861a667a6b4195 um ihn in die App zu übernehmen.\n" +
                 "Alternativ kannst Du ihn auch manuell in der Bahnhofsfoto App unter Meine Daten eintragen.\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"));
@@ -314,8 +314,9 @@ public class BahnhoefeServiceAppTest {
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload"))
                 .request()
                 .header("API-Key", "yummy")
-                .header("Upload-Token", "737ce3f3")
+                .header("Upload-Token", "edbfc44727a6fd4f5b029aff21861a667a6b4195")
                 .header("Nickname", "nickname")
+                .header("Email", "nickname@example.com")
                 .header("Station-Id", "4711")
                 .header("Country", "de")
                 .post(Entity.entity("", "image/png"));

@@ -10,8 +10,8 @@ public class TokenGenerator {
         this.salt = salt;
     }
 
-    public String buildFor(final String nickname) {
-        return DigestUtils.sha1Hex(salt + "-" + nickname);
+    public String buildFor(final String nickname, final String email) {
+        return DigestUtils.sha1Hex(salt + "-" + nickname + "-" + email);
     }
 
 }

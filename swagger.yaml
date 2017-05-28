@@ -213,6 +213,11 @@ paths:
           description: nickname of the user
           required: true
           type: string
+        - name: Email
+          in: header
+          description: email of the user
+          required: true
+          type: string
         - name: Country
           in: header
           description: country code
@@ -233,6 +238,8 @@ paths:
           description: upload successful
         '400':
           description: wrong request
+        '401':
+          description: wrong token
         '403':
           description: wrong apiKey
         '413':
