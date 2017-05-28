@@ -21,7 +21,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
 
     private String apiKey;
 
-    private UploadTokenGenerator uploadTokenGenerator;
+    private TokenGenerator tokenGenerator;
 
     private String uploadDir;
 
@@ -65,12 +65,12 @@ public class BahnhoefeServiceConfiguration extends Configuration {
         this.apiKey = apiKey;
     }
 
-    public UploadTokenGenerator getUploadTokenGenerator() {
-        return uploadTokenGenerator;
+    public TokenGenerator getTokenGenerator() {
+        return tokenGenerator;
     }
 
     public void setSalt(final String salt) {
-        this.uploadTokenGenerator = new UploadTokenGenerator(salt);
+        this.tokenGenerator = new TokenGenerator(salt);
     }
 
     public Mailer getMailer() {
@@ -78,7 +78,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = BahnhoefeServiceConfiguration.IDENT)
-    public void setMailer(Mailer mailer) {
+    public void setMailer(final Mailer mailer) {
         this.mailer = mailer;
     }
 }

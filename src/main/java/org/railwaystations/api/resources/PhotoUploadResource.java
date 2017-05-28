@@ -1,6 +1,6 @@
 package org.railwaystations.api.resources;
 
-import org.railwaystations.api.UploadTokenGenerator;
+import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.monitoring.Monitor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -22,14 +22,14 @@ public class PhotoUploadResource {
     private static final long MAX_SIZE = 20_000_000L;
 
     private final String apiKey;
-    private final UploadTokenGenerator uploadTokenGenerator;
+    private final TokenGenerator tokenGenerator;
     private final File uploadDir;
     private final Monitor monitor;
     private final Set<String> countries;
 
-    public PhotoUploadResource(final String apiKey, final UploadTokenGenerator uploadTokenGenerator, final String uploadDir, final Set<String> countries, final Monitor monitor) {
+    public PhotoUploadResource(final String apiKey, final TokenGenerator tokenGenerator, final String uploadDir, final Set<String> countries, final Monitor monitor) {
         this.apiKey = apiKey;
-        this.uploadTokenGenerator = uploadTokenGenerator;
+        this.tokenGenerator = tokenGenerator;
         this.uploadDir = new File(uploadDir);
         this.countries = countries;
         this.monitor = monitor;
@@ -59,7 +59,7 @@ public class PhotoUploadResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        if (!uploadTokenGenerator.buildFor(nickname).equals(uploadToken)) {
+        if (!tokenGenerator.buildFor(nickname).equals(uploadToken)) {
             LOG.info("invalid upload token");
             return Response.status(Response.Status.FORBIDDEN).build();
         }

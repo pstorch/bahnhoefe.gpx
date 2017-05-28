@@ -2,11 +2,11 @@ package org.railwaystations.api;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
-public class UploadTokenGenerator {
+public class TokenGenerator {
 
     private final String salt;
 
-    public UploadTokenGenerator(final String salt) {
+    public TokenGenerator(final String salt) {
         this.salt = salt;
     }
 

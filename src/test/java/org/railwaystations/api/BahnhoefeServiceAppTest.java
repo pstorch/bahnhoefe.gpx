@@ -2,6 +2,7 @@ package org.railwaystations.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
@@ -32,6 +33,7 @@ import java.util.regex.Pattern;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@SuppressFBWarnings("BC_UNCONFIRMED_CAST_OF_RETURN_VALUE")
 public class BahnhoefeServiceAppTest {
 
     @ClassRule
@@ -243,7 +245,7 @@ public class BahnhoefeServiceAppTest {
 
     @Test
     public void register() {
-        final MockMailer mailer = (MockMailer)RULE.getConfiguration().getMailer();
+        final MockMailer mailer = (MockMailer) RULE.getConfiguration().getMailer();
 
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))

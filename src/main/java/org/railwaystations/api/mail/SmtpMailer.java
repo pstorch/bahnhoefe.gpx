@@ -25,12 +25,7 @@ public class SmtpMailer implements Mailer {
         properties.setProperty("mail.smtp.host", host);
         properties.setProperty("mail.smtp.auth", "true");
 
-        session = Session.getInstance(properties, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(user, passwd);
-            }
-        });
+        session = Session.getInstance(properties, new UsernamePasswordAuthenticator(user, passwd));
         this.from = from;
     }
 
@@ -49,4 +44,18 @@ public class SmtpMailer implements Mailer {
         }
     }
 
+    private static class UsernamePasswordAuthenticator extends Authenticator {
+        private final String user;
+        private final String passwd;
+
+        private UsernamePasswordAuthenticator(final String user, final String passwd) {
+            this.user = user;
+            this.passwd = passwd;
+        }
+
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication(user, passwd);
+        }
+    }
 }

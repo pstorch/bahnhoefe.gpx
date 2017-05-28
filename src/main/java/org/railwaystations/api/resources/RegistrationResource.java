@@ -1,6 +1,6 @@
 package org.railwaystations.api.resources;
 
-import org.railwaystations.api.UploadTokenGenerator;
+import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.model.Registration;
 import org.railwaystations.api.monitoring.Monitor;
@@ -20,13 +20,13 @@ public class RegistrationResource {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationResource.class);
 
     private final String apiKey;
-    private final UploadTokenGenerator uploadTokenGenerator;
+    private final TokenGenerator tokenGenerator;
     private final Monitor monitor;
     private final Mailer mailer;
 
-    public RegistrationResource(final String apiKey, final UploadTokenGenerator uploadTokenGenerator, final Monitor monitor, final Mailer mailer) {
+    public RegistrationResource(final String apiKey, final TokenGenerator tokenGenerator, final Monitor monitor, final Mailer mailer) {
         this.apiKey = apiKey;
-        this.uploadTokenGenerator = uploadTokenGenerator;
+        this.tokenGenerator = tokenGenerator;
         this.monitor = monitor;
         this.mailer = mailer;
     }
@@ -41,15 +41,15 @@ public class RegistrationResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        final String token = uploadTokenGenerator.buildFor(registration.getNickname());
+        final String token = tokenGenerator.buildFor(registration.getNickname());
         LOG.info("Token " + token);
 
-        final String text = String.format("Hallo %1s,\n\n" +
-                        "vielen Dank für Deine Registrierung.\n" +
-                        "Dein Upload Token lautet: %2s\n" +
-                        "Klicke bitte auf http://railway-stations.org/uploadToken/%3s um ihn in die App zu übernehmen.\n" +
-                        "Alternativ kannst Du ihn auch manuell in der Bahnhofsfoto App unter Meine Daten eintragen.\n\n" +
-                        "Viele Grüße\n" +
+        final String text = String.format("Hallo %1s,%n%n" +
+                        "vielen Dank für Deine Registrierung.%n" +
+                        "Dein Upload Token lautet: %2s%n" +
+                        "Klicke bitte auf http://railway-stations.org/uploadToken/%3s um ihn in die App zu übernehmen.%n" +
+                        "Alternativ kannst Du ihn auch manuell in der Bahnhofsfoto App unter Meine Daten eintragen.%n%n" +
+                        "Viele Grüße%n" +
                         "Dein Bahnhofsfoto-Team", registration.getNickname(), token, token);
         mailer.send(registration.getEmail(), "Bahnhofsfotos upload token", text);
 

@@ -1,7 +1,7 @@
 package org.railwaystations.api.resources;
 
 import org.junit.Test;
-import org.railwaystations.api.UploadTokenGenerator;
+import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.mail.MockMailer;
 import org.railwaystations.api.model.Registration;
 import org.railwaystations.api.monitoring.MockMonitor;
@@ -19,10 +19,10 @@ public class RegistrationResourceTest {
     public void testPost() throws IOException {
         final MockMonitor monitor = new MockMonitor();
         final MockMailer mailer = new MockMailer();
-        final RegistrationResource registrationResource = new RegistrationResource("apiKey", new UploadTokenGenerator("dummy"), monitor, mailer);
+        final RegistrationResource resource = new RegistrationResource("apiKey", new TokenGenerator("dummy"), monitor, mailer);
         final Registration registration = new Registration("nickname", "email", "license", true, "linking", "link");
 
-        final Response response = registrationResource.post("apiKey", registration);
+        final Response response = resource.post("apiKey", registration);
 
         assertThat(response.getStatus(), equalTo(202));
         assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='email', license='license', photoOwner=true, linking='linking', link='link'}"));

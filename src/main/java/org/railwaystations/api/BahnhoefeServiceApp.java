@@ -41,10 +41,10 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
         environment.jersey().register(new PhotographersResource(config.getRepository()));
         environment.jersey().register(new StatisticResource(config.getRepository()));
         environment.jersey().register(new PhotoUploadResource(
-                config.getApiKey(), config.getUploadTokenGenerator(), config.getUploadDir(),
+                config.getApiKey(), config.getTokenGenerator(), config.getUploadDir(),
                 config.getRepository().getCountries(), config.getMonitor()));
         environment.jersey().register(new RegistrationResource(
-                config.getApiKey(), config.getUploadTokenGenerator(), config.getMonitor(), config.getMailer()));
+                config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer()));
         environment.jersey().register(new BahnhoefeGpxWriter());
         environment.jersey().register(new BahnhoefeTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());
