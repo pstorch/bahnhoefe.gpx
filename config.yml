@@ -4,6 +4,7 @@ salt: ${SALT:-dummy}
 mailer:
   "@class": org.railwaystations.api.mail.SmtpMailer
   host: ${SMTP_HOST:-}
+  port: ${SMTP_PORT:-25}
   user: ${SMTP_USER:-}
   passwd: ${SMTP_PASSWD:-}
   from: ${SMTP_FROM:-}

@@ -18,12 +18,15 @@ public class SmtpMailer implements Mailer {
     private final Session session;
 
     public SmtpMailer(@JsonProperty("host") final String host,
+                      @JsonProperty("port") final String port,
                       @JsonProperty("user") final String user,
                       @JsonProperty("passwd") final String passwd,
                       @JsonProperty("from") final String from) {
         final Properties properties = System.getProperties();
         properties.setProperty("mail.smtp.host", host);
         properties.setProperty("mail.smtp.auth", "true");
+        properties.setProperty("mail.smtp.port", port);
+        properties.setProperty("mail.smtp.starttls.enable", "true");
 
         session = Session.getInstance(properties, new UsernamePasswordAuthenticator(user, passwd));
         this.from = from;
