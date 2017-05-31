@@ -1,9 +1,11 @@
 package org.railwaystations.api.resources;
 
-import org.railwaystations.api.TokenGenerator;
-import org.railwaystations.api.monitoring.Monitor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.http.entity.InputStreamEntity;
+import org.railwaystations.api.TokenGenerator;
+import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,24 +51,22 @@ public class PhotoUploadResource {
             throws UnsupportedEncodingException {
         LOG.info("Nickname: {}, Email: {}, Country: {}, Station-Id: {}, Content-Type: {}", nickname, email, country, stationId, contentType);
 
-        // TODO: add upload-token and verify
-
         if (!this.apiKey.equals(apiKey)) {
             LOG.info("invalid API key");
-            return Response.status(Response.Status.FORBIDDEN).build();
+            return consumeBodyAndReturn(body, Response.Status.FORBIDDEN);
         }
 
         if (nickname.contains("/")) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
         if (!tokenGenerator.buildFor(nickname, email).equals(uploadToken)) {
             LOG.info("Token doesn't fit to nickname {} and email {}", nickname, email);
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return consumeBodyAndReturn(body, Response.Status.UNAUTHORIZED);
         }
 
         if (!countries.contains(country)) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
         final File uploadCountryDir = new File(uploadDir, country);
@@ -78,15 +78,27 @@ public class PhotoUploadResource {
             final long bytesRead = IOUtils.copyLarge(body, new FileOutputStream(file), 0L, MAX_SIZE);
             if (bytesRead == MAX_SIZE) {
                 FileUtils.deleteQuietly(file);
-                return Response.status(Response.Status.REQUEST_ENTITY_TOO_LARGE).build();
+                return consumeBodyAndReturn(body, Response.Status.REQUEST_ENTITY_TOO_LARGE);
             }
             monitor.sendMessage(String.format("New photo upload: %s/%s", country, fileName));
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return consumeBodyAndReturn(body, Response.Status.INTERNAL_SERVER_ERROR);
         }
 
         return Response.accepted().build();
+    }
+
+    private Response consumeBodyAndReturn(final InputStream body, final Response.Status status) {
+        if (body != null) {
+            final InputStreamEntity inputStreamEntity = new InputStreamEntity(body);
+            try {
+                inputStreamEntity.writeTo(new NullOutputStream());
+            } catch (final IOException e) {
+                LOG.warn("Unable to consume body", e);
+            }
+        }
+        return Response.status(status).build();
     }
 
     private String mimeToExtension(final String contentType) {
