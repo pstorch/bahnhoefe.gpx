@@ -22,6 +22,8 @@ public class PhotoUploadResource {
     private static final Logger LOG = LoggerFactory.getLogger(PhotoUploadResource.class);
 
     private static final long MAX_SIZE = 20_000_000L;
+    public static final String IMAGE_PNG = "image/png";
+    public static final String IMAGE_JPEG = "image/jpeg";
 
     private final String apiKey;
     private final TokenGenerator tokenGenerator;
@@ -38,7 +40,7 @@ public class PhotoUploadResource {
     }
 
     @POST
-    @Consumes({"image/png", "image/jpeg"})
+    @Consumes({IMAGE_PNG, IMAGE_JPEG})
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(final InputStream body,
                          @NotNull @HeaderParam("API-Key") final String apiKey,
@@ -102,7 +104,11 @@ public class PhotoUploadResource {
     }
 
     private String mimeToExtension(final String contentType) {
-        return contentType.substring(contentType.lastIndexOf('/') + 1);
+        switch (contentType) {
+            case IMAGE_PNG: return "png";
+            case IMAGE_JPEG: return "jpg";
+        }
+        throw new IllegalArgumentException("Unknown contentType " + contentType);
     }
 
 }

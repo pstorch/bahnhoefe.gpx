@@ -34,14 +34,14 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getStatus(), equalTo(202));
 
-        final File image = new File(tempDir.toFile(), "de/nickname-4711.jpeg");
+        final File image = new File(tempDir.toFile(), "de/nickname-4711.jpg");
         assertThat(image.exists(), equalTo(true));
 
         final byte[] outputBytes = new byte[inputBytes.length];
         IOUtils.readFully(new FileInputStream(image), outputBytes);
         assertThat(outputBytes, equalTo(inputBytes));
 
-        assertThat(monitor.getMessages().get(0), equalTo("New photo upload: de/nickname-4711.jpeg"));
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload: de/nickname-4711.jpg"));
     }
 
     @Test
