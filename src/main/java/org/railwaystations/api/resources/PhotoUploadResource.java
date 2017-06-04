@@ -116,8 +116,9 @@ public class PhotoUploadResource {
         switch (contentType) {
             case IMAGE_PNG: return "png";
             case IMAGE_JPEG: return "jpg";
+            default:
+                throw new IllegalArgumentException("Unknown contentType " + contentType);
         }
-        throw new IllegalArgumentException("Unknown contentType " + contentType);
     }
 
 }
