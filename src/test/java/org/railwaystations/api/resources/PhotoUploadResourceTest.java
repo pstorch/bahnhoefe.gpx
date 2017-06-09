@@ -60,7 +60,7 @@ public class PhotoUploadResourceTest {
         IOUtils.readFully(new FileInputStream(image), outputBytes);
         assertThat(outputBytes, equalTo(inputBytes));
 
-        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland: http://inbox.railway-stations.org/de/%40nick+name-4711.jpg"));
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland: http://inbox.railway-stations.org/de/@nick%20name-4711.jpg"));
     }
 
     @Test

@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.http.entity.InputStreamEntity;
+import org.eclipse.jetty.util.URIUtil;
 import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.model.Bahnhof;
@@ -16,7 +17,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.Map;
 
 @Path("/photoUpload")
@@ -91,7 +91,7 @@ public class PhotoUploadResource {
                 FileUtils.deleteQuietly(file);
                 return consumeBodyAndReturn(body, Response.Status.REQUEST_ENTITY_TOO_LARGE);
             }
-            monitor.sendMessage(String.format("New photo upload for %s: http://inbox.railway-stations.org/%s/%s", station.getTitle(), country, URLEncoder.encode(fileName, "UTF-8")));
+            monitor.sendMessage(String.format("New photo upload for %s: http://inbox.railway-stations.org/%s/%s", station.getTitle(), country, URIUtil.encodePath(fileName)));
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
             return consumeBodyAndReturn(body, Response.Status.INTERNAL_SERVER_ERROR);
