@@ -20,7 +20,6 @@ public class Registration {
     @NotEmpty
     private final String linking;
 
-    @NotEmpty
     private final String link;
 
     public Registration(@JsonProperty("nickname") final String nickname,

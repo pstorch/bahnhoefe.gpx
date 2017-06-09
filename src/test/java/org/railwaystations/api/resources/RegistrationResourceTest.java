@@ -1,5 +1,6 @@
 package org.railwaystations.api.resources;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.mail.MockMailer;
@@ -15,13 +16,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RegistrationResourceTest {
 
+    private MockMonitor monitor;
+    private MockMailer mailer;
+    private RegistrationResource resource;
+
+    @Before
+    public void setUp() {
+        monitor = new MockMonitor();
+        mailer = new MockMailer();
+        resource = new RegistrationResource("apiKey", new TokenGenerator("dummy"), monitor, mailer);
+    }
+
     @Test
     public void testPost() throws IOException {
-        final MockMonitor monitor = new MockMonitor();
-        final MockMailer mailer = new MockMailer();
-        final RegistrationResource resource = new RegistrationResource("apiKey", new TokenGenerator("dummy"), monitor, mailer);
         final Registration registration = new Registration("nickname", "nickname@example.com", "license", true, "linking", "link");
-
         final Response response = resource.post("apiKey", registration);
 
         assertThat(response.getStatus(), equalTo(202));

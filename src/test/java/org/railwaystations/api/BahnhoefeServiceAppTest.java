@@ -257,7 +257,7 @@ public class BahnhoefeServiceAppTest {
                         "\t\"license\": \"license\",\n" +
                         "\t\"photoOwner\": true, \n" +
                         "\t\"linking\": \"linking\", \n" +
-                        "\t\"link\": \"link\"\n" +
+                        "\t\"link\": \"\"\n" +
                         "}", "application/json"));
 
         assertThat(response.getStatus(), is(202));
