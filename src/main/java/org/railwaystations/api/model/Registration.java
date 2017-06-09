@@ -1,6 +1,7 @@
 package org.railwaystations.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -28,12 +29,12 @@ public class Registration {
                         @JsonProperty("photoOwner") final boolean photoOwner,
                         @JsonProperty("linking") final String linking,
                         @JsonProperty("link") final String link) {
-        this.nickname = nickname;
-        this.email = email;
+        this.nickname = StringUtils.trimToEmpty(nickname);
+        this.email = StringUtils.trimToEmpty(email);
         this.license = license;
         this.photoOwner = photoOwner;
         this.linking = linking;
-        this.link = link;
+        this.link = StringUtils.trimToEmpty(link);
     }
 
     @JsonProperty("nickname")

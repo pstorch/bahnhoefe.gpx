@@ -3,6 +3,7 @@ package org.railwaystations.api.resources;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.InputStreamEntity;
 import org.eclipse.jetty.util.URIUtil;
 import org.railwaystations.api.BahnhoefeRepository;
@@ -47,13 +48,17 @@ public class PhotoUploadResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(final InputStream body,
                          @NotNull @HeaderParam("API-Key") final String apiKey,
-                         @NotNull @HeaderParam("Upload-Token") final String uploadToken,
-                         @NotNull @HeaderParam("Nickname") final String nickname,
-                         @NotNull @HeaderParam("Email") final String email,
+                         @NotNull @HeaderParam("Upload-Token") final String inUploadToken,
+                         @NotNull @HeaderParam("Nickname") final String inNickname,
+                         @NotNull @HeaderParam("Email") final String inEmail,
                          @NotNull @HeaderParam("Station-Id") final String stationId,
                          @NotNull @HeaderParam("Country") final String country,
                          @HeaderParam("Content-Type") final String contentType)
             throws UnsupportedEncodingException {
+        // trim user input
+        final String nickname = StringUtils.trimToEmpty(inNickname);
+        final String email = StringUtils.trimToEmpty(inEmail);
+
         LOG.info("Nickname: {}, Email: {}, Country: {}, Station-Id: {}, Content-Type: {}", nickname, email, country, stationId, contentType);
 
         if (!this.apiKey.equals(apiKey)) {
@@ -65,6 +70,7 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
+        final String uploadToken = StringUtils.trimToEmpty(inUploadToken);
         if (!tokenGenerator.buildFor(nickname, email).equals(uploadToken)) {
             LOG.info("Token doesn't fit to nickname {} and email {}", nickname, email);
             return consumeBodyAndReturn(body, Response.Status.UNAUTHORIZED);

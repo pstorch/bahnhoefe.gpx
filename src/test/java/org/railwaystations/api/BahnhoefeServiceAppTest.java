@@ -252,7 +252,7 @@ public class BahnhoefeServiceAppTest {
                 .request()
                 .header("API-Key", "dummy")
                 .post(Entity.entity("{\n" +
-                        "\t\"nickname\": \"nickname\", \n" +
+                        "\t\"nickname\": \"nickname \", \n" +
                         "\t\"email\": \"nick.name@example.com\", \n" +
                         "\t\"license\": \"license\",\n" +
                         "\t\"photoOwner\": true, \n" +
