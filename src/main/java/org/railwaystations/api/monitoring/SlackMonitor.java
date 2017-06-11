@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -35,19 +36,14 @@ public class SlackMonitor implements Monitor {
     }
 
     public void sendMessage(final String message) {
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-                sendMessageInternal(message);
-            }
-        });
+        Executors.newSingleThreadExecutor().execute(() -> sendMessageInternal(message));
     }
 
-    private void sendMessageInternal(final String message) {
+    protected void sendMessageInternal(final String message) {
         try {
             final String json = MAPPER.writeValueAsString(new SlackMessage(message));
             final HttpPost httpPost = new HttpPost(url);
-            httpPost.setEntity(new StringEntity(json));
+            httpPost.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON.withCharset("UTF-8")));
             final CloseableHttpResponse response = httpclient.execute(httpPost);
             final int status = response.getStatusLine().getStatusCode();
             final String content = EntityUtils.toString(response.getEntity());
