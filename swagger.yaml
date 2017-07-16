@@ -254,6 +254,8 @@ paths:
           description: wrong token
         '403':
           description: wrong apiKey
+        '409':
+          description: photo already exists
         '413':
           description: image too large (maximum 20 MB)
   /registration:
