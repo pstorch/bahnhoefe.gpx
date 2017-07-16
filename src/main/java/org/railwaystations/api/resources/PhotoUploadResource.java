@@ -87,6 +87,7 @@ public class PhotoUploadResource {
         }
 
         final File uploadCountryDir = new File(uploadDir, country);
+        final boolean duplicate = isDuplicate(stationId, station, uploadCountryDir);
         final String fileName = String.format("%s-%s.%s", nickname, stationId, mimeToExtension(contentType));
         final File file = new File(uploadCountryDir, fileName);
         LOG.info("Writing photo to {}", file);
@@ -97,13 +98,29 @@ public class PhotoUploadResource {
                 FileUtils.deleteQuietly(file);
                 return consumeBodyAndReturn(body, Response.Status.REQUEST_ENTITY_TOO_LARGE);
             }
-            monitor.sendMessage(String.format("New photo upload for %s: http://inbox.railway-stations.org/%s/%s", station.getTitle(), country, URIUtil.encodePath(fileName)));
+            String duplicateInfo = "";
+            if (duplicate) {
+                duplicateInfo = " (possible duplicate!)";
+            }
+            monitor.sendMessage(String.format("New photo upload for %s: http://inbox.railway-stations.org/%s/%s%s", station.getTitle(), country, URIUtil.encodePath(fileName), duplicateInfo));
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
             return consumeBodyAndReturn(body, Response.Status.INTERNAL_SERVER_ERROR);
         }
 
-        return Response.accepted().build();
+        return duplicate ? Response.status(Response.Status.CONFLICT).build() : Response.accepted().build();
+    }
+
+    private boolean isDuplicate(@NotNull @HeaderParam("Station-Id") final String stationId, final Bahnhof station, final File uploadCountryDir) {
+        boolean duplicate = station.hasPhoto();
+        if (!duplicate) {
+            final File[] listFiles = uploadCountryDir.listFiles(pathname -> {
+                final String stationIdentifier = "-" + stationId + ".";
+                return pathname.getName().contains(stationIdentifier);
+            });
+            duplicate = listFiles != null && listFiles.length > 0;
+        }
+        return duplicate;
     }
 
     private Response consumeBodyAndReturn(final InputStream body, final Response.Status status) {

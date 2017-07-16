@@ -1,6 +1,7 @@
 package org.railwaystations.api.resources;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +39,8 @@ public class PhotoUploadResourceTest {
     public void setUp() throws IOException {
         final BahnhoefeLoader loader = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> stationsMap = new HashMap<>(2);
-        stationsMap.put(4711, new Bahnhof(4711, "de", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(4711, "Jim Knopf", "URL", "CC0")));
+        stationsMap.put(4711, new Bahnhof(4711, "de", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
+        stationsMap.put(1234, new Bahnhof(1234, "de", "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(4711, "Jim Knopf", "URL", "CC0")));
         Mockito.when(loader.loadBahnhoefe()).thenReturn(stationsMap);
         Mockito.when(loader.getCountry()).thenReturn(new Country("de", null, null, null, null));
 
@@ -63,6 +65,46 @@ public class PhotoUploadResourceTest {
         assertThat(outputBytes, equalTo(inputBytes));
 
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland: http://inbox.railway-stations.org/de/@nick%20name-4711.jpg"));
+    }
+
+    @Test
+    public void testPostDuplicateInbox() throws IOException {
+        final byte[] inputBytes = "image-content".getBytes(Charset.defaultCharset());
+        final InputStream is = new ByteArrayInputStream(inputBytes);
+        final File existing = new File(tempDir.toFile(), "de/@other_nick-4711.jpg");
+        FileUtils.write(existing, "dummy", "UTF-8");
+
+        final Response response = resource.post(is, "apiKey", "d913467f14e7f1c2bbbc74c07d5ab0689f4b4759", "@nick name", "nickname@example.com","4711", "de", "image/jpeg");
+
+        assertThat(response.getStatus(), equalTo(409));
+
+        final File image = new File(tempDir.toFile(), "de/@nick name-4711.jpg");
+        assertThat(image.exists(), equalTo(true));
+
+        final byte[] outputBytes = new byte[inputBytes.length];
+        IOUtils.readFully(new FileInputStream(image), outputBytes);
+        assertThat(outputBytes, equalTo(inputBytes));
+
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland: http://inbox.railway-stations.org/de/@nick%20name-4711.jpg (possible duplicate!)"));
+    }
+
+    @Test
+    public void testPostDuplicate() throws IOException {
+        final byte[] inputBytes = "image-content".getBytes(Charset.defaultCharset());
+        final InputStream is = new ByteArrayInputStream(inputBytes);
+
+        final Response response = resource.post(is, "apiKey", "d913467f14e7f1c2bbbc74c07d5ab0689f4b4759", "@nick name", "nickname@example.com","1234", "de", "image/jpeg");
+
+        assertThat(response.getStatus(), equalTo(409));
+
+        final File image = new File(tempDir.toFile(), "de/@nick name-1234.jpg");
+        assertThat(image.exists(), equalTo(true));
+
+        final byte[] outputBytes = new byte[inputBytes.length];
+        IOUtils.readFully(new FileInputStream(image), outputBytes);
+        assertThat(outputBytes, equalTo(inputBytes));
+
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Neverland: http://inbox.railway-stations.org/de/@nick%20name-1234.jpg (possible duplicate!)"));
     }
 
     @Test
