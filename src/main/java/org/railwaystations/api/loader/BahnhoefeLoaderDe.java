@@ -2,6 +2,7 @@ package org.railwaystations.api.loader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 
 import java.net.URL;
@@ -9,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
-
-    public static final String COUNTRY_CODE = "de";
 
     private static final String TITLE_ELEMENT = "title";
 
@@ -27,26 +26,25 @@ public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
     }
 
     public BahnhoefeLoaderDe(final URL bahnhoefeUrl, final URL photosUrl) {
-        super(photosUrl, bahnhoefeUrl);
-    }
-
-    @Override
-    public String getCountryCode() {
-        return BahnhoefeLoaderDe.COUNTRY_CODE;
+        super(new Country("de", "Deutschland",
+                "bahnhofsfotos@deutschlands-bahnhoefe.de",
+                "@android_oma, #dbHackathon, #dbOpendata, #Bahnhofsfoto, @khgdrn",
+                "https://mobile.bahn.de/bin/mobil/bhftafel.exe/dox?bt=dep&max=10&rt=1&use_realtime_filter=1&start=yes&input={title}"),
+                photosUrl, bahnhoefeUrl);
     }
 
     @Override
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     protected Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, Photo> photos) throws Exception {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
-        final JsonNode hits = readJsonFromUrl(bahnhoefeUrl)
+        final JsonNode hits = readJsonFromUrl(getBahnhoefeUrl())
                                     .get(BahnhoefeLoaderDe.HITS_ELEMENT)
                                     .get(BahnhoefeLoaderDe.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
             final JsonNode bahnhofJson = hits.get(i).get("_source");
             final Integer id = bahnhofJson.get("BahnhofNr").asInt();
             final Bahnhof bahnhof = new Bahnhof(id,
-                    getCountryCode(),
+                    getCountry().getCode(),
                     bahnhofJson.get(BahnhoefeLoaderDe.TITLE_ELEMENT).asText(),
                     bahnhofJson.get(BahnhoefeLoaderDe.LAT_ELEMENT).asDouble(),
                     bahnhofJson.get(BahnhoefeLoaderDe.LON_ELEMENT).asDouble(),

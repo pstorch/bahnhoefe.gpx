@@ -3,6 +3,7 @@ package org.railwaystations.api.resources;
 import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.loader.BahnhoefeLoader;
 import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.junit.Test;
@@ -25,13 +26,13 @@ public class BahnhoefeResourceTest {
         final Map<Integer, Bahnhof> bahnhoefeXY = new HashMap<>(2);
         bahnhoefeXY.put(5, new Bahnhof(5, "xy", "Lummerland", 50.0, 9.0, "XYZ", new Photo(5, "Jim Knopf", "URL", "CC0")));
         Mockito.when(loaderXY.loadBahnhoefe()).thenReturn(bahnhoefeXY);
-        Mockito.when(loaderXY.getCountryCode()).thenReturn("xy");
+        Mockito.when(loaderXY.getCountry()).thenReturn(new Country("xy", null, null, null, null));
 
         final BahnhoefeLoader loaderAB = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>(2);
         bahnhoefe.put(3, new Bahnhof(3, "ab", "Nimmerland", 40.0, 6.0, "ABC", new Photo(3, "Peter Pan", "URL2", "CC0 by SA")));
         Mockito.when(loaderAB.loadBahnhoefe()).thenReturn(bahnhoefe);
-        Mockito.when(loaderAB.getCountryCode()).thenReturn("ab");
+        Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", null, null, null, null));
 
         final BahnhoefeResource resource = new BahnhoefeResource(new BahnhoefeRepository(new LoggingMonitor(), loaderAB, loaderXY));
 

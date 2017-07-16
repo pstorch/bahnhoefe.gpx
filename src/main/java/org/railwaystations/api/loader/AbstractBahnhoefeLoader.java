@@ -3,8 +3,6 @@ package org.railwaystations.api.loader;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.railwaystations.api.model.Bahnhof;
-import org.railwaystations.api.model.Photo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -12,6 +10,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Country;
+import org.railwaystations.api.model.Photo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,14 +28,15 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBahnhoefeLoader.class);
 
-    protected URL bahnhoefeUrl;
-    protected URL photosUrl;
+    private URL bahnhoefeUrl;
+    private URL photosUrl;
+    private final Country country;
 
     private final CloseableHttpClient httpclient;
 
-
-    protected AbstractBahnhoefeLoader(final URL photosUrl, final URL bahnhoefeUrl) {
+    protected AbstractBahnhoefeLoader(final Country country, final URL photosUrl, final URL bahnhoefeUrl) {
         super();
+        this.country = country;
         this.photosUrl = photosUrl;
         this.bahnhoefeUrl = bahnhoefeUrl;
         this.httpclient = HttpClients.custom().setDefaultRequestConfig(
@@ -53,8 +55,9 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         this.photosUrl = new URL(photosUrl);
     }
 
-    @Override
-    public abstract String getCountryCode();
+    public Country getCountry() {
+        return country;
+    }
 
     @Override
     public Map<Integer, Bahnhof> loadBahnhoefe() {
@@ -109,5 +112,9 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
     }
 
     protected abstract Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, Photo> photos) throws Exception;
+
+    public URL getBahnhoefeUrl() {
+        return bahnhoefeUrl;
+    }
 
 }

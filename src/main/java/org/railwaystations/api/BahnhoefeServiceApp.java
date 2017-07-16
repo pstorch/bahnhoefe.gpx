@@ -39,6 +39,7 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
         config.getMonitor().sendMessage("RSAPI starting up");
         environment.jersey().register(new BahnhoefeResource(config.getRepository()));
         environment.jersey().register(new PhotographersResource(config.getRepository()));
+        environment.jersey().register(new CountriesResource(config.getRepository()));
         environment.jersey().register(new StatisticResource(config.getRepository()));
         environment.jersey().register(new PhotoUploadResource(config.getRepository(), config.getApiKey(),
                 config.getTokenGenerator(), config.getUploadDir(), config.getMonitor()));

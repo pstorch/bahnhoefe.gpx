@@ -9,6 +9,7 @@ import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.loader.BahnhoefeLoader;
 import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.monitoring.MockMonitor;
 
@@ -38,7 +39,7 @@ public class PhotoUploadResourceTest {
         final Map<Integer, Bahnhof> stationsMap = new HashMap<>(2);
         stationsMap.put(4711, new Bahnhof(4711, "de", "Lummerland", 50.0, 9.0, "XYZ", new Photo(4711, "Jim Knopf", "URL", "CC0")));
         Mockito.when(loader.loadBahnhoefe()).thenReturn(stationsMap);
-        Mockito.when(loader.getCountryCode()).thenReturn("de");
+        Mockito.when(loader.getCountry()).thenReturn(new Country("de", null, null, null, null));
 
         tempDir = Files.createTempDirectory("rsapi");
         resource = new PhotoUploadResource(new BahnhoefeRepository(monitor, loader), "apiKey", tokenGenerator, tempDir.toString(), monitor);

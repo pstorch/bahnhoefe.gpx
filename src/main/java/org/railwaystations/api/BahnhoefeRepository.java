@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.railwaystations.api.loader.BahnhoefeLoader;
 import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Country;
 import org.railwaystations.api.monitoring.Monitor;
 
 import java.util.*;
@@ -14,27 +15,27 @@ import java.util.stream.Collectors;
 public class BahnhoefeRepository {
 
     private final LoadingCache<String, Map<Integer, Bahnhof>> cache;
-    private final Set<String> countries;
+    private final Set<Country> countries;
 
     public BahnhoefeRepository(final Monitor monitor, final BahnhoefeLoader ... loaders) {
         super();
         this.cache = CacheBuilder.newBuilder().refreshAfterWrite(5, TimeUnit.MINUTES).build(
                 new BahnhoefeCacheLoader(monitor, loaders));
-        this.countries = Arrays.stream(loaders).map(BahnhoefeLoader::getCountryCode).collect(Collectors.toSet());
+        this.countries = Arrays.stream(loaders).map(BahnhoefeLoader::getCountry).collect(Collectors.toSet());
     }
 
-    public Map<Integer, Bahnhof> get(final String country) {
-        if (country == null) {
+    public Map<Integer, Bahnhof> get(final String countryCode) {
+        if (countryCode == null) {
             final Map<Integer, Bahnhof> map = new HashMap<>();
-            for (final String aCountry : countries) {
-                map.putAll(cache.getUnchecked(aCountry));
+            for (final Country aCountry : countries) {
+                map.putAll(cache.getUnchecked(aCountry.getCode()));
             }
             return map;
         }
-        return cache.getUnchecked(country);
+        return cache.getUnchecked(countryCode);
     }
 
-    public Set<String> getCountries() {
+    public Set<Country> getCountries() {
         return Collections.unmodifiableSet(countries);
     }
 
@@ -47,10 +48,10 @@ public class BahnhoefeRepository {
             this.loaders = loaders;
         }
 
-        public Map<Integer, Bahnhof> load(final String country) throws Exception {
+        public Map<Integer, Bahnhof> load(final String countryCode) throws Exception {
             try {
                 for (final BahnhoefeLoader loader : loaders) {
-                    if (loader.getCountryCode().equals(country)) {
+                    if (loader.getCountry().getCode().equals(countryCode)) {
                         return loader.loadBahnhoefe();
                     }
                 }

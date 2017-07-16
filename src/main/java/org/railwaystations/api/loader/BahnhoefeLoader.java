@@ -1,6 +1,7 @@
 package org.railwaystations.api.loader;
 
 import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Country;
 
 import java.net.MalformedURLException;
 import java.util.Map;
@@ -12,6 +13,6 @@ public interface BahnhoefeLoader {
 
     void setPhotosUrl(final String photosUrl) throws MalformedURLException;
 
-    String getCountryCode();
+    Country getCountry();
 
 }
