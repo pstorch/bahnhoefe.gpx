@@ -1,5 +1,6 @@
 package org.railwaystations.api.model;
 
+@SuppressWarnings("PMD.LongVariable")
 public class Country {
 
     private final String code;
@@ -42,8 +43,12 @@ public class Country {
 
     @Override
     public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         final Country country = (Country) o;
 
