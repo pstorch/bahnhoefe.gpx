@@ -2,6 +2,7 @@ package org.railwaystations.api.writer;
 
 import org.railwaystations.api.model.Bahnhof;
 import org.junit.Test;
+import org.railwaystations.api.model.Coordinates;
 
 import javax.ws.rs.WebApplicationException;
 import java.io.ByteArrayOutputStream;
@@ -17,8 +18,8 @@ public class BahnhoefeGpxWriterTest {
 	@Test
 	public void testWriteTo() throws WebApplicationException, IOException {
 		final List<Bahnhof> bahnhoefe = new ArrayList<>();
-		bahnhoefe.add(new Bahnhof(4711, "", "Test", 50d, 9d, null, null));
-		bahnhoefe.add(new Bahnhof(4712, "", "Foo", 51d, 8d, null, null));
+		bahnhoefe.add(new Bahnhof(4711, "", "Test", new Coordinates(50d, 9d), null, null));
+		bahnhoefe.add(new Bahnhof(4712, "", "Foo", new Coordinates(51d, 8d), null, null));
 		
 		final BahnhoefeGpxWriter writer = new BahnhoefeGpxWriter();
 		final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();

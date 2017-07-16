@@ -9,19 +9,19 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
+public class BahnhoefeLoaderFi extends AbstractBahnhoefeLoader {
 
     private static final String HITS_ELEMENT = "hits";
 
-    public BahnhoefeLoaderCh() {
+    public BahnhoefeLoaderFi() {
         this(null, null);
     }
 
-    public BahnhoefeLoaderCh(final URL bahnhoefeUrl, final URL photosUrl) {
-        super(new Country("ch", "Schweiz",
-                "fotos@schweizer-bahnhoefe.ch",
-                "@BahnhoefeCH, @android_oma, #BahnhofsfotoCH",
-                "http://fahrplan.sbb.ch/bin/stboard.exe/dn?input={title}&REQTrain_name=&boardType=dep&time=now&maxJourneys=20&selectDate=today&productsFilter=1111111111&start=yes"),
+    public BahnhoefeLoaderFi(final URL bahnhoefeUrl, final URL photosUrl) {
+        super(new Country("fi", "Finnland",
+                "bahnhofsfotos@deutschlands-bahnhoefe.de",
+                "@android_oma, #dbHackathon, #dbOpendata, #Bahnhofsfoto, @khgdrn",
+                "http://timetable-fi.railway-stations.org/index.php?stationshortcode={DS100}"),
                 bahnhoefeUrl, photosUrl);
     }
 
@@ -31,18 +31,17 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
 
         final JsonNode hits = readJsonFromUrl(getBahnhoefeUrl())
-                                .get(BahnhoefeLoaderCh.HITS_ELEMENT)
-                                .get(BahnhoefeLoaderCh.HITS_ELEMENT);
+                                .get(BahnhoefeLoaderFi.HITS_ELEMENT)
+                                .get(BahnhoefeLoaderFi.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
             final JsonNode sourceJson = hits.get(i).get("_source");
-            final JsonNode fieldsJson = sourceJson.get("fields");
-            final Integer id = fieldsJson.get("nummer").asInt();
-            final JsonNode abkuerzung = fieldsJson.get("abkuerzung");
+            final JsonNode propertiesJson = sourceJson.get("properties");
+            final Integer id = propertiesJson.get("UICIBNR").asInt();
             final Bahnhof bahnhof = new Bahnhof(id,
                     getCountry().getCode(),
-                    fieldsJson.get("name").asText(),
+                    propertiesJson.get("name").asText(),
                     readCoordinates(sourceJson),
-                    abkuerzung != null ? abkuerzung.asText() : null,
+                    propertiesJson.get("abkuerzung").asText(),
                     photos.get(id));
             bahnhoefe.put(bahnhof.getId(), bahnhof);
         }

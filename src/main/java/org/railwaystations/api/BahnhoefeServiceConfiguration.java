@@ -5,6 +5,7 @@ import io.dropwizard.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.loader.BahnhoefeLoaderCh;
 import org.railwaystations.api.loader.BahnhoefeLoaderDe;
+import org.railwaystations.api.loader.BahnhoefeLoaderFi;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
@@ -16,6 +17,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
 
     private final BahnhoefeLoaderDe loaderDe = new BahnhoefeLoaderDe();
     private final BahnhoefeLoaderCh loaderCh = new BahnhoefeLoaderCh();
+    private final BahnhoefeLoaderFi loaderFi = new BahnhoefeLoaderFi();
 
     private Monitor monitor = new LoggingMonitor();
 
@@ -35,8 +37,12 @@ public class BahnhoefeServiceConfiguration extends Configuration {
         return loaderCh;
     }
 
+    public BahnhoefeLoaderFi getLoaderFi() {
+        return loaderFi;
+    }
+
     public BahnhoefeRepository getRepository() {
-        return new BahnhoefeRepository(monitor, loaderDe, loaderCh);
+        return new BahnhoefeRepository(monitor, loaderDe, loaderCh, loaderFi);
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {

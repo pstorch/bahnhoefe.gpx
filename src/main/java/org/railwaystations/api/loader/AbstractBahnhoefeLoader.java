@@ -12,6 +12,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.railwaystations.api.model.Bahnhof;
 import org.railwaystations.api.model.Country;
+import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Photo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,4 +118,8 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         return bahnhoefeUrl;
     }
 
+    protected Coordinates readCoordinates(final JsonNode json) {
+        final JsonNode coordinates = json.get("geometry").get("coordinates");
+        return new Coordinates(coordinates.get(0).asDouble(), coordinates.get(1).asDouble());
+    }
 }

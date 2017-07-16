@@ -2,6 +2,7 @@ package org.railwaystations.api.loader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 
@@ -46,8 +47,8 @@ public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
             final Bahnhof bahnhof = new Bahnhof(id,
                     getCountry().getCode(),
                     bahnhofJson.get(BahnhoefeLoaderDe.TITLE_ELEMENT).asText(),
-                    bahnhofJson.get(BahnhoefeLoaderDe.LAT_ELEMENT).asDouble(),
-                    bahnhofJson.get(BahnhoefeLoaderDe.LON_ELEMENT).asDouble(),
+                    new Coordinates(bahnhofJson.get(BahnhoefeLoaderDe.LAT_ELEMENT).asDouble(),
+                                    bahnhofJson.get(BahnhoefeLoaderDe.LON_ELEMENT).asDouble()),
                     bahnhofJson.get(BahnhoefeLoaderDe.DS100_ELEMENT).asText(),
                     photos.get(id));
             bahnhoefe.put(bahnhof.getId(), bahnhof);

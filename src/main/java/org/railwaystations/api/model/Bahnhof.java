@@ -34,20 +34,20 @@ public class Bahnhof {
     private final String license;
 
     public Bahnhof() {
-        this(0, null, null, 0.0, 0.0, null);
+        this(0, null, null, new Coordinates(0.0, 0.0), null);
     }
 
-    public Bahnhof(final int id, final String country, final String title, final double lat, final double lon, final Photo photo) {
-        this(id, country, title, lat, lon, null, photo);
+    public Bahnhof(final int id, final String country, final String title, final Coordinates coordinates, final Photo photo) {
+        this(id, country, title, coordinates, null, photo);
     }
 
-    public Bahnhof(final int id, final String country, final String title, final double lat, final double lon, final String ds100, final Photo photo) {
+    public Bahnhof(final int id, final String country, final String title, final Coordinates coordinates, final String ds100, final Photo photo) {
         super();
         this.id = id;
         this.country = country;
         this.title = title;
-        this.lat = lat;
-        this.lon = lon;
+        this.lat = coordinates.getLatitude();
+        this.lon = coordinates.getLongitude();
         this.ds100 = ds100;
         if (photo != null) {
             this.photographer = photo.getPhotographer();
