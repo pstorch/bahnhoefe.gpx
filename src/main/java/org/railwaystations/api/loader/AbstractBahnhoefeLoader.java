@@ -120,6 +120,6 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
 
     protected Coordinates readCoordinates(final JsonNode json) {
         final JsonNode coordinates = json.get("geometry").get("coordinates");
-        return new Coordinates(coordinates.get(0).asDouble(), coordinates.get(1).asDouble());
+        return new Coordinates(coordinates.get(1).asDouble(), coordinates.get(0).asDouble());
     }
 }

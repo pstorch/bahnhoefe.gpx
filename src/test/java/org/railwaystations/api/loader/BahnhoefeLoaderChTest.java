@@ -42,15 +42,15 @@ public class BahnhoefeLoaderChTest {
 			final Bahnhof etoy = bahnhoefe.get(8501042);
 			assertThat(etoy.getId(), CoreMatchers.is(8501042));
 			assertThat(etoy.getTitle(), CoreMatchers.is("Etoy"));
-			assertThat(etoy.getLat(), CoreMatchers.is(46.47515995026246));
-			assertThat(etoy.getLon(), CoreMatchers.is(6.427139085981211));
+			assertThat(etoy.getLat(), CoreMatchers.is(6.427139085981211));
+			assertThat(etoy.getLon(), CoreMatchers.is(46.47515995026246));
 			assertThat(etoy.hasPhoto(), CoreMatchers.is(false));
 
 			final Bahnhof kuengoldingen = bahnhoefe.get(8502120);
 			assertThat(kuengoldingen.getId(), CoreMatchers.is(8502120));
 			assertThat(kuengoldingen.getTitle(), CoreMatchers.is("Küngoldingen"));
-			assertThat(kuengoldingen.getLat(), CoreMatchers.is(47.30746905671105));
-			assertThat(kuengoldingen.getLon(), CoreMatchers.is(7.941984790513125));
+			assertThat(kuengoldingen.getLat(), CoreMatchers.is(7.941984790513125));
+			assertThat(kuengoldingen.getLon(), CoreMatchers.is(47.30746905671105));
 			assertThat(kuengoldingen.hasPhoto(), CoreMatchers.is(true));
 			assertThat(kuengoldingen.getPhotographer(), CoreMatchers.is("@pokipsie"));
 			assertThat(kuengoldingen.getPhotoUrl(), CoreMatchers.is("http://www.deutschlands-bahnhoefe.org/sites/default/files/previewbig/8503006.jpg"));
