@@ -21,7 +21,7 @@ public class BahnhoefeLoaderFi extends AbstractBahnhoefeLoader {
         super(new Country("fi", "Finnland",
                 "bahnhofsfotos@deutschlands-bahnhoefe.de",
                 "@android_oma, #dbHackathon, #dbOpendata, #Bahnhofsfoto, @khgdrn",
-                "http://timetable-fi.railway-stations.org/index.php?stationshortcode={DS100}"),
+                "https://www.junat.net/en/"),
                 bahnhoefeUrl, photosUrl);
     }
 
