@@ -40,7 +40,7 @@ public class PhotoUploadResourceTest {
         final BahnhoefeLoader loader = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> stationsMap = new HashMap<>(2);
         stationsMap.put(4711, new Bahnhof(4711, "de", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
-        stationsMap.put(1234, new Bahnhof(1234, "de", "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(4711, "Jim Knopf", "URL", "CC0")));
+        stationsMap.put(1234, new Bahnhof(1234, "de", "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(4711, "Jim Knopf", "URL", "CC0", "photographerUrl")));
         Mockito.when(loader.loadBahnhoefe()).thenReturn(stationsMap);
         Mockito.when(loader.getCountry()).thenReturn(new Country("de", null, null, null, null));
 

@@ -10,11 +10,14 @@ public class Photo {
 
     private final String license;
 
-    public Photo(final int stationId, final String photographer, final String url, final String license) {
+    private final String photographerUrl;
+
+    public Photo(final int stationId, final String photographer, final String url, final String license, final String photographerUrl) {
         this.stationId = stationId;
         this.photographer = photographer;
         this.url = url;
         this.license = license;
+        this.photographerUrl = photographerUrl;
     }
 
     public String getUrl() {
@@ -31,5 +34,9 @@ public class Photo {
 
     public String getLicense() {
         return license;
+    }
+
+    public String getPhotographerUrl() {
+        return photographerUrl;
     }
 }
