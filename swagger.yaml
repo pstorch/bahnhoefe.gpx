@@ -299,6 +299,8 @@ definitions:
         type: string
       photographer:
         type: string
+      photographerUrl:
+        type: string
       photoUrl:
         type: string
       license:
