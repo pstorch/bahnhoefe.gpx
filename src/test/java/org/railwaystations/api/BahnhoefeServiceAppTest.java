@@ -66,6 +66,14 @@ public class BahnhoefeServiceAppTest {
     }
 
     @Test
+    public void stationById() throws IOException {
+        final Response response = loadRaw("/de/stations/41", 200);
+        final Bahnhof bahnhof = response.readEntity(Bahnhof.class);
+        assertThat(bahnhof.getId(), is(41));
+        assertThat(bahnhof.getTitle(), is( "Albersdorf"));
+    }
+
+    @Test
     public void stationsDe() throws IOException {
         final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s", "stations"), 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());

@@ -118,6 +118,30 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Station'
+  '/{country}/stations/{id}':
+    get:
+      summary: Find a railway station by its ID
+      produces:
+        - application/json
+      parameters:
+        - name: country
+          in: path
+          description: country code
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: id of the station
+          required: true
+          type: number
+          format: integer
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Station'
+        '404':
+          description: Country not found
   '/{country}/photographers':
     get:
       summary: >-

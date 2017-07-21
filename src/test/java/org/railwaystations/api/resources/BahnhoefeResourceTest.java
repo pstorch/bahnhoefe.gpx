@@ -1,5 +1,6 @@
 package org.railwaystations.api.resources;
 
+import org.junit.Before;
 import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.loader.BahnhoefeLoader;
 import org.railwaystations.api.model.Bahnhof;
@@ -21,8 +22,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BahnhoefeResourceTest {
 
-    @Test
-    public void testGet() throws IOException {
+    private BahnhoefeResource resource;
+
+    @Before
+    public void setUp() {
         final BahnhoefeLoader loaderXY = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> bahnhoefeXY = new HashMap<>(2);
         bahnhoefeXY.put(5, new Bahnhof(5, "xy", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(5, "Jim Knopf", "URL", "CC0", "photographerUrl")));
@@ -35,8 +38,11 @@ public class BahnhoefeResourceTest {
         Mockito.when(loaderAB.loadBahnhoefe()).thenReturn(bahnhoefe);
         Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", null, null, null, null));
 
-        final BahnhoefeResource resource = new BahnhoefeResource(new BahnhoefeRepository(new LoggingMonitor(), loaderAB, loaderXY));
+        resource = new BahnhoefeResource(new BahnhoefeRepository(new LoggingMonitor(), loaderAB, loaderXY));
+    }
 
+    @Test
+    public void testGetXY() throws IOException {
         final List<Bahnhof> resultXY = resource.get("xy", null, null, null, null, null);
         final Bahnhof bahnhofXY = resultXY.get(0);
         assertThat(bahnhofXY, notNullValue());
@@ -49,9 +55,16 @@ public class BahnhoefeResourceTest {
         assertThat(bahnhofXY.getPhotoUrl(), equalTo("URL"));
         assertThat(bahnhofXY.getLicense(), equalTo("CC0"));
         assertThat(bahnhofXY.getPhotographerUrl(), equalTo("photographerUrl"));
+    }
 
+    @Test
+    public void testGetAB() throws IOException {
         final List<Bahnhof> resultAB = resource.get("ab", null, null, null, null, null);
         final Bahnhof bahnhof = resultAB.get(0);
+        assertNimmerland(bahnhof);
+    }
+
+    private void assertNimmerland(final Bahnhof bahnhof) {
         assertThat(bahnhof, notNullValue());
         assertThat(bahnhof.getId(), equalTo(3));
         assertThat(bahnhof.getTitle(), equalTo("Nimmerland"));
@@ -62,7 +75,16 @@ public class BahnhoefeResourceTest {
         assertThat(bahnhof.getDS100(), equalTo("ABC"));
         assertThat(bahnhof.getLicense(), equalTo("CC0 by SA"));
         assertThat(bahnhof.getPhotographerUrl(), equalTo("photographerUrl2"));
+    }
 
+    @Test
+    public void testGetById() throws IOException {
+        final Bahnhof bahnhof = resource.getById("ab", 3);
+        assertNimmerland(bahnhof);
+    }
+
+    @Test
+    public void testGetAll() throws IOException {
         final List<Bahnhof> resultAll = resource.get(null, null, null, null, null, null);
         assertThat(resultAll.size(), equalTo(2));
     }

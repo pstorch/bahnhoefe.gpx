@@ -21,6 +21,7 @@ public class BahnhoefeResource {
     private static final String MAX_DISTANCE = "maxDistance";
     private static final String LAT = "lat";
     private static final String LON = "lon";
+    private static final String ID = "id";
 
     private final BahnhoefeRepository repository;
 
@@ -53,6 +54,14 @@ public class BahnhoefeResource {
                              @QueryParam(BahnhoefeResource.LON) final Double lon) throws IOException {
         return getBahnhoefeMap(country)
                 .values().stream().filter(bahnhof -> bahnhof.appliesTo(hasPhoto, photographer, maxDistance, lat, lon)).collect(Collectors.toList());
+    }
+
+    @GET
+    @Path("{country}/stations/{id}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
+    public Bahnhof getById(@PathParam(BahnhoefeResource.COUNTRY) final String country,
+                                        @PathParam(BahnhoefeResource.ID) final Integer id) throws IOException {
+        return getBahnhoefeMap(country).get(id);
     }
 
     private Map<Integer, Bahnhof> getBahnhoefeMap(final String country) {
