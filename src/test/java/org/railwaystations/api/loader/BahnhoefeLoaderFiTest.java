@@ -52,7 +52,7 @@ public class BahnhoefeLoaderFiTest {
 			assertThat(tornio.getLat(), CoreMatchers.is(65.85313472639608));
 			assertThat(tornio.getLon(), CoreMatchers.is(24.18528739655337));
 			assertThat(tornio.hasPhoto(), CoreMatchers.is(true));
-			assertThat(tornio.getPhotographer(), CoreMatchers.is("@RecumbentTravel"));
+			assertThat(tornio.getPhotographer(), CoreMatchers.is("Anonym"));
 			assertThat(tornio.getPhotoUrl(), CoreMatchers.is("https://railway-stations.org/sites/default/files/previewbig/1000274.jpg"));
 			assertThat(tornio.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0) "));
 		}

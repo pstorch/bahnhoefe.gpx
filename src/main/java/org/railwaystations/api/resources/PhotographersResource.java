@@ -41,7 +41,7 @@ public class PhotographersResource {
     private Map<String, Long> getPhotographerMap(final String country) {
         final Map<String, Long> photographerMap = repository.get(country).values().stream()
                 .filter(Bahnhof::hasPhoto)
-                .map(Bahnhof::getPhotographer)
+                .map(Bahnhof::getStatUser)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         if (photographerMap.isEmpty()) {
             throw new WebApplicationException(404);

@@ -46,7 +46,7 @@ public class StatisticResource {
                 total.incrementAndGet();
                 if (b.hasPhoto()) {
                     withPhoto.incrementAndGet();
-                    photographers.add(b.getPhotographer());
+                    photographers.add(b.getStatUser());
                 } else {
                     withoutPhoto.incrementAndGet();
                 }

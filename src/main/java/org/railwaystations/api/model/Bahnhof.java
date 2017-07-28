@@ -1,5 +1,6 @@
 package org.railwaystations.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Bahnhof {
@@ -36,6 +37,9 @@ public class Bahnhof {
     @JsonProperty
     private final String license;
 
+    @JsonIgnore
+    private final String statUser;
+
     public Bahnhof() {
         this(0, null, null, new Coordinates(0.0, 0.0), null);
     }
@@ -57,11 +61,13 @@ public class Bahnhof {
             this.photoUrl = photo.getUrl();
             this.license = photo.getLicense();
             this.photographerUrl = photo.getPhotographerUrl();
+            this.statUser = photo.getStatUser();
         } else {
             this.photographer = null;
             this.photoUrl = null;
             this.license = null;
             this.photographerUrl = null;
+            this.statUser = null;
         }
     }
 
@@ -133,5 +139,9 @@ public class Bahnhof {
 
     public String getPhotographerUrl() {
         return photographerUrl;
+    }
+
+    public String getStatUser() {
+        return statUser;
     }
 }
