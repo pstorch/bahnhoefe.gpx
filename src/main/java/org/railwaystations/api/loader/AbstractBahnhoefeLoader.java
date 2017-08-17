@@ -24,6 +24,7 @@ import java.util.Map;
 
 public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
 
+    protected static final String HITS_ELEMENT = "hits";
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final JsonFactory FACTORY = MAPPER.getFactory();
 
@@ -111,7 +112,27 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         return photos;
     }
 
-    protected abstract Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, Photo> photos) throws Exception;
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    protected Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, Photo> photos) throws Exception {
+        final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
+
+        final JsonNode hits = readJsonFromUrl(getBahnhoefeUrl())
+                                .get(AbstractBahnhoefeLoader.HITS_ELEMENT)
+                                .get(AbstractBahnhoefeLoader.HITS_ELEMENT);
+        for (int i = 0; i < hits.size(); i++) {
+            final JsonNode sourceJson = hits.get(i).get("_source");
+            final JsonNode propertiesJson = sourceJson.get("properties");
+            final Integer id = propertiesJson.get("UICIBNR").asInt();
+            final Bahnhof bahnhof = new Bahnhof(id,
+                    getCountry().getCode(),
+                    propertiesJson.get("name").asText(),
+                    readCoordinates(sourceJson),
+                    propertiesJson.get("abkuerzung").asText(),
+                    photos.get(id));
+            bahnhoefe.put(bahnhof.getId(), bahnhof);
+        }
+        return bahnhoefe;
+    }
 
     public URL getBahnhoefeUrl() {
         return bahnhoefeUrl;

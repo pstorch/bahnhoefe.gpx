@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.loader.BahnhoefeLoaderCh;
 import org.railwaystations.api.loader.BahnhoefeLoaderDe;
 import org.railwaystations.api.loader.BahnhoefeLoaderFi;
+import org.railwaystations.api.loader.BahnhoefeLoaderUk;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
@@ -18,6 +19,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
     private final BahnhoefeLoaderDe loaderDe = new BahnhoefeLoaderDe();
     private final BahnhoefeLoaderCh loaderCh = new BahnhoefeLoaderCh();
     private final BahnhoefeLoaderFi loaderFi = new BahnhoefeLoaderFi();
+    private final BahnhoefeLoaderUk loaderUk = new BahnhoefeLoaderUk();
 
     private Monitor monitor = new LoggingMonitor();
 
@@ -41,8 +43,12 @@ public class BahnhoefeServiceConfiguration extends Configuration {
         return loaderFi;
     }
 
+    public BahnhoefeLoaderUk getLoaderUk() {
+        return loaderUk;
+    }
+
     public BahnhoefeRepository getRepository() {
-        return new BahnhoefeRepository(monitor, loaderDe, loaderCh, loaderFi);
+        return new BahnhoefeRepository(monitor, loaderDe, loaderCh, loaderFi, loaderUk);
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
