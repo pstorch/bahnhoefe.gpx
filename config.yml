@@ -18,3 +18,4 @@ loaderFi:
   bahnhoefeUrl: ${BAHNHOEFE_FI_URL:-http://94.136.168.53/bahnhoefefi/_search?size=500}
   photosUrl: ${PHOTOS_FI_URL:-https://railway-stations.org/bahnhoefepager/fi/bahnhofsfotos.json}
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
+slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

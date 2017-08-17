@@ -29,6 +29,8 @@ public class BahnhoefeServiceConfiguration extends Configuration {
 
     private Mailer mailer;
 
+    private String slackVerificationToken;
+
     public BahnhoefeLoaderDe getLoaderDe() {
         return loaderDe;
     }
@@ -87,4 +89,13 @@ public class BahnhoefeServiceConfiguration extends Configuration {
     public void setMailer(final Mailer mailer) {
         this.mailer = mailer;
     }
+
+    public String getSlackVerificationToken() {
+        return slackVerificationToken;
+    }
+
+    public void setSlackVerificationToken(final String slackVerificationToken) {
+        this.slackVerificationToken = slackVerificationToken;
+    }
+
 }

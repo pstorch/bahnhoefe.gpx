@@ -3,6 +3,7 @@ package org.railwaystations.api;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.loader.BahnhoefeLoader;
 import org.railwaystations.api.model.Bahnhof;
 import org.railwaystations.api.model.Country;
@@ -37,6 +38,37 @@ public class BahnhoefeRepository {
 
     public Set<Country> getCountries() {
         return Collections.unmodifiableSet(countries);
+    }
+
+    public void refresh() {
+        final Thread refresher = new Thread(() -> {
+            for (final Country aCountry : countries) {
+                cache.refresh(aCountry.getCode());
+            }
+        });
+        refresher.start();
+    }
+
+    public Bahnhof findById(final Integer id) {
+        for (final Country country : getCountries()) {
+            Bahnhof bahnhof = get(country.getCode()).get(id);
+            if (bahnhof != null) {
+                return bahnhof;
+            }
+        }
+        return null;
+    }
+
+    public List<Bahnhof> findByName(final String name) {
+        final List<Bahnhof> found = new ArrayList<>();
+        for (final Country country : getCountries()) {
+            found.addAll(get(country.getCode())
+                    .values()
+                    .stream()
+                    .filter(bahnhof -> StringUtils.containsIgnoreCase(bahnhof.getTitle(), name))
+                    .collect(Collectors.toList()));
+        }
+        return found;
     }
 
     private static class BahnhoefeCacheLoader extends CacheLoader<String, Map<Integer, Bahnhof>> {

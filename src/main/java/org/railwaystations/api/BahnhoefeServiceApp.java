@@ -45,6 +45,7 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
                 config.getTokenGenerator(), config.getUploadDir(), config.getMonitor()));
         environment.jersey().register(new RegistrationResource(
                 config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer()));
+        environment.jersey().register(new SlackCommandResource(config.getRepository(), config.getSlackVerificationToken()));
         environment.jersey().register(new BahnhoefeGpxWriter());
         environment.jersey().register(new BahnhoefeTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());
