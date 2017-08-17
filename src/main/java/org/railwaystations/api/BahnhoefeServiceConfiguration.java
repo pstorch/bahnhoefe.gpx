@@ -11,6 +11,7 @@ import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
 import org.railwaystations.api.monitoring.SlackMonitor;
 
+@SuppressWarnings("PMD.LongVariable")
 public class BahnhoefeServiceConfiguration extends Configuration {
 
     private static final String IDENT = "@class";

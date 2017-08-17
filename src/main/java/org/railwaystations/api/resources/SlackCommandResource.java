@@ -58,17 +58,17 @@ public class SlackCommandResource {
                 return new SlackResponse(ResponseType.in_channel, toMessage(bahnhof));
             }
         }
-        return new SlackResponse(ResponseType.ephimeral, "I understand:\n- '/rsapi refresh'\n- '/rsapi search <station-name>'\n- '/rsapi show <station-id>\n");
+        return new SlackResponse(ResponseType.ephimeral, "I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <station-id>%n");
     }
 
     private String toMessage(final List<Bahnhof> bahnhofList) {
-        final StringBuilder sb = new StringBuilder("Found:\n");
-        bahnhofList.forEach(bahnhof -> sb.append(String.format("- %s: %d\n", bahnhof.getTitle(), bahnhof.getId())));
+        final StringBuilder sb = new StringBuilder("Found:%n");
+        bahnhofList.forEach(bahnhof -> sb.append(String.format("- %s: %d%n", bahnhof.getTitle(), bahnhof.getId())));
         return sb.toString();
     }
 
-    private String toMessage(Bahnhof bahnhof) {
-        return String.format("Station: %d - %s\nCountry: %s\nLocation: %f,%f\nPhotographer: %s\nLicense: %s\nPhoto: %s\n", bahnhof.getId(), bahnhof.getTitle(), bahnhof.getCountry(), bahnhof.getLat(), bahnhof.getLon(), bahnhof.getPhotographer(), bahnhof.getLicense(), bahnhof.getPhotoUrl());
+    private String toMessage(final Bahnhof bahnhof) {
+        return String.format("Station: %d - %s%nCountry: %s%nLocation: %f,%f%nPhotographer: %s%nLicense: %s%nPhoto: %s%n", bahnhof.getId(), bahnhof.getTitle(), bahnhof.getCountry(), bahnhof.getLat(), bahnhof.getLon(), bahnhof.getPhotographer(), bahnhof.getLicense(), bahnhof.getPhotoUrl());
     }
 
 
@@ -102,6 +102,13 @@ public class SlackCommandResource {
             this.text = text;
         }
 
+        public String getText() {
+            return text;
+        }
+
+        public ResponseType getResponseType() {
+            return responseType;
+        }
     }
 
 }

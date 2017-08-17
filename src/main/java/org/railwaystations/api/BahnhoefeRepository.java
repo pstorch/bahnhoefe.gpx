@@ -51,7 +51,7 @@ public class BahnhoefeRepository {
 
     public Bahnhof findById(final Integer id) {
         for (final Country country : getCountries()) {
-            Bahnhof bahnhof = get(country.getCode()).get(id);
+            final Bahnhof bahnhof = get(country.getCode()).get(id);
             if (bahnhof != null) {
                 return bahnhof;
             }
