@@ -11,8 +11,6 @@ import java.util.Map;
 
 public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
 
-    private static final String HITS_ELEMENT = "hits";
-
     public BahnhoefeLoaderCh() {
         this(null, null);
     }
@@ -31,8 +29,8 @@ public class BahnhoefeLoaderCh extends AbstractBahnhoefeLoader {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
 
         final JsonNode hits = readJsonFromUrl(getBahnhoefeUrl())
-                                .get(BahnhoefeLoaderCh.HITS_ELEMENT)
-                                .get(BahnhoefeLoaderCh.HITS_ELEMENT);
+                                .get(AbstractBahnhoefeLoader.HITS_ELEMENT)
+                                .get(AbstractBahnhoefeLoader.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
             final JsonNode sourceJson = hits.get(i).get("_source");
             final JsonNode fieldsJson = sourceJson.get("fields");

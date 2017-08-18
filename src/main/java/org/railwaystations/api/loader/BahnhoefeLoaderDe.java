@@ -18,8 +18,6 @@ public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
 
     private static final String LAT_ELEMENT = "lat";
 
-    private static final String HITS_ELEMENT = "hits";
-
     private static final String DS100_ELEMENT = "DS100";
 
     public BahnhoefeLoaderDe() {
@@ -39,8 +37,8 @@ public class BahnhoefeLoaderDe extends AbstractBahnhoefeLoader {
     protected Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, Photo> photos) throws Exception {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
         final JsonNode hits = readJsonFromUrl(getBahnhoefeUrl())
-                                    .get(BahnhoefeLoaderDe.HITS_ELEMENT)
-                                    .get(BahnhoefeLoaderDe.HITS_ELEMENT);
+                                    .get(AbstractBahnhoefeLoader.HITS_ELEMENT)
+                                    .get(AbstractBahnhoefeLoader.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
             final JsonNode bahnhofJson = hits.get(i).get("_source");
             final Integer id = bahnhofJson.get("BahnhofNr").asInt();

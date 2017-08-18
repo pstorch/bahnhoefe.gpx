@@ -44,7 +44,9 @@ public class BahnhoefeServiceAppTest {
                     ConfigOverride.config("loaderCh.bahnhoefeUrl", BahnhoefeServiceAppTest.class.getResource("/bahnhoefeCh.json").toString()),
                     ConfigOverride.config("loaderCh.photosUrl", BahnhoefeServiceAppTest.class.getResource("/photosCh.json").toString()),
                     ConfigOverride.config("loaderFi.bahnhoefeUrl", BahnhoefeServiceAppTest.class.getResource("/bahnhoefeFi.json").toString()),
-                    ConfigOverride.config("loaderFi.photosUrl", BahnhoefeServiceAppTest.class.getResource("/photosFi.json").toString()));
+                    ConfigOverride.config("loaderFi.photosUrl", BahnhoefeServiceAppTest.class.getResource("/photosFi.json").toString()),
+                    ConfigOverride.config("loaderUk.bahnhoefeUrl", BahnhoefeServiceAppTest.class.getResource("/bahnhoefeUk.json").toString()),
+                    ConfigOverride.config("loaderUk.photosUrl", BahnhoefeServiceAppTest.class.getResource("/photosUk.json").toString()));
 
     private Client client;
 

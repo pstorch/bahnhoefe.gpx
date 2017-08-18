@@ -4,17 +4,17 @@ import org.railwaystations.api.model.Country;
 
 import java.net.URL;
 
-public class BahnhoefeLoaderFi extends AbstractBahnhoefeLoader {
+public class BahnhoefeLoaderUk extends AbstractBahnhoefeLoader {
 
-    public BahnhoefeLoaderFi() {
+    public BahnhoefeLoaderUk() {
         this(null, null);
     }
 
-    public BahnhoefeLoaderFi(final URL bahnhoefeUrl, final URL photosUrl) {
-        super(new Country("fi", "Finnland",
+    public BahnhoefeLoaderUk(final URL bahnhoefeUrl, final URL photosUrl) {
+        super(new Country("uk", "United Kingdom",
                 "bahnhofsfotos@deutschlands-bahnhoefe.de",
                 "@android_oma, #dbHackathon, #dbOpendata, #Bahnhofsfoto, @khgdrn",
-                "https://www.junat.net/en/"),
+                "http://ojp.nationalrail.co.uk/service/ldbboard/dep/{DS100}"),
                 bahnhoefeUrl, photosUrl);
     }
 
