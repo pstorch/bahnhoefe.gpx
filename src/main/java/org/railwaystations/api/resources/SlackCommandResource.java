@@ -58,11 +58,11 @@ public class SlackCommandResource {
                 return new SlackResponse(ResponseType.in_channel, toMessage(bahnhof));
             }
         }
-        return new SlackResponse(ResponseType.ephimeral, "I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <station-id>%n");
+        return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <station-id>%n"));
     }
 
     private String toMessage(final List<Bahnhof> bahnhofList) {
-        final StringBuilder sb = new StringBuilder("Found:%n");
+        final StringBuilder sb = new StringBuilder(String.format("Found:%n"));
         bahnhofList.forEach(bahnhof -> sb.append(String.format("- %s: %d%n", bahnhof.getTitle(), bahnhof.getId())));
         return sb.toString();
     }
