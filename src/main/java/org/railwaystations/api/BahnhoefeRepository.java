@@ -20,7 +20,7 @@ public class BahnhoefeRepository {
 
     public BahnhoefeRepository(final Monitor monitor, final BahnhoefeLoader ... loaders) {
         super();
-        this.cache = CacheBuilder.newBuilder().refreshAfterWrite(5, TimeUnit.MINUTES).build(
+        this.cache = CacheBuilder.newBuilder().refreshAfterWrite(60, TimeUnit.MINUTES).build(
                 new BahnhoefeCacheLoader(monitor, loaders));
         this.countries = Arrays.stream(loaders).map(BahnhoefeLoader::getCountry).collect(Collectors.toSet());
     }

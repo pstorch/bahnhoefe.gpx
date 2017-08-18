@@ -52,6 +52,7 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
         environment.jersey().register(new PhotographersTxtWriter());
         environment.jersey().property("jersey.config.server.mediaTypeMappings",
                 "gpx : application/service+xml, json : application/json, txt : text/plain");
+        config.getRepository().refresh();
     }
 
 }
