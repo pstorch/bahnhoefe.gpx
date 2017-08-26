@@ -41,7 +41,7 @@ public class SlackMonitor implements Monitor {
 
     @Override
     public void sendMessage(final String responseUrl, final String message) {
-        Executors.newSingleThreadExecutor().execute(() -> sendMessageInternal(message, responseUrl));
+        Executors.newSingleThreadExecutor().execute(() -> sendMessageInternal(message, responseUrl == null ? url : responseUrl));
     }
 
     protected void sendMessageInternal(final String message, final String url) {
