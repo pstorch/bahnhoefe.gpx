@@ -12,4 +12,9 @@ public class LoggingMonitor implements Monitor {
         LOG.info(message);
     }
 
+    @Override
+    public void sendMessage(final String responseUrl, final String message) {
+        sendMessage(message);
+    }
+
 }

@@ -36,10 +36,15 @@ public class SlackMonitor implements Monitor {
     }
 
     public void sendMessage(final String message) {
-        Executors.newSingleThreadExecutor().execute(() -> sendMessageInternal(message));
+        sendMessage(url, message);
     }
 
-    protected void sendMessageInternal(final String message) {
+    @Override
+    public void sendMessage(final String responseUrl, final String message) {
+        Executors.newSingleThreadExecutor().execute(() -> sendMessageInternal(message, responseUrl));
+    }
+
+    protected void sendMessageInternal(final String message, final String url) {
         try {
             final String json = MAPPER.writeValueAsString(new SlackMessage(message));
             final HttpPost httpPost = new HttpPost(url);

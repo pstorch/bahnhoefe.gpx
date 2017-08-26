@@ -14,7 +14,7 @@ public class SlackMonitorTest {
     public void sendMessage() {
         final SlackMonitor slack = new SlackMonitor(SLACK_URL);
         if (StringUtils.isNoneEmpty(SLACK_URL)) {
-            slack.sendMessageInternal("Ein Test mit Umlauten öäüßÖÄÜ");
+            slack.sendMessageInternal("Ein Test mit Umlauten öäüßÖÄÜ", SLACK_URL);
         }
     }
 

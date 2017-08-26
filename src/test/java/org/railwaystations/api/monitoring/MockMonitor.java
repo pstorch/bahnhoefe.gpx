@@ -12,6 +12,11 @@ public class MockMonitor implements Monitor {
         messages.add(message);
     }
 
+    @Override
+    public void sendMessage(final String responseUrl, final String message) {
+        sendMessage(message);
+    }
+
     public List<String> getMessages() {
         return messages;
     }

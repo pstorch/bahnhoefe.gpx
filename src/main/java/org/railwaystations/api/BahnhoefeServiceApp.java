@@ -37,22 +37,23 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
     public void run(final BahnhoefeServiceConfiguration config, final Environment environment)
             throws MalformedURLException {
         config.getMonitor().sendMessage("RSAPI starting up");
-        environment.jersey().register(new BahnhoefeResource(config.getRepository()));
-        environment.jersey().register(new PhotographersResource(config.getRepository()));
-        environment.jersey().register(new CountriesResource(config.getRepository()));
-        environment.jersey().register(new StatisticResource(config.getRepository()));
-        environment.jersey().register(new PhotoUploadResource(config.getRepository(), config.getApiKey(),
+        final BahnhoefeRepository repository = config.getRepository();
+        environment.jersey().register(new BahnhoefeResource(repository));
+        environment.jersey().register(new PhotographersResource(repository));
+        environment.jersey().register(new CountriesResource(repository));
+        environment.jersey().register(new StatisticResource(repository));
+        environment.jersey().register(new PhotoUploadResource(repository, config.getApiKey(),
                 config.getTokenGenerator(), config.getUploadDir(), config.getMonitor()));
         environment.jersey().register(new RegistrationResource(
                 config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer()));
-        environment.jersey().register(new SlackCommandResource(config.getRepository(), config.getSlackVerificationToken()));
+        environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken()));
         environment.jersey().register(new BahnhoefeGpxWriter());
         environment.jersey().register(new BahnhoefeTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());
         environment.jersey().register(new PhotographersTxtWriter());
         environment.jersey().property("jersey.config.server.mediaTypeMappings",
                 "gpx : application/service+xml, json : application/json, txt : text/plain");
-        config.getRepository().refresh();
+        repository.refresh(null);
     }
 
 }

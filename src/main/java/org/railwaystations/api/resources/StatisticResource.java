@@ -7,9 +7,6 @@ import org.railwaystations.api.writer.StatisticTxtWriter;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Path("/")
 public class StatisticResource {
@@ -37,22 +34,7 @@ public class StatisticResource {
     }
 
     private Statistic getStatisticMap(final String country) {
-        final AtomicInteger total = new AtomicInteger();
-        final AtomicInteger withPhoto = new AtomicInteger();
-        final AtomicInteger withoutPhoto = new AtomicInteger();
-        final Set<String> photographers = new HashSet<>();
-        repository.get(country).values()
-            .forEach(b -> {
-                total.incrementAndGet();
-                if (b.hasPhoto()) {
-                    withPhoto.incrementAndGet();
-                    photographers.add(b.getStatUser());
-                } else {
-                    withoutPhoto.incrementAndGet();
-                }
-            });
-
-        return new Statistic(total.intValue(), withPhoto.intValue(), withoutPhoto.intValue(), photographers.size());
+        return repository.getStatistic(country);
     }
 
 }

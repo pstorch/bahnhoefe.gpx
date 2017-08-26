@@ -30,12 +30,14 @@ public class SlackCommandResource {
     @POST
     @Path("slack")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
-    public SlackResponse command(@FormParam("token") final String token, @FormParam("text") final String text) throws IOException {
+    public SlackResponse command(@FormParam("token") final String token,
+                                 @FormParam("text") final String text,
+                                 @FormParam("response_url") final String responseUrl) throws IOException {
         if (!StringUtils.equals(verificationToken, token)) {
             throw new WebApplicationException(Response.Status.UNAUTHORIZED);
         }
         if (StringUtils.equals("refresh", text)) {
-            repository.refresh();
+            repository.refresh(responseUrl);
             return new SlackResponse(ResponseType.in_channel, "Refreshing caches");
         }
         final Matcher matcherSearch = PATTERN_SEARCH.matcher(text);
