@@ -13,6 +13,7 @@ import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
@@ -40,9 +41,10 @@ public class RegistrationResourceTest {
                 "vielen Dank für Deine Registrierung.\n" +
                 "Dein Upload Token lautet: d3d0f89efee21abcaaa58900ede61ab805ffba34\n" +
                 "Klicke bitte auf http://railway-stations.org/uploadToken/d3d0f89efee21abcaaa58900ede61ab805ffba34 um ihn in die App zu übernehmen.\n" +
-                "Alternativ kannst Du ihn auch manuell in der Bahnhofsfoto App unter Meine Daten eintragen.\n\n" +
+                "Alternativ kannst Du auch mit Deinem Smartphone den angehängten QR-Code scannen oder den Code manuell in der Bahnhofsfoto App unter 'Meine Daten' eintragen.\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"));
+        assertThat(mailer.getQrCode(), notNullValue());
     }
 
 }

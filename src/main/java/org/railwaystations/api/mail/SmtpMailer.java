@@ -4,9 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.File;
 import java.util.Properties;
 
 public class SmtpMailer implements Mailer {
@@ -33,14 +39,28 @@ public class SmtpMailer implements Mailer {
     }
 
     @Override
-    public void send(final String to, final String subject, final String text) {
+    public void send(final String to, final String subject, final String text, final File qrCode) {
         try {
             LOG.info("Sending mail to {}", to);
             final MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(from));
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
             message.setSubject(subject);
-            message.setText(text);
+
+            final Multipart multipart = new MimeMultipart();
+
+            final MimeBodyPart textBodyPart = new MimeBodyPart();
+            textBodyPart.setText(text);
+            multipart.addBodyPart(textBodyPart);
+
+            final MimeBodyPart messageBodyPart = new MimeBodyPart();
+            final String fileName = "qr_code.png";
+            final DataSource source = new FileDataSource(qrCode);
+            messageBodyPart.setDataHandler(new DataHandler(source));
+            messageBodyPart.setFileName(fileName);
+            multipart.addBodyPart(messageBodyPart);
+
+            message.setContent(multipart);
             Transport.send(message);
         } catch (final MessagingException e) {
             throw new RuntimeException("Unable to send mail", e);

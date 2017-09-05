@@ -279,7 +279,7 @@ public class BahnhoefeServiceAppTest {
                 "vielen Dank für Deine Registrierung.\n" +
                 "Dein Upload Token lautet: edbfc44727a6fd4f5b029aff21861a667a6b4195\n" +
                 "Klicke bitte auf http://railway-stations.org/uploadToken/edbfc44727a6fd4f5b029aff21861a667a6b4195 um ihn in die App zu übernehmen.\n" +
-                "Alternativ kannst Du ihn auch manuell in der Bahnhofsfoto App unter Meine Daten eintragen.\n\n" +
+                "Alternativ kannst Du auch mit Deinem Smartphone den angehängten QR-Code scannen oder den Code manuell in der Bahnhofsfoto App unter 'Meine Daten' eintragen.\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"));
     }
