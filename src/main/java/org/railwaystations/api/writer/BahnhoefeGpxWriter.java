@@ -1,7 +1,6 @@
 package org.railwaystations.api.writer;
 
 import org.railwaystations.api.model.Bahnhof;
-import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -71,8 +70,6 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Bahnhof>> {
             xmlw.flush();
         } catch (final XMLStreamException | FactoryConfigurationError e) {
             throw new WebApplicationException(e);
-        } finally {
-            IOUtils.closeQuietly(entityStream);
         }
     }
 
