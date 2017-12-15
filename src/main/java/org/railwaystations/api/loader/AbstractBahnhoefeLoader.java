@@ -123,11 +123,12 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
             final JsonNode sourceJson = hits.get(i).get("_source");
             final JsonNode propertiesJson = sourceJson.get("properties");
             final Integer id = propertiesJson.get("UICIBNR").asInt();
+            final JsonNode abkuerzung = propertiesJson.get("abkuerzung");
             final Bahnhof bahnhof = new Bahnhof(id,
                     getCountry().getCode(),
                     propertiesJson.get("name").asText(),
                     readCoordinates(sourceJson),
-                    propertiesJson.get("abkuerzung").asText(),
+                    abkuerzung != null ? abkuerzung.asText() : null,
                     photos.get(id));
             bahnhoefe.put(bahnhof.getId(), bahnhof);
         }

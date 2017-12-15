@@ -20,5 +20,8 @@ loaderFi:
 loaderUk:
   bahnhoefeUrl: ${BAHNHOEFE_UK_URL:-http://94.136.168.53/bahnhoefeuk/_search?size=3000}
   photosUrl: ${PHOTOS_UK_URL:-https://railway-stations.org/bahnhoefepager/uk/bahnhofsfotos.json}
+loaderFr:
+  bahnhoefeUrl: ${BAHNHOEFE_FR_URL:-http://94.136.168.53/bahnhoefefr/_search?size=5000}
+  photosUrl: ${PHOTOS_FR_URL:-https://railway-stations.org/bahnhoefepager/fr/bahnhofsfotos.json}
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

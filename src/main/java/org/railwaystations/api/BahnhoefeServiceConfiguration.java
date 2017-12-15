@@ -3,10 +3,7 @@ package org.railwaystations.api;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.loader.BahnhoefeLoaderCh;
-import org.railwaystations.api.loader.BahnhoefeLoaderDe;
-import org.railwaystations.api.loader.BahnhoefeLoaderFi;
-import org.railwaystations.api.loader.BahnhoefeLoaderUk;
+import org.railwaystations.api.loader.*;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
@@ -21,6 +18,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
     private final BahnhoefeLoaderCh loaderCh = new BahnhoefeLoaderCh();
     private final BahnhoefeLoaderFi loaderFi = new BahnhoefeLoaderFi();
     private final BahnhoefeLoaderUk loaderUk = new BahnhoefeLoaderUk();
+    private final BahnhoefeLoaderFr loaderFr = new BahnhoefeLoaderFr();
 
     private Monitor monitor = new LoggingMonitor();
 
@@ -51,7 +49,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
     }
 
     public BahnhoefeRepository getRepository() {
-        return new BahnhoefeRepository(monitor, loaderDe, loaderCh, loaderFi, loaderUk);
+        return new BahnhoefeRepository(monitor, loaderDe, loaderCh, loaderFi, loaderUk, loaderFr);
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
@@ -105,4 +103,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
         this.slackVerificationToken = slackVerificationToken;
     }
 
+    public BahnhoefeLoaderFr getLoaderFr() {
+        return loaderFr;
+    }
 }
