@@ -17,7 +17,7 @@ Run:
 
 Release:
 - `mvn release:prepare`
-- `mvn release:perform`
+- `mvn release:perform -Darguments=-DaltDeploymentRepository=local::default::file:///tmp/maven`
 
 ## Docker
 This project can be run as a Docker container. The docker image is automatically built via the above maven build command.
