@@ -3,7 +3,7 @@
 
 	<groupId>org.railwaystations</groupId>
 	<artifactId>bahnhoefe.service</artifactId>
-	<version>20171216.0114-SNAPSHOT</version>
+	<version>20171216.1500</version>
 	<packaging>jar</packaging>
 
 	<name>Bahnhoefe Service</name>
@@ -12,7 +12,7 @@
     <scm>
         <connection>scm:git:git@github.com:RailwayStations/RSAPI.git</connection>
         <url>scm:git:git@github.com:RailwayStations/RSAPI.git</url>
-      <tag>HEAD</tag>
+      <tag>bahnhoefe.service-20171216.1500</tag>
   </scm>
 
     <properties>
