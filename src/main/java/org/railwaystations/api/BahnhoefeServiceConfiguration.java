@@ -19,6 +19,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
     private final BahnhoefeLoaderFi loaderFi = new BahnhoefeLoaderFi();
     private final BahnhoefeLoaderUk loaderUk = new BahnhoefeLoaderUk();
     private final BahnhoefeLoaderFr loaderFr = new BahnhoefeLoaderFr();
+    private final BahnhoefeLoaderEs loaderEs = new BahnhoefeLoaderEs();
 
     private Monitor monitor = new LoggingMonitor();
 
@@ -49,7 +50,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
     }
 
     public BahnhoefeRepository getRepository() {
-        return new BahnhoefeRepository(monitor, loaderDe, loaderCh, loaderFi, loaderUk, loaderFr);
+        return new BahnhoefeRepository(monitor, loaderDe, loaderCh, loaderFi, loaderUk, loaderFr, loaderEs);
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
@@ -105,5 +106,9 @@ public class BahnhoefeServiceConfiguration extends Configuration {
 
     public BahnhoefeLoaderFr getLoaderFr() {
         return loaderFr;
+    }
+
+    public BahnhoefeLoaderEs getLoaderEs() {
+        return loaderEs;
     }
 }
