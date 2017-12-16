@@ -128,7 +128,7 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
                     getCountry().getCode(),
                     propertiesJson.get("name").asText(),
                     readCoordinates(sourceJson),
-                    abkuerzung != null ? abkuerzung.asText() : null,
+                    abkuerzung != null ? abkuerzung.asText() : "",
                     photos.get(id));
             bahnhoefe.put(bahnhof.getId(), bahnhof);
         }
