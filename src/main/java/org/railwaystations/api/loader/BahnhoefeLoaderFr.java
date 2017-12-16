@@ -14,7 +14,7 @@ public class BahnhoefeLoaderFr extends AbstractBahnhoefeLoader {
         super(new Country("fr", "France",
                 "bahnhofsfotos@deutschlands-bahnhoefe.de",
                 "@android_oma, #dbHackathon, #dbOpendata, #Bahnhofsfoto, @khgdrn",
-                "http://www.sncf.com/sncf/gare?libelleGare={title}"),
+                "http://m.sncf.com/sncf/gare?libelleGare={title}"),
                 bahnhoefeUrl, photosUrl);
     }
 
