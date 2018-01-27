@@ -21,4 +21,7 @@ loaderFr:
 loaderEs:
   bahnhoefeUrl: ${BAHNHOEFE_ES_URL:-http://94.136.168.53/bahnhoefees/_search?size=2000}
   photosUrl: ${PHOTOS_ES_URL:-https://railway-stations.org/bahnhoefepager/es/bahnhofsfotos.json}
+loaderPl:
+  bahnhoefeUrl: ${BAHNHOEFE_PL_URL:-http://94.136.168.53/bahnhoefepl/_search?size=5000}
+  photosUrl: ${PHOTOS_PL_URL:-https://railway-stations.org/bahnhoefepager/pl/bahnhofsfotos.json}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
