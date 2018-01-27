@@ -20,6 +20,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ public class PhotoUploadResourceTest {
         Mockito.when(loader.getCountry()).thenReturn(new Country("de", null, null, null, null));
 
         tempDir = Files.createTempDirectory("rsapi");
-        resource = new PhotoUploadResource(new BahnhoefeRepository(monitor, loader), "apiKey", tokenGenerator, tempDir.toString(), monitor);
+        resource = new PhotoUploadResource(new BahnhoefeRepository(monitor, Collections.singletonList(loader)), "apiKey", tokenGenerator, tempDir.toString(), monitor);
     }
 
     @Test

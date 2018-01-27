@@ -3,11 +3,15 @@ package org.railwaystations.api.model;
 @SuppressWarnings("PMD.LongVariable")
 public class Country {
 
-    private final String code;
-    private final String name;
-    private final String email;
-    private final String twitterTags;
-    private final String timetableUrlTemplate;
+    private String code;
+    private String name;
+    private String email = "bahnhofsfotos@deutschlands-bahnhoefe.de";
+    private String twitterTags = "@android_oma, #dbHackathon, #dbOpendata, #Bahnhofsfoto, @khgdrn";
+    private String timetableUrlTemplate;
+
+    public Country() {
+        super();
+    }
 
     public Country(final String code) {
         this(code, null, null, null, null);

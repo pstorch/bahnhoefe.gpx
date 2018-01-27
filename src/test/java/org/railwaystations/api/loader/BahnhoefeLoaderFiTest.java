@@ -6,6 +6,7 @@ import com.jcabi.http.mock.MkGrizzlyContainer;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Country;
 
 import java.io.IOException;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class BahnhoefeLoaderFiTest {
 			);
 			container.start();
 
-			final BahnhoefeLoader loader = new BahnhoefeLoaderFi(container.home().toURL(),
+			final BahnhoefeLoader loader = new BaseBahnhoefeLoader(new Country("fi"), container.home().toURL(),
 					container.home().toURL());
 
 			final Map<Integer, Bahnhof> bahnhoefe = loader.loadBahnhoefe();

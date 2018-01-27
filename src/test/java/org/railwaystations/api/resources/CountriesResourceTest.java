@@ -9,6 +9,7 @@ import org.railwaystations.api.model.Country;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -24,7 +25,7 @@ public class CountriesResourceTest {
         final BahnhoefeLoader loaderAB = Mockito.mock(BahnhoefeLoader.class);
         Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", "nameAB", "emailAB", "twitterAB", "timetableAB"));
 
-        final CountriesResource resource = new CountriesResource(new BahnhoefeRepository(new LoggingMonitor(), loaderAB, loaderXY));
+        final CountriesResource resource = new CountriesResource(new BahnhoefeRepository(new LoggingMonitor(), Arrays.asList(loaderAB, loaderXY)));
 
         final Set<Country> countries = resource.list();
         assertThat(countries.size(), equalTo(2));

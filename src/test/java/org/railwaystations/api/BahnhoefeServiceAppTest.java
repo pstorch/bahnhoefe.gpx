@@ -3,7 +3,6 @@ package org.railwaystations.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.commons.io.IOUtils;
@@ -38,15 +37,7 @@ public class BahnhoefeServiceAppTest {
 
     @ClassRule
     public static final DropwizardAppRule<BahnhoefeServiceConfiguration> RULE =
-            new DropwizardAppRule<>(BahnhoefeServiceApp.class, ResourceHelpers.resourceFilePath("config.yml"),
-                    ConfigOverride.config("loaderDe.bahnhoefeUrl", BahnhoefeServiceAppTest.class.getResource("/bahnhoefeDe.json").toString()),
-                    ConfigOverride.config("loaderDe.photosUrl", BahnhoefeServiceAppTest.class.getResource("/photosDe.json").toString()),
-                    ConfigOverride.config("loaderCh.bahnhoefeUrl", BahnhoefeServiceAppTest.class.getResource("/bahnhoefeCh.json").toString()),
-                    ConfigOverride.config("loaderCh.photosUrl", BahnhoefeServiceAppTest.class.getResource("/photosCh.json").toString()),
-                    ConfigOverride.config("loaderFi.bahnhoefeUrl", BahnhoefeServiceAppTest.class.getResource("/bahnhoefeFi.json").toString()),
-                    ConfigOverride.config("loaderFi.photosUrl", BahnhoefeServiceAppTest.class.getResource("/photosFi.json").toString()),
-                    ConfigOverride.config("loaderUk.bahnhoefeUrl", BahnhoefeServiceAppTest.class.getResource("/bahnhoefeUk.json").toString()),
-                    ConfigOverride.config("loaderUk.photosUrl", BahnhoefeServiceAppTest.class.getResource("/photosUk.json").toString()));
+            new DropwizardAppRule<>(BahnhoefeServiceApp.class, ResourceHelpers.resourceFilePath("config.yml"));
 
     private Client client;
 

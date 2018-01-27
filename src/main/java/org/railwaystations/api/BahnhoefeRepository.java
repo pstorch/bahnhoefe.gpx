@@ -21,12 +21,12 @@ public class BahnhoefeRepository {
     private final Set<Country> countries;
     private final Monitor monitor;
 
-    public BahnhoefeRepository(final Monitor monitor, final BahnhoefeLoader ... loaders) {
+    public BahnhoefeRepository(final Monitor monitor, final List<BahnhoefeLoader> loaders) {
         super();
         this.monitor = monitor;
         this.cache = CacheBuilder.newBuilder().refreshAfterWrite(60, TimeUnit.MINUTES).build(
                 new BahnhoefeCacheLoader(monitor, loaders));
-        this.countries = Arrays.stream(loaders).map(BahnhoefeLoader::getCountry).collect(Collectors.toSet());
+        this.countries = loaders.stream().map(BahnhoefeLoader::getCountry).collect(Collectors.toSet());
     }
 
     public Map<Integer, Bahnhof> get(final String countryCode) {
@@ -106,9 +106,9 @@ public class BahnhoefeRepository {
 
     private static class BahnhoefeCacheLoader extends CacheLoader<String, Map<Integer, Bahnhof>> {
         private final Monitor monitor;
-        private final BahnhoefeLoader[] loaders;
+        private final List<BahnhoefeLoader> loaders;
 
-        public BahnhoefeCacheLoader(final Monitor slack, final BahnhoefeLoader... loaders) {
+        public BahnhoefeCacheLoader(final Monitor slack, final List<BahnhoefeLoader> loaders) {
             this.monitor = slack;
             this.loaders = loaders;
         }

@@ -11,32 +11,31 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.railwaystations.api.model.Bahnhof;
-import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Coordinates;
+import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
+public class BaseBahnhoefeLoader implements BahnhoefeLoader {
 
-    protected static final String HITS_ELEMENT = "hits";
+    private static final String HITS_ELEMENT = "hits";
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final JsonFactory FACTORY = MAPPER.getFactory();
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractBahnhoefeLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BaseBahnhoefeLoader.class);
 
-    private URL bahnhoefeUrl;
-    private URL photosUrl;
+    private final URL bahnhoefeUrl;
+    private final URL photosUrl;
     private final Country country;
 
     private final CloseableHttpClient httpclient;
 
-    protected AbstractBahnhoefeLoader(final Country country, final URL photosUrl, final URL bahnhoefeUrl) {
+    BaseBahnhoefeLoader(final Country country, final URL photosUrl, final URL bahnhoefeUrl) {
         super();
         this.country = country;
         this.photosUrl = photosUrl;
@@ -49,20 +48,12 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         ).build();
     }
 
-    public final void setBahnhoefeUrl(final String bahnhoefeUrl) throws MalformedURLException {
-        this.bahnhoefeUrl = new URL(bahnhoefeUrl);
-    }
-
-    public final void setPhotosUrl(final String photosUrl) throws MalformedURLException {
-        this.photosUrl = new URL(photosUrl);
-    }
-
     public Country getCountry() {
         return country;
     }
 
     @Override
-    public Map<Integer, Bahnhof> loadBahnhoefe() {
+    public final Map<Integer, Bahnhof> loadBahnhoefe() {
         try {
             return loadBahnhoefe(loadPhotos(new HashMap<>(), 0));
         } catch (final Exception e) {
@@ -70,7 +61,7 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         }
     }
 
-    protected JsonNode readJsonFromUrl(final URL url) throws Exception {
+    private JsonNode readJsonFromUrl(final URL url) throws Exception {
         // shortcut for testing, need to find a better way
         if ("file".equals(url.getProtocol())) {
             return MAPPER.readTree(url);
@@ -112,34 +103,33 @@ public abstract class AbstractBahnhoefeLoader implements BahnhoefeLoader {
         return photos;
     }
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    protected Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, Photo> photos) throws Exception {
+    private Map<Integer, Bahnhof> loadBahnhoefe(final Map<Integer, Photo> photos) throws Exception {
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
 
-        final JsonNode hits = readJsonFromUrl(getBahnhoefeUrl())
-                                .get(AbstractBahnhoefeLoader.HITS_ELEMENT)
-                                .get(AbstractBahnhoefeLoader.HITS_ELEMENT);
+        final JsonNode hits = readJsonFromUrl(bahnhoefeUrl)
+                                .get(BaseBahnhoefeLoader.HITS_ELEMENT)
+                                .get(BaseBahnhoefeLoader.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
             final JsonNode sourceJson = hits.get(i).get("_source");
-            final JsonNode propertiesJson = sourceJson.get("properties");
-            final Integer id = propertiesJson.get("UICIBNR").asInt();
-            final JsonNode abkuerzung = propertiesJson.get("abkuerzung");
-            final Bahnhof bahnhof = new Bahnhof(id,
-                    getCountry().getCode(),
-                    propertiesJson.get("name").asText(),
-                    readCoordinates(sourceJson),
-                    abkuerzung != null ? abkuerzung.asText() : "",
-                    photos.get(id));
+            final Bahnhof bahnhof = createBahnhofFromElasticSourceElement(photos, sourceJson);
             bahnhoefe.put(bahnhof.getId(), bahnhof);
         }
         return bahnhoefe;
     }
 
-    public URL getBahnhoefeUrl() {
-        return bahnhoefeUrl;
+    protected Bahnhof createBahnhofFromElasticSourceElement(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
+        final JsonNode propertiesJson = sourceJson.get("properties");
+        final Integer id = propertiesJson.get("UICIBNR").asInt();
+        final JsonNode abkuerzung = propertiesJson.get("abkuerzung");
+        return new Bahnhof(id,
+                getCountry().getCode(),
+                propertiesJson.get("name").asText(),
+                readCoordinates(sourceJson),
+                abkuerzung != null ? abkuerzung.asText() : "",
+                photos.get(id));
     }
 
-    protected Coordinates readCoordinates(final JsonNode json) {
+    Coordinates readCoordinates(final JsonNode json) {
         final JsonNode coordinates = json.get("geometry").get("coordinates");
         return new Coordinates(coordinates.get(1).asDouble(), coordinates.get(0).asDouble());
     }

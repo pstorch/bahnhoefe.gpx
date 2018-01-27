@@ -8,26 +8,57 @@ mailer:
   user: ${SMTP_USER:-}
   passwd: ${SMTP_PASSWD:-}
   from: ${SMTP_FROM:-}
-loaderDe:
-  bahnhoefeUrl: ${BAHNHOEFE_DE_URL:-http://94.136.168.53/bahnhoefe/_search?size=6000}
-  photosUrl: ${PHOTOS_DE_URL:-https://railway-stations.org/bahnhoefepager/de/bahnhofsfotos.json}
-loaderCh:
-  bahnhoefeUrl: ${BAHNHOEFE_CH_URL:-http://94.136.168.53/bahnhoefech/_search?size=6000}
-  photosUrl: ${PHOTOS_CH_URL:-https://railway-stations.org/bahnhoefepager/ch/bahnhofsfotos.json}
-loaderFi:
-  bahnhoefeUrl: ${BAHNHOEFE_FI_URL:-http://94.136.168.53/bahnhoefefi/_search?size=500}
-  photosUrl: ${PHOTOS_FI_URL:-https://railway-stations.org/bahnhoefepager/fi/bahnhofsfotos.json}
-loaderUk:
-  bahnhoefeUrl: ${BAHNHOEFE_UK_URL:-http://94.136.168.53/bahnhoefeuk/_search?size=3000}
-  photosUrl: ${PHOTOS_UK_URL:-https://railway-stations.org/bahnhoefepager/uk/bahnhofsfotos.json}
-loaderFr:
-  bahnhoefeUrl: ${BAHNHOEFE_FR_URL:-http://94.136.168.53/bahnhoefefr/_search?size=5000}
-  photosUrl: ${PHOTOS_FR_URL:-https://railway-stations.org/bahnhoefepager/fr/bahnhofsfotos.json}
-loaderEs:
-  bahnhoefeUrl: ${BAHNHOEFE_ES_URL:-http://94.136.168.53/bahnhoefees/_search?size=2000}
-  photosUrl: ${PHOTOS_ES_URL:-https://railway-stations.org/bahnhoefepager/es/bahnhofsfotos.json}
-loaderPl:
-  bahnhoefeUrl: ${BAHNHOEFE_PL_URL:-http://94.136.168.53/bahnhoefepl/_search?size=5000}
-  photosUrl: ${PHOTOS_PL_URL:-https://railway-stations.org/bahnhoefepager/pl/bahnhofsfotos.json}
+loaders:
+  - type: deLoader
+    country:
+      code: de
+      name: Deutschland
+      timetableUrlTemplate: https://mobile.bahn.de/bin/mobil/bhftafel.exe/dox?bt=dep&max=10&rt=1&use_realtime_filter=1&start=yes&input={title}
+    bahnhoefeUrl: http://94.136.168.53/bahnhoefe/_search?size=6000
+    photosUrl: https://railway-stations.org/bahnhoefepager/de/bahnhofsfotos.json
+  - type: chLoader
+    country:
+      code: ch
+      name: Schweiz
+      email: "fotos@schweizer-bahnhoefe.ch"
+      twitterTags: "@BahnhoefeCH, @android_oma, #BahnhofsfotoCH"
+      timetableUrlTemplate: http://fahrplan.sbb.ch/bin/stboard.exe/dn?input={title}&REQTrain_name=&boardType=dep&time=now&maxJourneys=20&selectDate=today&productsFilter=1111111111&start=yes
+    bahnhoefeUrl: http://94.136.168.53/bahnhoefech/_search?size=6000
+    photosUrl: https://railway-stations.org/bahnhoefepager/ch/bahnhofsfotos.json
+  - type: baseLoader
+    country:
+      code: fi
+      name: Finnland
+      timetableUrlTemplate: https://www.junat.net/en/
+    bahnhoefeUrl: http://94.136.168.53/bahnhoefefi/_search?size=500
+    photosUrl: https://railway-stations.org/bahnhoefepager/fi/bahnhofsfotos.json
+  - type: baseLoader
+    country:
+      code: uk
+      name: United Kingdom
+      timetableUrlTemplate: http://ojp.nationalrail.co.uk/service/ldbboard/dep/{DS100}
+    bahnhoefeUrl: http://94.136.168.53/bahnhoefeuk/_search?size=3000
+    photosUrl: https://railway-stations.org/bahnhoefepager/uk/bahnhofsfotos.json
+  - type: baseLoader
+    country:
+      code: fr
+      name: France
+      timetableUrlTemplate: http://m.sncf.com/sncf/gare?libelleGare={title}
+    bahnhoefeUrl: http://94.136.168.53/bahnhoefefr/_search?size=5000
+    photosUrl: https://railway-stations.org/bahnhoefepager/fr/bahnhofsfotos.json
+  - type: baseLoader
+    country:
+      code: es
+      name: España
+      timetableUrlTemplate: http://www.adif.es/AdifWeb/estacionesMapa.jsp?i=en_US&dest=&pes=informacion&e={DS100}
+    bahnhoefeUrl: http://94.136.168.53/bahnhoefees/_search?size=2000
+    photosUrl: https://railway-stations.org/bahnhoefepager/es/bahnhofsfotos.json
+  - type: baseLoader
+    country:
+      code: pl
+      name: Polska
+      timetableUrlTemplate: http://mt.rozklad-pkp.pl/de/sq?input={id}&maxJourneys=15&start=start
+    bahnhoefeUrl: http://94.136.168.53/bahnhoefepl/_search?size=5000
+    photosUrl: https://railway-stations.org/bahnhoefepager/pl/bahnhofsfotos.json
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

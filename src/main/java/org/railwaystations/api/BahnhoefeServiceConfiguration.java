@@ -1,26 +1,24 @@
 package org.railwaystations.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.loader.*;
+import org.railwaystations.api.loader.BahnhoefeLoaderFactory;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
 import org.railwaystations.api.monitoring.SlackMonitor;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @SuppressWarnings("PMD.LongVariable")
 public class BahnhoefeServiceConfiguration extends Configuration {
 
     private static final String IDENT = "@class";
-
-    private final BahnhoefeLoaderDe loaderDe = new BahnhoefeLoaderDe();
-    private final BahnhoefeLoaderCh loaderCh = new BahnhoefeLoaderCh();
-    private final BahnhoefeLoaderFi loaderFi = new BahnhoefeLoaderFi();
-    private final BahnhoefeLoaderUk loaderUk = new BahnhoefeLoaderUk();
-    private final BahnhoefeLoaderFr loaderFr = new BahnhoefeLoaderFr();
-    private final BahnhoefeLoaderEs loaderEs = new BahnhoefeLoaderEs();
-    private final BahnhoefeLoaderPl loaderPl = new BahnhoefeLoaderPl();
 
     private Monitor monitor = new LoggingMonitor();
 
@@ -34,24 +32,13 @@ public class BahnhoefeServiceConfiguration extends Configuration {
 
     private String slackVerificationToken;
 
-    public BahnhoefeLoaderDe getLoaderDe() {
-        return loaderDe;
-    }
-
-    public BahnhoefeLoaderCh getLoaderCh() {
-        return loaderCh;
-    }
-
-    public BahnhoefeLoaderFi getLoaderFi() {
-        return loaderFi;
-    }
-
-    public BahnhoefeLoaderUk getLoaderUk() {
-        return loaderUk;
-    }
+    @JsonProperty
+    @NotNull
+    @Valid
+    private List<BahnhoefeLoaderFactory> loaders;
 
     public BahnhoefeRepository getRepository() {
-        return new BahnhoefeRepository(monitor, loaderDe, loaderCh, loaderFi, loaderUk, loaderFr, loaderEs, loaderPl);
+        return new BahnhoefeRepository(monitor, loaders.stream().map(BahnhoefeLoaderFactory::createLoader).collect(Collectors.toList()));
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
@@ -105,15 +92,4 @@ public class BahnhoefeServiceConfiguration extends Configuration {
         this.slackVerificationToken = slackVerificationToken;
     }
 
-    public BahnhoefeLoaderFr getLoaderFr() {
-        return loaderFr;
-    }
-
-    public BahnhoefeLoaderEs getLoaderEs() {
-        return loaderEs;
-    }
-
-    public BahnhoefeLoaderPl getLoaderPl() {
-        return loaderPl;
-    }
 }

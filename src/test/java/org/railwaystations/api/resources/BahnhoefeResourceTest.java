@@ -12,9 +12,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -38,7 +36,7 @@ public class BahnhoefeResourceTest {
         Mockito.when(loaderAB.loadBahnhoefe()).thenReturn(bahnhoefe);
         Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", null, null, null, null));
 
-        resource = new BahnhoefeResource(new BahnhoefeRepository(new LoggingMonitor(), loaderAB, loaderXY));
+        resource = new BahnhoefeResource(new BahnhoefeRepository(new LoggingMonitor(), Arrays.asList(loaderAB, loaderXY)));
     }
 
     @Test

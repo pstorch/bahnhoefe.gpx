@@ -3,9 +3,10 @@ package org.railwaystations.api.loader;
 import com.jcabi.http.mock.MkAnswer;
 import com.jcabi.http.mock.MkContainer;
 import com.jcabi.http.mock.MkGrizzlyContainer;
-import org.railwaystations.api.model.Bahnhof;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Country;
 
 import java.io.IOException;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class BahnhoefeLoaderChTest {
 			);
 			container.start();
 
-			final BahnhoefeLoader loader = new BahnhoefeLoaderCh(container.home().toURL(),
+			final BahnhoefeLoader loader = new BahnhoefeLoaderCh(new Country("ch"), container.home().toURL(),
 					container.home().toURL());
 
 			final Map<Integer, Bahnhof> bahnhoefe = loader.loadBahnhoefe();
