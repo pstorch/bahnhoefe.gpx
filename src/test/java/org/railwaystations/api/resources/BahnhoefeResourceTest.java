@@ -1,18 +1,24 @@
 package org.railwaystations.api.resources;
 
 import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.loader.BahnhoefeLoader;
+import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.model.Bahnhof;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.monitoring.LoggingMonitor;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.util.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -23,20 +29,22 @@ public class BahnhoefeResourceTest {
     private BahnhoefeResource resource;
 
     @Before
-    public void setUp() {
+    public void setUp() throws MalformedURLException {
+        final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
+
         final BahnhoefeLoader loaderXY = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> bahnhoefeXY = new HashMap<>(2);
-        bahnhoefeXY.put(5, new Bahnhof(5, "xy", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(5, "Jim Knopf", "URL", "CC0", "photographerUrl")));
-        Mockito.when(loaderXY.loadBahnhoefe()).thenReturn(bahnhoefeXY);
+        bahnhoefeXY.put(5, new Bahnhof(5, "xy", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(5, "URL", "Jim Knopf", "photographerUrl", null, "CC0", "licenseUrl")));
+        Mockito.when(loaderXY.loadBahnhoefe(Mockito.anyMap(), Mockito.anyString())).thenReturn(bahnhoefeXY);
         Mockito.when(loaderXY.getCountry()).thenReturn(new Country("xy", null, null, null, null));
 
         final BahnhoefeLoader loaderAB = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>(2);
-        bahnhoefe.put(3, new Bahnhof(3, "ab", "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(3, "Peter Pan", "URL2", "CC0 by SA", "photographerUrl2")));
-        Mockito.when(loaderAB.loadBahnhoefe()).thenReturn(bahnhoefe);
+        bahnhoefe.put(3, new Bahnhof(3, "ab", "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(3, "URL2", "Peter Pan", "photographerUrl2", null, "CC0 by SA", "licenseUrl2")));
+        Mockito.when(loaderAB.loadBahnhoefe(Mockito.anyMap(), Mockito.anyString())).thenReturn(bahnhoefe);
         Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", null, null, null, null));
 
-        resource = new BahnhoefeResource(new BahnhoefeRepository(new LoggingMonitor(), Arrays.asList(loaderAB, loaderXY)));
+        resource = new BahnhoefeResource(new BahnhoefeRepository(new LoggingMonitor(), Arrays.asList(loaderAB, loaderXY), photographerLoader, ""));
     }
 
     @Test

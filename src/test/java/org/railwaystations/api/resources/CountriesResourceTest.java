@@ -25,7 +25,7 @@ public class CountriesResourceTest {
         final BahnhoefeLoader loaderAB = Mockito.mock(BahnhoefeLoader.class);
         Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", "nameAB", "emailAB", "twitterAB", "timetableAB"));
 
-        final CountriesResource resource = new CountriesResource(new BahnhoefeRepository(new LoggingMonitor(), Arrays.asList(loaderAB, loaderXY)));
+        final CountriesResource resource = new CountriesResource(new BahnhoefeRepository(new LoggingMonitor(), Arrays.asList(loaderAB, loaderXY), null, ""));
 
         final Set<Country> countries = resource.list();
         assertThat(countries.size(), equalTo(2));

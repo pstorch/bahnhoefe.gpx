@@ -1,17 +1,15 @@
 package org.railwaystations.api;
 
-import org.railwaystations.api.resources.*;
-import org.railwaystations.api.writer.BahnhoefeGpxWriter;
-import org.railwaystations.api.writer.BahnhoefeTxtWriter;
-import org.railwaystations.api.writer.PhotographersTxtWriter;
-import org.railwaystations.api.writer.StatisticTxtWriter;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-
-import java.net.MalformedURLException;
+import org.railwaystations.api.resources.*;
+import org.railwaystations.api.writer.BahnhoefeGpxWriter;
+import org.railwaystations.api.writer.BahnhoefeTxtWriter;
+import org.railwaystations.api.writer.PhotographersTxtWriter;
+import org.railwaystations.api.writer.StatisticTxtWriter;
 
 /**
  * RailwayStations API Dropwizard App
@@ -34,8 +32,7 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
     }
 
     @Override
-    public void run(final BahnhoefeServiceConfiguration config, final Environment environment)
-            throws MalformedURLException {
+    public void run(final BahnhoefeServiceConfiguration config, final Environment environment) {
         config.getMonitor().sendMessage("RSAPI starting up");
         final BahnhoefeRepository repository = config.getRepository();
         environment.jersey().register(new BahnhoefeResource(repository));
@@ -46,7 +43,7 @@ public class BahnhoefeServiceApp extends Application<BahnhoefeServiceConfigurati
                 config.getTokenGenerator(), config.getUploadDir(), config.getMonitor()));
         environment.jersey().register(new RegistrationResource(
                 config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer()));
-        environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken()));
+        environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(), new PhotoImporter(repository, config.getUploadDir(), config.getPhotoDir())));
         environment.jersey().register(new BahnhoefeGpxWriter());
         environment.jersey().register(new BahnhoefeTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());

@@ -12,6 +12,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.railwaystations.api.mail.MockMailer;
 import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Photographer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -26,6 +27,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,15 +101,15 @@ public class BahnhoefeServiceAppTest {
     }
 
     @Test
-    public void stationsDeFromAndroidOma() throws IOException {
-        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=@android_oma", "stations"), 200);
-        assertThat(bahnhoefe.length, is(31));
+    public void stationsDeFromAnonym() throws IOException {
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=Anonym", "stations"), 200);
+        assertThat(bahnhoefe.length, is(9));
     }
 
     @Test
-    public void stationsDeFromAndroidOmaWithinMax30kmFromFfmHbf() throws IOException {
-        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?maxDistance=30&lat=50.1060866&lon=8.6615762&photographer=@android_oma", "stations"), 200);
-        assertThat(bahnhoefe.length, is(17));
+    public void stationsDeFromDgerkrathWithinMax5km() throws IOException {
+        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?maxDistance=5&lat=51.2670337567818&lon=7.19520717859267&photographer=@Dgerkrath", "stations"), 200);
+        assertThat(bahnhoefe.length, is(3));
     }
 
     @Test
@@ -150,7 +152,7 @@ public class BahnhoefeServiceAppTest {
         assertThat(gpx.getAttribute("xmlns"), is("http://www.topografix.com/GPX/1/1"));
         assertThat(gpx.getAttribute("version"), is("1.1"));
         final NodeList wpts = gpx.getElementsByTagName("wpt");
-        assertThat(wpts.getLength(), is(20));
+        assertThat(wpts.getLength(), is(8));
     }
 
     private String readSaveStringEntity(final Response response) throws IOException {
@@ -197,7 +199,7 @@ public class BahnhoefeServiceAppTest {
         final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
-        assertThat(jsonNode.size(), is(115));
+        assertThat(jsonNode.size(), is(31));
     }
 
     @Test
@@ -214,7 +216,7 @@ public class BahnhoefeServiceAppTest {
                 final Matcher matcher = pattern.matcher(line);
                 assertThat(matcher.matches(), is(true));
             }
-            assertThat(count, is(115));
+            assertThat(count, is(31));
         }
     }
 
@@ -325,6 +327,15 @@ public class BahnhoefeServiceAppTest {
                 .post(Entity.entity("", "image/png"));
 
         assertThat(response.getStatus(), is(403));
+    }
+
+    @Test
+    public void photographersLoader() {
+        final Map<String, Photographer> photographers = RULE.getConfiguration().getPhotographerLoader().loadPhotographers();
+        final Photographer photographer = photographers.get("SimoneDoerfling");
+        assertThat(photographer.getName(), is("SimoneDoerfling"));
+        assertThat(photographer.getUrl(), is("http://www.deutschlands-bahnhoefe.de/"));
+        assertThat(photographer.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
     }
 
 }

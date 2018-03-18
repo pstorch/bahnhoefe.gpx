@@ -23,7 +23,7 @@ public class BahnhofTest {
 
     @Test
     public void appliesToPhotographer() {
-        final Bahnhof bahnhof = new Bahnhof(0, "", "", new Coordinates(0.0, 0.0), new Photo(0, "test", "URL", "CC0", "photographerUrl"));
+        final Bahnhof bahnhof = new Bahnhof(0, "", "", new Coordinates(0.0, 0.0), new Photo(0, "URL", "test", "photographerUrl", null, "CC0", null));
         assertThat(bahnhof.appliesTo(null, "test", null, null, null), is(true));
         assertThat(bahnhof.appliesTo(false, null, null, null, null), is(false));
         assertThat(bahnhof.appliesTo(true, null, null, null, null), is(true));
@@ -38,7 +38,7 @@ public class BahnhofTest {
 
     @Test
     public void appliesToDistanceAndPhotographer() {
-        final Bahnhof bahnhof = new Bahnhof(0, "", "", new Coordinates(50.554550, 9.683787), new Photo(0, "test", "URL", "CC0", "photographerUrl"));
+        final Bahnhof bahnhof = new Bahnhof(0, "", "", new Coordinates(50.554550, 9.683787), new Photo(0, "URL", "test", "photographerUrl", null, "CC0", null));
         assertThat(bahnhof.appliesTo(null, "test", 50, 50.8, 9.8), is(true));
     }
 

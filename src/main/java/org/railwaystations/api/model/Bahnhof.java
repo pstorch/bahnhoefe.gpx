@@ -37,6 +37,9 @@ public class Bahnhof {
     @JsonProperty
     private final String license;
 
+    @JsonProperty
+    private final Long createdAt;
+
     @JsonIgnore
     private final String statUser;
 
@@ -62,12 +65,14 @@ public class Bahnhof {
             this.license = photo.getLicense();
             this.photographerUrl = photo.getPhotographerUrl();
             this.statUser = photo.getStatUser();
+            this.createdAt = photo.getCreatedAt();
         } else {
             this.photographer = null;
             this.photoUrl = null;
             this.license = null;
             this.photographerUrl = null;
             this.statUser = null;
+            this.createdAt = null;
         }
     }
 
@@ -143,5 +148,9 @@ public class Bahnhof {
 
     public String getStatUser() {
         return statUser;
+    }
+
+    public Long getCreatedAt() {
+        return createdAt;
     }
 }

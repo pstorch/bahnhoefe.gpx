@@ -3,22 +3,24 @@ package org.railwaystations.api.model;
 public class Photo {
 
     private final int stationId;
-    private final String photographer;
     private final String url;
-    private final String license;
+    private final String photographer;
     private final String photographerUrl;
+    private final Long createdAt;
+    private final String license;
     private final String statUser;
 
-    public Photo(final int stationId, final String photographer, final String url, final String license, final String photographerUrl) {
-        this(stationId, photographer, url, license, photographerUrl, photographer);
+    public Photo(final int stationId, final String url, final String photographer, final String photographerUrl, final Long createdAt, final String license) {
+        this(stationId, url, photographer, photographerUrl, createdAt, license, photographer);
     }
 
-    public Photo(final int stationId, final String photographer, final String url, final String license, final String photographerUrl, final String statUser) {
+    public Photo(final int stationId, final String url, final String photographer, final String photographerUrl, final Long createdAt, final String license, final String statUser) {
         this.stationId = stationId;
-        this.photographer = photographer;
         this.url = url;
-        this.license = license;
+        this.photographer = photographer;
         this.photographerUrl = photographerUrl;
+        this.createdAt = createdAt;
+        this.license = license;
         this.statUser = statUser;
     }
 
@@ -44,5 +46,9 @@ public class Photo {
 
     public String getStatUser() {
         return statUser;
+    }
+
+    public Long getCreatedAt() {
+        return createdAt;
     }
 }

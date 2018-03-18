@@ -1,8 +1,11 @@
 uploadDir: ${UPLOAD_DIR:-/tmp/rsapi}
+photoDir: ${PHOTO_DIR:-/tmp/railway-station-photos}
 apiKey: ${API_KEY:-dummy}
 salt: ${SALT:-dummy}
 mailer:
   "@class": org.railwaystations.api.mail.MockMailer
+photographersUrl: file:./src/test/resources/photographers.json
+photoBaseUrl: https://railway-stations.org
 loaders:
   - type: deLoader
     country:

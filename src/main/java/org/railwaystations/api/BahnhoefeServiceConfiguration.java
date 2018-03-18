@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.loader.BahnhoefeLoaderFactory;
+import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
@@ -12,6 +13,7 @@ import org.railwaystations.api.monitoring.SlackMonitor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,13 +34,19 @@ public class BahnhoefeServiceConfiguration extends Configuration {
 
     private String slackVerificationToken;
 
+    private URL photographersUrl;
+
+    private String photoBaseUrl;
+
     @JsonProperty
     @NotNull
     @Valid
     private List<BahnhoefeLoaderFactory> loaders;
 
+    private String photoDir;
+
     public BahnhoefeRepository getRepository() {
-        return new BahnhoefeRepository(monitor, loaders.stream().map(BahnhoefeLoaderFactory::createLoader).collect(Collectors.toList()));
+        return new BahnhoefeRepository(monitor, loaders.stream().map(BahnhoefeLoaderFactory::createLoader).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
@@ -90,6 +98,30 @@ public class BahnhoefeServiceConfiguration extends Configuration {
 
     public void setSlackVerificationToken(final String slackVerificationToken) {
         this.slackVerificationToken = slackVerificationToken;
+    }
+
+    public PhotographerLoader getPhotographerLoader() {
+        return new PhotographerLoader(photographersUrl);
+    }
+
+    public void setPhotographersUrl(final URL photographersUrl) {
+        this.photographersUrl = photographersUrl;
+    }
+
+    public String getPhotoBaseUrl() {
+        return photoBaseUrl;
+    }
+
+    public void setPhotoBaseUrl(final String photoBaseUrl) {
+        this.photoBaseUrl = photoBaseUrl;
+    }
+
+    public String getPhotoDir() {
+        return photoDir;
+    }
+
+    public void setPhotoDir(final String photoDir) {
+        this.photoDir = photoDir;
     }
 
 }

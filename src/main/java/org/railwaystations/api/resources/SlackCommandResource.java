@@ -3,13 +3,14 @@ package org.railwaystations.api.resources;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.BahnhoefeRepository;
+import org.railwaystations.api.PhotoImporter;
 import org.railwaystations.api.model.Bahnhof;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,10 +22,12 @@ public class SlackCommandResource {
 
     private final BahnhoefeRepository repository;
     private final String verificationToken;
+    private final PhotoImporter photoImporter;
 
-    public SlackCommandResource(final BahnhoefeRepository repository, final String verificationToken) {
+    public SlackCommandResource(final BahnhoefeRepository repository, final String verificationToken, final PhotoImporter photoImporter) {
         this.repository = repository;
         this.verificationToken = verificationToken;
+        this.photoImporter = photoImporter;
     }
 
     @POST
@@ -32,13 +35,17 @@ public class SlackCommandResource {
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
     public SlackResponse command(@FormParam("token") final String token,
                                  @FormParam("text") final String text,
-                                 @FormParam("response_url") final String responseUrl) throws IOException {
+                                 @FormParam("response_url") final String responseUrl) {
         if (!StringUtils.equals(verificationToken, token)) {
             throw new WebApplicationException(Response.Status.UNAUTHORIZED);
         }
         if (StringUtils.equals("refresh", text)) {
             repository.refresh(responseUrl);
             return new SlackResponse(ResponseType.in_channel, "Refreshing caches");
+        }
+        if (StringUtils.equals("import", text)) {
+            final Map<String, String> report = photoImporter.importPhotos();
+            return new SlackResponse(ResponseType.in_channel, photoImporter.reportToMessage(report));
         }
         final Matcher matcherSearch = PATTERN_SEARCH.matcher(text);
         if (matcherSearch.matches()) {
@@ -60,7 +67,7 @@ public class SlackCommandResource {
                 return new SlackResponse(ResponseType.in_channel, toMessage(bahnhof));
             }
         }
-        return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <station-id>%n"));
+        return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <station-id>%n- '/rsapi import'%n"));
     }
 
     private String toMessage(final List<Bahnhof> bahnhofList) {

@@ -19,7 +19,7 @@ Fields, formal arguments, or local variable names that are too long can make the
     </description>
       <priority>3</priority>
       <properties>
-          <property name="minimum" type="Integer" description="The variable length reporting threshold" min="1" max="100" value="17"/>
+          <property name="minimum" type="Integer" description="The variable length reporting threshold" min="1" max="100" value="20"/>
           <property name="xpath">
               <value>
                   <![CDATA[

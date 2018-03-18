@@ -43,7 +43,7 @@ This project can be run as a Docker container. The docker image is automatically
   ```
 
   - Run as background service:
-  ```docker run -d -p 8080:8080 --restart always --name rsapi --env-file rsapi.env -v <photo-upload-dir>:/tmp/rsapi pstorch/rsapi:<version>```
+  ```docker run -d -p 8080:8080 --restart always --name rsapi --env-file rsapi.env -v <photo-upload-dir>:/tmp/rsapi -v <photo-main-dir>:/tmp/railway-station-photos pstorch/rsapi:<version>```
 
   - Remove the (running) container:
   ```docker rm -f rsapi```

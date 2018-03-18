@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.loader.BahnhoefeLoader;
+import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.model.Bahnhof;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
@@ -17,6 +18,7 @@ import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,15 +40,16 @@ public class PhotoUploadResourceTest {
 
     @Before
     public void setUp() throws IOException {
+        final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
         final BahnhoefeLoader loader = Mockito.mock(BahnhoefeLoader.class);
         final Map<Integer, Bahnhof> stationsMap = new HashMap<>(2);
         stationsMap.put(4711, new Bahnhof(4711, "de", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
-        stationsMap.put(1234, new Bahnhof(1234, "de", "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(4711, "Jim Knopf", "URL", "CC0", "photographerUrl")));
-        Mockito.when(loader.loadBahnhoefe()).thenReturn(stationsMap);
+        stationsMap.put(1234, new Bahnhof(1234, "de", "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(4711, "URL", "Jim Knopf", "photographerUrl", null, "CC0", null)));
+        Mockito.when(loader.loadBahnhoefe(Mockito.anyMap(), Mockito.anyString())).thenReturn(stationsMap);
         Mockito.when(loader.getCountry()).thenReturn(new Country("de", null, null, null, null));
 
         tempDir = Files.createTempDirectory("rsapi");
-        resource = new PhotoUploadResource(new BahnhoefeRepository(monitor, Collections.singletonList(loader)), "apiKey", tokenGenerator, tempDir.toString(), monitor);
+        resource = new PhotoUploadResource(new BahnhoefeRepository(monitor, Collections.singletonList(loader), photographerLoader, ""), "apiKey", tokenGenerator, tempDir.toString(), monitor);
     }
 
     @Test
