@@ -2,11 +2,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.railwaystations</groupId>
-	<artifactId>bahnhoefe.service</artifactId>
+	<artifactId>rsapi</artifactId>
 	<version>20180129.2056-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Bahnhoefe Service</name>
+	<name>Railway Stations API</name>
 	<url>http://maven.apache.org</url>
 
     <scm>
@@ -276,9 +276,8 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>1.0.0</version>
 				<configuration>
-					<useConfigFile>true</useConfigFile>
 					<dockerDirectory>${project.basedir}</dockerDirectory>
-                    <imageName>pstorch/bahnhoefe-gpx</imageName>
+                    <imageName>pstorch/rsapi</imageName>
 					<imageTags>
 						<imageTag>${project.version}</imageTag>
 					</imageTags>

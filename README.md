@@ -23,11 +23,11 @@ Release:
 This project can be run as a Docker container. The docker image is automatically built via the above maven build command.
 
 - run locally:
-  ```docker run -it --rm -p 8080:8080 pstorch/bahnhoefe-gpx```
+  ```docker run -it --rm -p 8080:8080 pstorch/rsapi```
 
 - run on server:
   - Download the image from docker hub:
-  ```docker pull pstorch/bahnhoefe-gpx:<version>```
+  ```docker pull pstorch/rsapi:<version>```
   
   - Configure environment variables. Place ```rsapi.env``` file in current directory:
   ```
@@ -43,21 +43,21 @@ This project can be run as a Docker container. The docker image is automatically
   ```
 
   - Run as background service:
-  ```docker run -d -p 8080:8080 --restart always --name bahnhoefe-service --env-file rsapi.env -v <photo-upload-dir>:/tmp/rsapi pstorch/bahnhoefe-gpx:<version>```
+  ```docker run -d -p 8080:8080 --restart always --name rsapi --env-file rsapi.env -v <photo-upload-dir>:/tmp/rsapi pstorch/rsapi:<version>```
 
   - Remove the (running) container:
-  ```docker rm -f bahnhoefe-service```
+  ```docker rm -f rsapi```
   
   - Check if it is running:
   ```docker ps```
   
   - Read the logs:
-  ```docker logs bahnhoefe-service```
+  ```docker logs rsapi```
   
   - Attach to container:
-  ```docker attach --sig-proxy=false bahnhoefe-service```
+  ```docker attach --sig-proxy=false rsapi```
   
-Ready to use images are published at https://hub.docker.com/r/pstorch/bahnhoefe-gpx/
+Ready to use images are published at https://hub.docker.com/r/pstorch/rsapi/
 
 ## Use
 Point your browser to http://localhost:8080/{country}/stations, where `country` can be "de", "ch", "fi" or "uk"

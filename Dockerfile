@@ -3,7 +3,7 @@ FROM java:8-jre
 ARG VERSION
 
 COPY config.yml /opt/services/
-COPY target/bahnhoefe.service-$VERSION.jar /opt/services/service.jar
+COPY target/rsapi-$VERSION.jar /opt/services/service.jar
 EXPOSE 8080
 EXPOSE 8081
 WORKDIR /opt/services
