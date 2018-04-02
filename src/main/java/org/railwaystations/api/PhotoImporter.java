@@ -105,16 +105,21 @@ public class PhotoImporter {
                     }
                 }
 
-                final String photographerName = matcher.group(1);
+                String photographerName = matcher.group(1);
+                final String flag = photographerName.equals("@RecumbentTravel") ? "1" : "0";
+                if (!flag.equals("0")) {
+                    photographerName = "Anonym";
+                }
+
                 final Photographer photographer = repository.getPhotographer(photographerName);
                 if (photographer == null) {
                     report.put(importFile.getAbsolutePath(), "Photographer " + photographerName + " not found");
                     break;
                 }
 
-                final StatusLine status = postToElastic(stationId, countryCode, photographer);
-                if (status.getStatusCode() != 201) {
-                    report.put(importFile.getAbsolutePath(), "Elastic error response: " + status.toString());
+                final Optional<StatusLine> status = postToElastic(stationId, countryCode, photographer, flag);
+                if (status.isPresent() && status.get().getStatusCode() != 201) {
+                    report.put(importFile.getAbsolutePath(), "Elastic error response: " + status.get().toString());
                     break;
                 }
 
@@ -134,23 +139,25 @@ public class PhotoImporter {
         }
     }
 
-    private StatusLine postToElastic(final Integer stationId, final String countryCode, final Photographer photographer) throws Exception {
+    private Optional<StatusLine> postToElastic(final Integer stationId, final String countryCode, final Photographer photographer, final String flag) throws Exception {
         final ObjectNode fotoJson = MAPPER.createObjectNode();
-        final String flag = photographer.getName().equals("@RecumbentTravel") ? "1" : "0";
         fotoJson.put("BahnhofsID", stationId);
         fotoJson.put("bahnhofsfoto", "/fotos/" + countryCode + "/" + stationId + ".jpg");
         fotoJson.put("fotolizenz", photographer.getLicense());
-        fotoJson.put("fotografenname", "0".equals(flag) ? photographer.getName() : "Anonym");
+        fotoJson.put("fotografenname", photographer.getName());
         fotoJson.put("erfasst", System.currentTimeMillis());
         fotoJson.put("flag", flag);
         fotoJson.put("laenderkennzeichen", countryCode);
-        final CloseableHttpResponse response = httpClient.post(getPhotoUrl(countryCode), fotoJson.toString());
-        return response.getStatusLine();
+        StatusLine statusLine = null;
+        try (final CloseableHttpResponse response = httpClient.post(getPhotoUrl(countryCode), fotoJson.toString())) {
+            statusLine = response.getStatusLine();
+        }
+        return Optional.of(statusLine);
     }
 
     private URL getPhotoUrl(final String countryCode) throws MalformedURLException {
         // TODO: make this configurable and testable
-        return new URL("http://localhost:9200/bahnhofsfotos" + countryCode + "/foto");
+        return new URL("http://localhost:9200/bahnhofsfotos" + countryCode + "/bahnhofsfoto");
     }
 
     private void moveFile(final File importFile, final File countryDir, final Integer stationId) throws IOException {

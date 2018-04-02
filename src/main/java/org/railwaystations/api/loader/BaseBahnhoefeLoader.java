@@ -5,6 +5,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.joda.time.DateTime;
 import org.railwaystations.api.BackendHttpClient;
 import org.railwaystations.api.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -14,6 +16,7 @@ public class BaseBahnhoefeLoader implements BahnhoefeLoader {
 
     private static final String HITS_ELEMENT = "hits";
     private static final String SOURCE_ELEMENT = "_source";
+    private static final Logger LOG = LoggerFactory.getLogger(BaseBahnhoefeLoader.class);
 
     private final URL bahnhoefeUrl;
     private final URL photosUrl;
@@ -48,6 +51,9 @@ public class BaseBahnhoefeLoader implements BahnhoefeLoader {
                 .get(BaseBahnhoefeLoader.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
             final Photo photo = createPhotoFromElasticSourceElement(hits.get(i).get(BaseBahnhoefeLoader.SOURCE_ELEMENT), photographers, photoBaseUrl);
+            if (photos.get(photo.getStationId()) != null) {
+                LOG.info("Photo for Station " + photo.getStationId() + " has duplicates");
+            }
             photos.put(photo.getStationId(), photo);
         }
         return photos;
