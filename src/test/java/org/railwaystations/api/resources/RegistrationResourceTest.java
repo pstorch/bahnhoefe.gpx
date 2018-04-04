@@ -1,6 +1,7 @@
 package org.railwaystations.api.resources;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.assertj.core.util.Files;
 import org.junit.Before;
 import org.junit.Test;
 import org.railwaystations.api.TokenGenerator;
@@ -9,11 +10,9 @@ import org.railwaystations.api.model.Registration;
 import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
-import java.io.IOException;
+import java.io.File;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
@@ -22,16 +21,18 @@ public class RegistrationResourceTest {
     private MockMonitor monitor;
     private MockMailer mailer;
     private RegistrationResource resource;
+    private String workDir;
 
     @Before
     public void setUp() {
         monitor = new MockMonitor();
         mailer = new MockMailer();
-        resource = new RegistrationResource("apiKey", new TokenGenerator("dummy"), monitor, mailer);
+        workDir = Files.temporaryFolderPath();
+        resource = new RegistrationResource("apiKey", new TokenGenerator("dummy"), monitor, mailer, workDir);
     }
 
     @Test
-    public void testPost() throws IOException {
+    public void testPost() {
         final Registration registration = new Registration("nickname", "nickname@example.com", "license", true, "linking", "link");
         final Response response = resource.post("apiKey", registration);
 
@@ -45,6 +46,9 @@ public class RegistrationResourceTest {
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"));
         assertThat(mailer.getQrCode(), notNullValue());
+
+        final File regFile = new File(workDir, "nickname.json");
+        assertThat(regFile.exists(), is(true));
     }
 
 }

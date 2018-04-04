@@ -6,7 +6,7 @@ server:
     - type: http
       port: 8081
       bindHost: 127.0.0.1
-uploadDir: ${UPLOAD_DIR:-/tmp/rsapi}
+workDir: ${UPLOAD_DIR:-/tmp/rsapi}
 photoDir: ${PHOTO_DIR:-/tmp/railway-station-photos}
 apiKey: ${API_KEY:-dummy}
 salt: ${SALT:-dummy}

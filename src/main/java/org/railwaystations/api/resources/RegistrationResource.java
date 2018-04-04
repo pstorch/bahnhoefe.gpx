@@ -1,11 +1,14 @@
 package org.railwaystations.api.resources;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import org.apache.commons.io.FileUtils;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.model.Registration;
@@ -23,36 +26,56 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 @Path("/registration")
 public class RegistrationResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationResource.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final String apiKey;
     private final TokenGenerator tokenGenerator;
     private final Monitor monitor;
     private final Mailer mailer;
+    private final File regDir;
+    private final Map<String, String> licenseMap = new HashMap<>(2);
 
-    public RegistrationResource(final String apiKey, final TokenGenerator tokenGenerator, final Monitor monitor, final Mailer mailer) {
+    public RegistrationResource(final String apiKey, final TokenGenerator tokenGenerator, final Monitor monitor, final Mailer mailer, final String workDir) {
         this.apiKey = apiKey;
         this.tokenGenerator = tokenGenerator;
         this.monitor = monitor;
         this.mailer = mailer;
+        this.regDir = new File(workDir, "registrations");
+        try {
+            FileUtils.forceMkdir(this.regDir);
+        } catch (final IOException e) {
+            throw new RuntimeException("Unable to create " + this.regDir);
+        }
+        licenseMap.put("CC0", "CC0 1.0 Universell (CC0 1.0)");
+        licenseMap.put("CC4", "CC BY-SA 4.0");
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response post(@HeaderParam("API-Key") final String apiKey, @NotNull @Valid final Registration registration)
-            throws UnsupportedEncodingException {
+    public Response post(@HeaderParam("API-Key") final String apiKey, @NotNull @Valid final Registration registration) {
         LOG.info("New " + registration);
         if (!this.apiKey.equals(apiKey)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
+        sendTokenByMail(registration);
+        saveRegistration(registration);
+        monitor.sendMessage(String.format("New %s", registration));
+
+        return Response.accepted().build();
+    }
+
+    private void sendTokenByMail(@NotNull @Valid final Registration registration) {
         final String token = tokenGenerator.buildFor(registration.getNickname(), registration.getEmail());
         LOG.info("Token " + token);
         final String url = "http://railway-stations.org/uploadToken/" + token;
@@ -66,10 +89,19 @@ public class RegistrationResource {
                         "Dein Bahnhofsfoto-Team",
                 registration.getNickname(), token, url);
         mailer.send(registration.getEmail(), "Bahnhofsfotos upload token", text, generateComZXing(url));
+    }
 
-        monitor.sendMessage(String.format("New %s", registration));
-
-        return Response.accepted().build();
+    private void saveRegistration(@NotNull @Valid final Registration registration) {
+        final ObjectNode fotografJson = MAPPER.createObjectNode();
+        fotografJson.put("fotografenname", registration.getNickname());
+        fotografJson.put("fotografenURL", registration.getLink());
+        fotografJson.put("fotografenlizenz", licenseMap.getOrDefault(registration.getLicense(), registration.getLicense()));
+        try (final PrintWriter pw = new PrintWriter(new File(regDir, registration.getNickname() + ".json"), "UTF-8")) {
+            pw.println(fotografJson.toString());
+            pw.flush();
+        } catch (final IOException e) {
+            LOG.error("Couldn't write registration file ", e);
+        }
     }
 
     private File generateComZXing(final String url) {

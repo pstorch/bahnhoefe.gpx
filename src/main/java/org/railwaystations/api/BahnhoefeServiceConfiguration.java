@@ -28,7 +28,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
 
     private TokenGenerator tokenGenerator;
 
-    private String uploadDir;
+    private String workDir;
 
     private Mailer mailer;
 
@@ -59,12 +59,12 @@ public class BahnhoefeServiceConfiguration extends Configuration {
         return monitor;
     }
 
-    public String getUploadDir() {
-        return uploadDir;
+    public String getWorkDir() {
+        return workDir;
     }
 
-    public void setUploadDir(final String uploadDir) {
-        this.uploadDir = uploadDir;
+    public void setWorkDir(final String workDir) {
+        this.workDir = workDir;
     }
 
     public String getApiKey() {
