@@ -317,26 +317,40 @@ definitions:
       id:
         type: integer
         format: int64
+        description: Unique ID of the station per country
       country:
         type: string
+        description: Two character country code
       title:
         type: string
+        description: Name of the station
       photographer:
         type: string
+        description: Nickname of the photographer
       photographerUrl:
         type: string
+        description: Link to the photographer
       photoUrl:
         type: string
+        description: URL of the photo
       license:
         type: string
+        description: License of the photo, clients need to link to an online version of the license text
       lat:
         type: number
         format: double
+        description: Latitude of the station
       lon:
         type: number
         format: double
+        description: Longitute of the station
+      createdAt:
+        type: number
+        format: int64
+        description: Timestamp when the photo was created in the railway-stations database (Milliseconds since 1.1.1970)
       DS100:
         type: string
+        description: A short code of the station, depending on the country
   Photographers:
     type: object
     description: >-
