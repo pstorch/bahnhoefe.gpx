@@ -18,7 +18,7 @@ mailer:
   passwd: ${SMTP_PASSWD:-}
   from: ${SMTP_FROM:-}
 photographersUrl: http://94.136.168.53/fotografen/_search?size=500
-photoBaseUrl: https://railway-stations.org
+photoBaseUrl: https://fotos.railway-stations.org
 loaders:
   - type: deLoader
     country:

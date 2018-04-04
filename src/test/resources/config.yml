@@ -5,7 +5,7 @@ salt: ${SALT:-dummy}
 mailer:
   "@class": org.railwaystations.api.mail.MockMailer
 photographersUrl: file:./src/test/resources/photographers.json
-photoBaseUrl: https://railway-stations.org
+photoBaseUrl: https://fotos.railway-stations.org
 loaders:
   - type: deLoader
     country:
