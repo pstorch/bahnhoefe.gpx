@@ -143,16 +143,20 @@ public class PhotoImporter {
         final ObjectNode fotoJson = MAPPER.createObjectNode();
         fotoJson.put("BahnhofsID", stationId);
         fotoJson.put("bahnhofsfoto", "/fotos/" + countryCode + "/" + stationId + ".jpg");
-        fotoJson.put("fotolizenz", photographer.getLicense());
+        fotoJson.put("fotolizenz", getLicense(photographer.getLicense(), countryCode));
         fotoJson.put("fotografenname", photographer.getName());
         fotoJson.put("erfasst", System.currentTimeMillis());
         fotoJson.put("flag", flag);
         fotoJson.put("laenderkennzeichen", countryCode);
-        StatusLine statusLine = null;
+        final StatusLine statusLine;
         try (final CloseableHttpResponse response = httpClient.post(getPhotoUrl(countryCode), fotoJson.toString())) {
             statusLine = response.getStatusLine();
         }
         return Optional.of(statusLine);
+    }
+
+    private String getLicense(final String photographerLicense, final String countryCode) {
+        return "fr".equals(countryCode) ? "CC BY-NC 4.0 International" : photographerLicense;
     }
 
     private URL getPhotoUrl(final String countryCode) throws MalformedURLException {
