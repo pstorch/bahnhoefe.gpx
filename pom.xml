@@ -3,7 +3,7 @@
 
 	<groupId>org.railwaystations</groupId>
 	<artifactId>rsapi</artifactId>
-	<version>20180402.2231-SNAPSHOT</version>
+	<version>20180404.2300</version>
 	<packaging>jar</packaging>
 
 	<name>Railway Stations API</name>
@@ -12,7 +12,7 @@
     <scm>
         <connection>scm:git:git@github.com:RailwayStations/RSAPI.git</connection>
         <url>scm:git:git@github.com:RailwayStations/RSAPI.git</url>
-      <tag>HEAD</tag>
+      <tag>rsapi-20180404.2300</tag>
   </scm>
 
     <properties>
