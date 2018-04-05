@@ -47,7 +47,7 @@ public class RegistrationResourceTest {
                 "Dein Bahnhofsfoto-Team"));
         assertThat(mailer.getQrCode(), notNullValue());
 
-        final File regFile = new File(workDir, "nickname.json");
+        final File regFile = new File(new File(workDir, "registrations"), "nickname.json");
         assertThat(regFile.exists(), is(true));
     }
 
