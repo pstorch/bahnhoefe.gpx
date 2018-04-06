@@ -1,13 +1,13 @@
 package org.railwaystations.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.railwaystations.api.model.Bahnhof;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photographer;
+import org.railwaystations.api.model.Station;
+import org.railwaystations.api.model.elastic.Bahnhofsfoto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +72,7 @@ public class PhotoImporter {
         return builder.toString();
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private void importPhotosByCountry(final File importDir, final String countryCode, final Map<String, String> report) {
         final File countryDir = new File(photoDir, countryCode);
         if (!countryDir.exists() && !countryDir.mkdirs()) {
@@ -94,7 +95,7 @@ public class PhotoImporter {
 
                 final Integer stationId = Integer.valueOf(matcher.group(2));
                 if (country.isPresent()) {
-                    final Bahnhof station = repository.get(countryCode).get(stationId);
+                    final Station station = repository.get(countryCode).get(stationId);
                     if (station == null) {
                         report.put(importFile.getAbsolutePath(), "Station " + stationId + " not found");
                         break;
@@ -117,7 +118,9 @@ public class PhotoImporter {
                     break;
                 }
 
-                final Optional<StatusLine> status = postToElastic(stationId, countryCode, photographer, flag);
+                final Bahnhofsfoto bahnhofsfoto = new Bahnhofsfoto(stationId, "/fotos/" + countryCode + "/" + stationId + ".jpg",
+                        getLicense(photographer.getLicense(), countryCode), photographer.getName(), System.currentTimeMillis(), flag, countryCode);
+                final Optional<StatusLine> status = postToElastic(bahnhofsfoto);
                 if (status.isPresent() && status.get().getStatusCode() != 201) {
                     report.put(importFile.getAbsolutePath(), "Elastic error response: " + status.get().toString());
                     break;
@@ -139,17 +142,9 @@ public class PhotoImporter {
         }
     }
 
-    private Optional<StatusLine> postToElastic(final Integer stationId, final String countryCode, final Photographer photographer, final String flag) throws Exception {
-        final ObjectNode fotoJson = MAPPER.createObjectNode();
-        fotoJson.put("BahnhofsID", stationId);
-        fotoJson.put("bahnhofsfoto", "/fotos/" + countryCode + "/" + stationId + ".jpg");
-        fotoJson.put("fotolizenz", getLicense(photographer.getLicense(), countryCode));
-        fotoJson.put("fotografenname", photographer.getName());
-        fotoJson.put("erfasst", System.currentTimeMillis());
-        fotoJson.put("flag", flag);
-        fotoJson.put("laenderkennzeichen", countryCode);
+    protected Optional<StatusLine> postToElastic(final Bahnhofsfoto bahnhofsfoto) throws Exception {
         final StatusLine statusLine;
-        try (final CloseableHttpResponse response = httpClient.post(getPhotoUrl(countryCode), fotoJson.toString())) {
+        try (final CloseableHttpResponse response = httpClient.post(getPhotoUrl(bahnhofsfoto.getCountryCode()), MAPPER.writeValueAsString(bahnhofsfoto))) {
             statusLine = response.getStatusLine();
         }
         return Optional.of(statusLine);

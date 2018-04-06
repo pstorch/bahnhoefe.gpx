@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.PhotoImporter;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -49,7 +49,7 @@ public class SlackCommandResource {
         }
         final Matcher matcherSearch = PATTERN_SEARCH.matcher(text);
         if (matcherSearch.matches()) {
-            final List<Bahnhof> bahnhofList = repository.findByName(matcherSearch.group(1));
+            final List<Station> bahnhofList = repository.findByName(matcherSearch.group(1));
             if (bahnhofList.size() == 1) {
                 return new SlackResponse(ResponseType.in_channel, toMessage(bahnhofList.get(0)));
             } else if (bahnhofList.size() > 1){
@@ -60,7 +60,7 @@ public class SlackCommandResource {
         final Matcher matcherShow = PATTERN_SHOW.matcher(text);
         if (matcherShow.matches()) {
             final Integer id = Integer.valueOf(matcherShow.group(1));
-            final Bahnhof bahnhof = repository.findById(id);
+            final Station bahnhof = repository.findById(id);
             if (bahnhof == null) {
                 return new SlackResponse(ResponseType.in_channel, "Station with id " + id + " not found");
             } else {
@@ -70,13 +70,13 @@ public class SlackCommandResource {
         return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <station-id>%n- '/rsapi import'%n"));
     }
 
-    private String toMessage(final List<Bahnhof> bahnhofList) {
+    private String toMessage(final List<Station> bahnhofList) {
         final StringBuilder sb = new StringBuilder(String.format("Found:%n"));
         bahnhofList.forEach(bahnhof -> sb.append(String.format("- %s: %d%n", bahnhof.getTitle(), bahnhof.getId())));
         return sb.toString();
     }
 
-    private String toMessage(final Bahnhof bahnhof) {
+    private String toMessage(final Station bahnhof) {
         return String.format("Station: %d - %s%nCountry: %s%nLocation: %f,%f%nPhotographer: %s%nLicense: %s%nPhoto: %s%n", bahnhof.getId(), bahnhof.getTitle(), bahnhof.getCountry(), bahnhof.getLat(), bahnhof.getLon(), bahnhof.getPhotographer(), bahnhof.getLicense(), bahnhof.getPhotoUrl());
     }
 

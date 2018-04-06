@@ -1,7 +1,6 @@
 package org.railwaystations.api.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -12,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.model.Registration;
+import org.railwaystations.api.model.elastic.Fotograf;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,12 +92,9 @@ public class RegistrationResource {
     }
 
     private void saveRegistration(@NotNull @Valid final Registration registration) {
-        final ObjectNode fotografJson = MAPPER.createObjectNode();
-        fotografJson.put("fotografenname", registration.getNickname());
-        fotografJson.put("fotografenURL", registration.getLink());
-        fotografJson.put("fotografenlizenz", licenseMap.getOrDefault(registration.getLicense(), registration.getLicense()));
+        final Fotograf fotograf = new Fotograf(registration.getNickname(), registration.getLink(), licenseMap.getOrDefault(registration.getLicense(), registration.getLicense()));
         try (final PrintWriter pw = new PrintWriter(new File(regDir, registration.getNickname() + ".json"), "UTF-8")) {
-            pw.println(fotografJson.toString());
+            MAPPER.writeValue(pw, fotograf);
             pw.flush();
         } catch (final IOException e) {
             LOG.error("Couldn't write registration file ", e);

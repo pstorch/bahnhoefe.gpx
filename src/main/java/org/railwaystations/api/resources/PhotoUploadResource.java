@@ -8,7 +8,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.eclipse.jetty.util.URIUtil;
 import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.TokenGenerator;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,12 +76,12 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.UNAUTHORIZED);
         }
 
-        final Map<Integer, Bahnhof> stationsMap = repository.get(country);
+        final Map<Integer, Station> stationsMap = repository.get(country);
         if (stationsMap.isEmpty()) {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
-        final Bahnhof station = stationsMap.get(Integer.valueOf(stationId));
+        final Station station = stationsMap.get(Integer.valueOf(stationId));
         if (station == null) {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
@@ -111,7 +111,7 @@ public class PhotoUploadResource {
         return duplicate ? Response.status(Response.Status.CONFLICT).build() : Response.accepted().build();
     }
 
-    private boolean isDuplicate(@NotNull @HeaderParam("Station-Id") final String stationId, final Bahnhof station, final File uploadCountryDir) {
+    private boolean isDuplicate(@NotNull @HeaderParam("Station-Id") final String stationId, final Station station, final File uploadCountryDir) {
         boolean duplicate = station.hasPhoto();
         if (!duplicate) {
             final File[] listFiles = uploadCountryDir.listFiles(pathname -> {

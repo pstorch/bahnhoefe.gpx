@@ -1,5 +1,6 @@
 package org.railwaystations.api.resources;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.assertj.core.util.Files;
 import org.junit.Before;
@@ -7,16 +8,20 @@ import org.junit.Test;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.mail.MockMailer;
 import org.railwaystations.api.model.Registration;
+import org.railwaystations.api.model.elastic.Fotograf;
 import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 public class RegistrationResourceTest {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private MockMonitor monitor;
     private MockMailer mailer;
@@ -32,7 +37,7 @@ public class RegistrationResourceTest {
     }
 
     @Test
-    public void testPost() {
+    public void testPost() throws IOException {
         final Registration registration = new Registration("nickname", "nickname@example.com", "license", true, "linking", "link");
         final Response response = resource.post("apiKey", registration);
 
@@ -49,6 +54,10 @@ public class RegistrationResourceTest {
 
         final File regFile = new File(new File(workDir, "registrations"), "nickname.json");
         assertThat(regFile.exists(), is(true));
+        final Fotograf fotograf = MAPPER.readValue(regFile, Fotograf.class);
+        assertThat(fotograf.getName(), is("nickname"));
+        assertThat(fotograf.getUrl(), is("link"));
+        assertThat(fotograf.getLicense(), is("license"));
     }
 
 }

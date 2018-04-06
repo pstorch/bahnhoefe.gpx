@@ -3,7 +3,7 @@ package org.railwaystations.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Bahnhof {
+public class Station {
 
     private static final int EARTH_RADIUS = 6371;
 
@@ -43,15 +43,15 @@ public class Bahnhof {
     @JsonIgnore
     private final String statUser;
 
-    public Bahnhof() {
+    public Station() {
         this(0, null, null, new Coordinates(0.0, 0.0), null);
     }
 
-    public Bahnhof(final int id, final String country, final String title, final Coordinates coordinates, final Photo photo) {
+    public Station(final int id, final String country, final String title, final Coordinates coordinates, final Photo photo) {
         this(id, country, title, coordinates, null, photo);
     }
 
-    public Bahnhof(final int id, final String country, final String title, final Coordinates coordinates, final String ds100, final Photo photo) {
+    public Station(final int id, final String country, final String title, final Coordinates coordinates, final String ds100, final Photo photo) {
         super();
         this.id = id;
         this.country = country;
@@ -113,7 +113,7 @@ public class Bahnhof {
                 + Math.cos(Math.toRadians(this.lat)) * Math.cos(Math.toRadians(latitude))
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         final Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return Bahnhof.EARTH_RADIUS * c;
+        return Station.EARTH_RADIUS * c;
     }
 
     public boolean appliesTo(final Boolean hasPhoto, final String photographer, final Integer maxDistance, final Double lat, final Double lon) {

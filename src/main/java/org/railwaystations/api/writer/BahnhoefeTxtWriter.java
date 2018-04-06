@@ -1,6 +1,6 @@
 package org.railwaystations.api.writer;
 
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -16,11 +16,11 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 @Produces(BahnhoefeTxtWriter.TEXT_PLAIN)
-public class BahnhoefeTxtWriter implements MessageBodyWriter<List<Bahnhof>> {
+public class BahnhoefeTxtWriter implements MessageBodyWriter<List<Station>> {
 
     public static final String TEXT_PLAIN = "text/plain";
 
-    private static void bahnhofToTxt(final PrintWriter pw, final Bahnhof bahnhof) {
+    private static void bahnhofToTxt(final PrintWriter pw, final Station bahnhof) {
         pw.println(String.format("%s\t%s\t%s\t%s\t%s\t10,10\t0,-10", Double.toString(bahnhof.getLat()),
                 Double.toString(bahnhof.getLon()), bahnhof.getTitle(), bahnhof.getTitle(),
                 bahnhof.hasPhoto() ? "gruenpunkt.png" : "rotpunkt.png"));
@@ -33,13 +33,13 @@ public class BahnhoefeTxtWriter implements MessageBodyWriter<List<Bahnhof>> {
     }
 
     @Override
-    public long getSize(final List<Bahnhof> t, final Class<?> type, final Type genericType,
+    public long getSize(final List<Station> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType) {
         return -1;
     }
 
     @Override
-    public void writeTo(final List<Bahnhof> t, final Class<?> type, final Type genericType,
+    public void writeTo(final List<Station> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
         final PrintWriter pw = new PrintWriter(new OutputStreamWriter(entityStream, "UTF-8"));

@@ -6,7 +6,7 @@ import com.jcabi.http.mock.MkGrizzlyContainer;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
 
 import java.io.IOException;
@@ -36,16 +36,16 @@ public class BahnhoefeLoaderFiTest {
 			final BahnhoefeLoader loader = new BaseBahnhoefeLoader(new Country("fi"), container.home().toURL(),
 					container.home().toURL());
 
-			final Map<Integer, Bahnhof> bahnhoefe = loader.loadBahnhoefe(new HashMap<>(), "https://railway-stations.org");
+			final Map<Integer, Station> bahnhoefe = loader.loadBahnhoefe(new HashMap<>(), "https://railway-stations.org");
 
-			final Bahnhof oulunkylae = bahnhoefe.get(1000015);
+			final Station oulunkylae = bahnhoefe.get(1000015);
 			assertThat(oulunkylae.getId(), CoreMatchers.is(1000015));
 			assertThat(oulunkylae.getTitle(), CoreMatchers.is("Oulunkylä"));
 			assertThat(oulunkylae.getLat(), CoreMatchers.is(60.22926457931425));
 			assertThat(oulunkylae.getLon(), CoreMatchers.is(24.96850881268564));
 			assertThat(oulunkylae.hasPhoto(), CoreMatchers.is(false));
 
-			final Bahnhof tornio = bahnhoefe.get(1001318);
+			final Station tornio = bahnhoefe.get(1001318);
 			assertThat(tornio.getId(), CoreMatchers.is(1001318));
 			assertThat(tornio.getTitle(), CoreMatchers.is("Tornio-Itäinen"));
 			assertThat(tornio.getLat(), CoreMatchers.is(65.85313472639608));
@@ -53,7 +53,7 @@ public class BahnhoefeLoaderFiTest {
 			assertThat(tornio.hasPhoto(), CoreMatchers.is(true));
 			assertThat(tornio.getPhotographer(), CoreMatchers.is("Anonym"));
 			assertThat(tornio.getPhotoUrl(), CoreMatchers.is("https://railway-stations.org/sites/default/files/previewbig/1000274.jpg"));
-			assertThat(tornio.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0) "));
+			assertThat(tornio.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0)"));
 		}
 	}
 

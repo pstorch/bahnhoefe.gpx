@@ -1,7 +1,7 @@
 package org.railwaystations.api.resources;
 
 import org.railwaystations.api.BahnhoefeRepository;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.writer.PhotographersTxtWriter;
 
 import javax.ws.rs.*;
@@ -40,8 +40,8 @@ public class PhotographersResource {
 
     private Map<String, Long> getPhotographerMap(final String country) {
         final Map<String, Long> photographerMap = repository.get(country).values().stream()
-                .filter(Bahnhof::hasPhoto)
-                .map(Bahnhof::getStatUser)
+                .filter(Station::hasPhoto)
+                .map(Station::getStatUser)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         if (photographerMap.isEmpty()) {
             throw new WebApplicationException(404);

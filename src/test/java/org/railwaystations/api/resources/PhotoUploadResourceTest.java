@@ -10,7 +10,7 @@ import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.loader.BahnhoefeLoader;
 import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
@@ -42,9 +42,9 @@ public class PhotoUploadResourceTest {
     public void setUp() throws IOException {
         final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
         final BahnhoefeLoader loader = Mockito.mock(BahnhoefeLoader.class);
-        final Map<Integer, Bahnhof> stationsMap = new HashMap<>(2);
-        stationsMap.put(4711, new Bahnhof(4711, "de", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
-        stationsMap.put(1234, new Bahnhof(1234, "de", "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(4711, "URL", "Jim Knopf", "photographerUrl", null, "CC0", null)));
+        final Map<Integer, Station> stationsMap = new HashMap<>(2);
+        stationsMap.put(4711, new Station(4711, "de", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
+        stationsMap.put(1234, new Station(1234, "de", "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(4711, "URL", "Jim Knopf", "photographerUrl", null, "CC0", null)));
         Mockito.when(loader.loadBahnhoefe(Mockito.anyMap(), Mockito.anyString())).thenReturn(stationsMap);
         Mockito.when(loader.getCountry()).thenReturn(new Country("de", null, null, null, null));
 

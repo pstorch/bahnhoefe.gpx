@@ -1,7 +1,7 @@
 package org.railwaystations.api.resources;
 
 import org.railwaystations.api.BahnhoefeRepository;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.writer.BahnhoefeGpxWriter;
 import org.railwaystations.api.writer.BahnhoefeTxtWriter;
 
@@ -33,7 +33,7 @@ public class BahnhoefeResource {
     @Path("stations")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN + ";charset=UTF-8"})
-    public List<Bahnhof> get(@QueryParam(BahnhoefeResource.COUNTRY) final String country,
+    public List<Station> get(@QueryParam(BahnhoefeResource.COUNTRY) final String country,
                              @QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
                              @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
                              @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
@@ -46,12 +46,12 @@ public class BahnhoefeResource {
     @Path("{country}/stations")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", BahnhoefeGpxWriter.GPX_MIME_TYPE,
             BahnhoefeTxtWriter.TEXT_PLAIN + ";charset=UTF-8"})
-    public List<Bahnhof> getWithCountry(@PathParam(BahnhoefeResource.COUNTRY) final String country,
-                             @QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
-                             @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
-                             @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
-                             @QueryParam(BahnhoefeResource.LAT) final Double lat,
-                             @QueryParam(BahnhoefeResource.LON) final Double lon) throws IOException {
+    public List<Station> getWithCountry(@PathParam(BahnhoefeResource.COUNTRY) final String country,
+                                        @QueryParam(BahnhoefeResource.HAS_PHOTO) final Boolean hasPhoto,
+                                        @QueryParam(BahnhoefeResource.PHOTOGRAPHER) final String photographer,
+                                        @QueryParam(BahnhoefeResource.MAX_DISTANCE) final Integer maxDistance,
+                                        @QueryParam(BahnhoefeResource.LAT) final Double lat,
+                                        @QueryParam(BahnhoefeResource.LON) final Double lon) throws IOException {
         return getBahnhoefeMap(country)
                 .values().stream().filter(bahnhof -> bahnhof.appliesTo(hasPhoto, photographer, maxDistance, lat, lon)).collect(Collectors.toList());
     }
@@ -59,13 +59,13 @@ public class BahnhoefeResource {
     @GET
     @Path("{country}/stations/{id}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
-    public Bahnhof getById(@PathParam(BahnhoefeResource.COUNTRY) final String country,
-                                        @PathParam(BahnhoefeResource.ID) final Integer id) throws IOException {
+    public Station getById(@PathParam(BahnhoefeResource.COUNTRY) final String country,
+                           @PathParam(BahnhoefeResource.ID) final Integer id) throws IOException {
         return getBahnhoefeMap(country).get(id);
     }
 
-    private Map<Integer, Bahnhof> getBahnhoefeMap(final String country) {
-        final Map<Integer, Bahnhof> bahnhofMap = repository.get(country);
+    private Map<Integer, Station> getBahnhoefeMap(final String country) {
+        final Map<Integer, Station> bahnhofMap = repository.get(country);
         if (bahnhofMap.isEmpty()) {
             throw new WebApplicationException(404);
         }

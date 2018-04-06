@@ -1,6 +1,6 @@
 package org.railwaystations.api.writer;
 
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -18,7 +18,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 @Produces(BahnhoefeGpxWriter.GPX_MIME_TYPE)
-public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Bahnhof>> {
+public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Station>> {
 
     public static final String GPX_MIME_TYPE = "application/service+xml";
 
@@ -32,7 +32,7 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Bahnhof>> {
 
     private static final String LAT_ELEMENT = "lat";
 
-    private static void bahnhofToXml(final XMLStreamWriter xmlw, final Bahnhof bahnhof) {
+    private static void bahnhofToXml(final XMLStreamWriter xmlw, final Station bahnhof) {
         try {
             xmlw.writeStartElement(BahnhoefeGpxWriter.WPT_ELEMENT);
             xmlw.writeAttribute(BahnhoefeGpxWriter.LAT_ELEMENT, Double.toString(bahnhof.getLat()));
@@ -54,7 +54,7 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Bahnhof>> {
     }
 
     @Override
-    public void writeTo(final List<Bahnhof> t, final Class<?> type, final Type genericType,
+    public void writeTo(final List<Station> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
         try {
@@ -74,7 +74,7 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Bahnhof>> {
     }
 
     @Override
-    public long getSize(final List<Bahnhof> t, final Class<?> type, final Type genericType,
+    public long getSize(final List<Station> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType) {
         return 0;
     }

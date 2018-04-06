@@ -6,7 +6,7 @@ import com.jcabi.http.mock.MkGrizzlyContainer;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
 
 import java.io.IOException;
@@ -36,16 +36,16 @@ public class BahnhoefeLoaderChTest {
 			final BahnhoefeLoader loader = new BahnhoefeLoaderCh(new Country("ch"), container.home().toURL(),
 					container.home().toURL());
 
-			final Map<Integer, Bahnhof> bahnhoefe = loader.loadBahnhoefe(new HashMap<>(), "https://railway-stations.org");
+			final Map<Integer, Station> bahnhoefe = loader.loadBahnhoefe(new HashMap<>(), "https://railway-stations.org");
 
-			final Bahnhof etoy = bahnhoefe.get(8501042);
+			final Station etoy = bahnhoefe.get(8501042);
 			assertThat(etoy.getId(), CoreMatchers.is(8501042));
 			assertThat(etoy.getTitle(), CoreMatchers.is("Etoy"));
 			assertThat(etoy.getLat(), CoreMatchers.is(46.47515995026246));
 			assertThat(etoy.getLon(), CoreMatchers.is(6.427139085981211));
 			assertThat(etoy.hasPhoto(), CoreMatchers.is(false));
 
-			final Bahnhof zweidlen = bahnhoefe.get(8503405);
+			final Station zweidlen = bahnhoefe.get(8503405);
 			assertThat(zweidlen.getId(), CoreMatchers.is(8503405));
 			assertThat(zweidlen.getTitle(), CoreMatchers.is("Zweidlen"));
 			assertThat(zweidlen.getLat(), CoreMatchers.is(47.57044026489993));
@@ -53,7 +53,7 @@ public class BahnhoefeLoaderChTest {
 			assertThat(zweidlen.hasPhoto(), CoreMatchers.is(true));
 			assertThat(zweidlen.getPhotographer(), CoreMatchers.is("@Mac4Me"));
 			assertThat(zweidlen.getPhotoUrl(), CoreMatchers.is("https://railway-stations.org/sites/default/files/previewbig/%40Mac4Me-8503405_BF.jpg"));
-			assertThat(zweidlen.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0) "));
+			assertThat(zweidlen.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0)"));
 		}
 	}
 

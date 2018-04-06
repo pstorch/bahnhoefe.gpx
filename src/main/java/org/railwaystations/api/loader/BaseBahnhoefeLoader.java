@@ -1,19 +1,22 @@
 package org.railwaystations.api.loader;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.joda.time.DateTime;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.BackendHttpClient;
 import org.railwaystations.api.model.*;
+import org.railwaystations.api.model.elastic.Bahnhofsfoto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 public class BaseBahnhoefeLoader implements BahnhoefeLoader {
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String HITS_ELEMENT = "hits";
     private static final String SOURCE_ELEMENT = "_source";
     private static final Logger LOG = LoggerFactory.getLogger(BaseBahnhoefeLoader.class);
@@ -37,7 +40,7 @@ public class BaseBahnhoefeLoader implements BahnhoefeLoader {
     }
 
     @Override
-    public final Map<Integer, Bahnhof> loadBahnhoefe(final Map<String, Photographer> photographers, final String photoBaseUrl) {
+    public final Map<Integer, Station> loadBahnhoefe(final Map<String, Photographer> photographers, final String photoBaseUrl) {
         try {
             return fetchBahnhoefe(fetchPhotos(new HashMap<>(), photographers, photoBaseUrl));
         } catch (final Exception e) {
@@ -50,7 +53,7 @@ public class BaseBahnhoefeLoader implements BahnhoefeLoader {
                 .get(BaseBahnhoefeLoader.HITS_ELEMENT)
                 .get(BaseBahnhoefeLoader.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
-            final Photo photo = createPhotoFromElasticSourceElement(hits.get(i).get(BaseBahnhoefeLoader.SOURCE_ELEMENT), photographers, photoBaseUrl);
+            final Photo photo = createPhoto(hits.get(i).get(BaseBahnhoefeLoader.SOURCE_ELEMENT), photographers, photoBaseUrl);
             if (photos.get(photo.getStationId()) != null) {
                 LOG.info("Photo for Station " + photo.getStationId() + " has duplicates");
             }
@@ -59,16 +62,12 @@ public class BaseBahnhoefeLoader implements BahnhoefeLoader {
         return photos;
     }
 
-    private Photo createPhotoFromElasticSourceElement(final JsonNode photoJson, final Map<String, Photographer> photographers, final String photoBaseUrl) {
-        final JsonNode id = photoJson.get("BahnhofsID");
-        final String photographer = photoJson.get("fotografenname").asText();
-        final String statUser = "1".equals(photoJson.get("flag").asText()) ? "@RecumbentTravel" : photographer;
-        final String url = photoBaseUrl + photoJson.get("bahnhofsfoto").asText();
-        final String license = photoJson.get("fotolizenz").asText();
-        final String erfasst = photoJson.get("erfasst").asText();
-        final long createdAt = NumberUtils.isDigits(erfasst)?Long.parseLong(erfasst):DateTime.parse(erfasst).toDate().getTime();
-
-        return new Photo(id.asInt(), url, photographer, getPhotographerUrl(photographer, photographers), createdAt, license, statUser);
+    private Photo createPhoto(final JsonNode photoJson, final Map<String, Photographer> photographers, final String photoBaseUrl) throws IOException {
+        final Bahnhofsfoto bahnhofsfoto = MAPPER.treeToValue(photoJson, Bahnhofsfoto.class);
+        final String statUser = "1".equals(photoJson.get("flag").asText()) ? "@RecumbentTravel" : bahnhofsfoto.getPhotographer();
+        return new Photo(bahnhofsfoto.getId(), photoBaseUrl + bahnhofsfoto.getUrl(),
+                bahnhofsfoto.getPhotographer(), getPhotographerUrl(bahnhofsfoto.getPhotographer(), photographers),
+                bahnhofsfoto.getCreatedAt(), StringUtils.trimToEmpty(bahnhofsfoto.getLicense()), statUser);
     }
 
     private String getPhotographerUrl(final String nickname, final Map<String, Photographer> photographers) {
@@ -76,24 +75,24 @@ public class BaseBahnhoefeLoader implements BahnhoefeLoader {
         return photographer != null ? photographer.getUrl() : null;
     }
 
-    private Map<Integer, Bahnhof> fetchBahnhoefe(final Map<Integer, Photo> photos) throws Exception {
-        final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>();
+    private Map<Integer, Station> fetchBahnhoefe(final Map<Integer, Photo> photos) throws Exception {
+        final Map<Integer, Station> bahnhoefe = new HashMap<>();
 
         final JsonNode hits = httpclient.readJsonFromUrl(bahnhoefeUrl)
                                 .get(BaseBahnhoefeLoader.HITS_ELEMENT)
                                 .get(BaseBahnhoefeLoader.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
-            final Bahnhof bahnhof = createBahnhofFromElasticSourceElement(photos, hits.get(i).get(BaseBahnhoefeLoader.SOURCE_ELEMENT));
+            final Station bahnhof = createBahnhofFromElasticSourceElement(photos, hits.get(i).get(BaseBahnhoefeLoader.SOURCE_ELEMENT));
             bahnhoefe.put(bahnhof.getId(), bahnhof);
         }
         return bahnhoefe;
     }
 
-    protected Bahnhof createBahnhofFromElasticSourceElement(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
+    protected Station createBahnhofFromElasticSourceElement(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
         final JsonNode propertiesJson = sourceJson.get("properties");
         final Integer id = propertiesJson.get("UICIBNR").asInt();
         final JsonNode abkuerzung = propertiesJson.get("abkuerzung");
-        return new Bahnhof(id,
+        return new Station(id,
                 getCountry().getCode(),
                 propertiesJson.get("name").asText(),
                 readCoordinates(sourceJson),

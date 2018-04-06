@@ -1,7 +1,7 @@
 package org.railwaystations.api.loader;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
@@ -16,9 +16,9 @@ public class BahnhoefeLoaderDe extends BaseBahnhoefeLoader {
     }
 
     @Override
-    protected Bahnhof createBahnhofFromElasticSourceElement(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
+    protected Station createBahnhofFromElasticSourceElement(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
         final Integer id = sourceJson.get("BahnhofNr").asInt();
-        return new Bahnhof(id,
+        return new Station(id,
                 getCountry().getCode(),
                 sourceJson.get("title").asText(),
                 new Coordinates(sourceJson.get("lat").asDouble(),

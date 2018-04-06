@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 import org.railwaystations.api.BahnhoefeRepository;
 import org.railwaystations.api.loader.BahnhoefeLoader;
 import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
@@ -33,14 +33,14 @@ public class BahnhoefeResourceTest {
         final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
 
         final BahnhoefeLoader loaderXY = Mockito.mock(BahnhoefeLoader.class);
-        final Map<Integer, Bahnhof> bahnhoefeXY = new HashMap<>(2);
-        bahnhoefeXY.put(5, new Bahnhof(5, "xy", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(5, "URL", "Jim Knopf", "photographerUrl", null, "CC0", "licenseUrl")));
+        final Map<Integer, Station> bahnhoefeXY = new HashMap<>(2);
+        bahnhoefeXY.put(5, new Station(5, "xy", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(5, "URL", "Jim Knopf", "photographerUrl", null, "CC0", "licenseUrl")));
         Mockito.when(loaderXY.loadBahnhoefe(Mockito.anyMap(), Mockito.anyString())).thenReturn(bahnhoefeXY);
         Mockito.when(loaderXY.getCountry()).thenReturn(new Country("xy", null, null, null, null));
 
         final BahnhoefeLoader loaderAB = Mockito.mock(BahnhoefeLoader.class);
-        final Map<Integer, Bahnhof> bahnhoefe = new HashMap<>(2);
-        bahnhoefe.put(3, new Bahnhof(3, "ab", "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(3, "URL2", "Peter Pan", "photographerUrl2", null, "CC0 by SA", "licenseUrl2")));
+        final Map<Integer, Station> bahnhoefe = new HashMap<>(2);
+        bahnhoefe.put(3, new Station(3, "ab", "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(3, "URL2", "Peter Pan", "photographerUrl2", null, "CC0 by SA", "licenseUrl2")));
         Mockito.when(loaderAB.loadBahnhoefe(Mockito.anyMap(), Mockito.anyString())).thenReturn(bahnhoefe);
         Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", null, null, null, null));
 
@@ -49,8 +49,8 @@ public class BahnhoefeResourceTest {
 
     @Test
     public void testGetXY() throws IOException {
-        final List<Bahnhof> resultXY = resource.get("xy", null, null, null, null, null);
-        final Bahnhof bahnhofXY = resultXY.get(0);
+        final List<Station> resultXY = resource.get("xy", null, null, null, null, null);
+        final Station bahnhofXY = resultXY.get(0);
         assertThat(bahnhofXY, notNullValue());
         assertThat(bahnhofXY.getId(), equalTo(5));
         assertThat(bahnhofXY.getTitle(), equalTo("Lummerland"));
@@ -65,12 +65,12 @@ public class BahnhoefeResourceTest {
 
     @Test
     public void testGetAB() throws IOException {
-        final List<Bahnhof> resultAB = resource.get("ab", null, null, null, null, null);
-        final Bahnhof bahnhof = resultAB.get(0);
+        final List<Station> resultAB = resource.get("ab", null, null, null, null, null);
+        final Station bahnhof = resultAB.get(0);
         assertNimmerland(bahnhof);
     }
 
-    private void assertNimmerland(final Bahnhof bahnhof) {
+    private void assertNimmerland(final Station bahnhof) {
         assertThat(bahnhof, notNullValue());
         assertThat(bahnhof.getId(), equalTo(3));
         assertThat(bahnhof.getTitle(), equalTo("Nimmerland"));
@@ -85,13 +85,13 @@ public class BahnhoefeResourceTest {
 
     @Test
     public void testGetById() throws IOException {
-        final Bahnhof bahnhof = resource.getById("ab", 3);
+        final Station bahnhof = resource.getById("ab", 3);
         assertNimmerland(bahnhof);
     }
 
     @Test
     public void testGetAll() throws IOException {
-        final List<Bahnhof> resultAll = resource.get(null, null, null, null, null, null);
+        final List<Station> resultAll = resource.get(null, null, null, null, null, null);
         assertThat(resultAll.size(), equalTo(2));
     }
 

@@ -6,7 +6,7 @@ import com.google.common.cache.LoadingCache;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.loader.BahnhoefeLoader;
 import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photographer;
 import org.railwaystations.api.model.Statistic;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class BahnhoefeRepository {
 
-    private final LoadingCache<String, Map<Integer, Bahnhof>> cache;
+    private final LoadingCache<String, Map<Integer, Station>> cache;
     private final Set<Country> countries;
     private final Monitor monitor;
     private final PhotographerLoader photographerLoader;
@@ -33,9 +33,9 @@ public class BahnhoefeRepository {
         this.photographerLoader = photographerLoader;
     }
 
-    public Map<Integer, Bahnhof> get(final String countryCode) {
+    public Map<Integer, Station> get(final String countryCode) {
         if (countryCode == null) {
-            final Map<Integer, Bahnhof> map = new HashMap<>();
+            final Map<Integer, Station> map = new HashMap<>();
             for (final Country aCountry : countries) {
                 map.putAll(cache.getUnchecked(aCountry.getCode()));
             }
@@ -68,9 +68,9 @@ public class BahnhoefeRepository {
         refresher.start();
     }
 
-    public Bahnhof findById(final Integer id) {
+    public Station findById(final Integer id) {
         for (final Country country : getCountries()) {
-            final Bahnhof bahnhof = get(country.getCode()).get(id);
+            final Station bahnhof = get(country.getCode()).get(id);
             if (bahnhof != null) {
                 return bahnhof;
             }
@@ -78,8 +78,8 @@ public class BahnhoefeRepository {
         return null;
     }
 
-    public List<Bahnhof> findByName(final String name) {
-        final List<Bahnhof> found = new ArrayList<>();
+    public List<Station> findByName(final String name) {
+        final List<Station> found = new ArrayList<>();
         for (final Country country : getCountries()) {
             found.addAll(get(country.getCode())
                     .values()
@@ -121,7 +121,7 @@ public class BahnhoefeRepository {
         return countries.stream().filter(c -> c.getCode().equals(countryCode)).findFirst();
     }
 
-    private static class BahnhoefeCacheLoader extends CacheLoader<String, Map<Integer, Bahnhof>> {
+    private static class BahnhoefeCacheLoader extends CacheLoader<String, Map<Integer, Station>> {
         private final Monitor monitor;
         private final List<BahnhoefeLoader> loaders;
         private final PhotographerLoader photographerLoader;
@@ -134,7 +134,7 @@ public class BahnhoefeRepository {
             this.photoBaseUrl = photoBaseUrl;
         }
 
-        public Map<Integer, Bahnhof> load(final String countryCode) {
+        public Map<Integer, Station> load(final String countryCode) {
             try {
                 for (final BahnhoefeLoader loader : loaders) {
                     if (loader.getCountry().getCode().equals(countryCode)) {

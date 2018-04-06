@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.railwaystations.api.mail.MockMailer;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Photographer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -55,7 +55,7 @@ public class BahnhoefeServiceAppTest {
 
     @Test
     public void stationsAllCountries() throws IOException {
-        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe("/stations", 200);
+        final Station[] bahnhoefe = assertLoadBahnhoefe("/stations", 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
         assertThat(findById(bahnhoefe, 8501042), notNullValue());
     }
@@ -63,34 +63,34 @@ public class BahnhoefeServiceAppTest {
     @Test
     public void stationById() throws IOException {
         final Response response = loadRaw("/de/stations/41", 200);
-        final Bahnhof bahnhof = response.readEntity(Bahnhof.class);
+        final Station bahnhof = response.readEntity(Station.class);
         assertThat(bahnhof.getId(), is(41));
         assertThat(bahnhof.getTitle(), is( "Albersdorf"));
     }
 
     @Test
     public void stationsDe() throws IOException {
-        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s", "stations"), 200);
+        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s", "stations"), 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
         assertThat(findById(bahnhoefe, 8501042), nullValue());
     }
 
     @Test
     public void stationsDeQueryParam() throws IOException {
-        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/%s?country=de", "stations"), 200);
+        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/%s?country=de", "stations"), 200);
         assertThat(findById(bahnhoefe, 41), notNullValue());
         assertThat(findById(bahnhoefe, 8501042), nullValue());
     }
 
     @Test
     public void stationsDePhotograph() throws IOException {
-        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=@hessenpfaelzer", "stations"), 200);
+        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=@hessenpfaelzer", "stations"), 200);
         assertThat(findById(bahnhoefe, 7066), notNullValue());
     }
 
     @Test
     public void stationsCh() throws IOException {
-        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/ch/%s", "stations"), 200);
+        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/ch/%s", "stations"), 200);
         assertThat(findById(bahnhoefe, 8501042), notNullValue());
         assertThat(findById(bahnhoefe, 41), nullValue());
     }
@@ -102,13 +102,13 @@ public class BahnhoefeServiceAppTest {
 
     @Test
     public void stationsDeFromAnonym() throws IOException {
-        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=Anonym", "stations"), 200);
+        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=Anonym", "stations"), 200);
         assertThat(bahnhoefe.length, is(9));
     }
 
     @Test
     public void stationsDeFromDgerkrathWithinMax5km() throws IOException {
-        final Bahnhof[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?maxDistance=5&lat=51.2670337567818&lon=7.19520717859267&photographer=@Dgerkrath", "stations"), 200);
+        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?maxDistance=5&lat=51.2670337567818&lon=7.19520717859267&photographer=@Dgerkrath", "stations"), 200);
         assertThat(bahnhoefe.length, is(3));
     }
 
@@ -161,13 +161,13 @@ public class BahnhoefeServiceAppTest {
         return new String(buffer, "UTF-8").trim();
     }
 
-    private Bahnhof[] assertLoadBahnhoefe(final String path, final int expectedStatus) throws IOException {
+    private Station[] assertLoadBahnhoefe(final String path, final int expectedStatus) throws IOException {
         final Response response = loadRaw(path, expectedStatus);
 
         if (response == null) {
-            return new Bahnhof[0];
+            return new Station[0];
         }
-        return response.readEntity(Bahnhof[].class);
+        return response.readEntity(Station[].class);
     }
 
     private Response loadRaw(final String path, final int expectedStatus) throws IOException {
@@ -183,8 +183,8 @@ public class BahnhoefeServiceAppTest {
         return null;
     }
 
-    private Bahnhof findById(final Bahnhof[] bahnhoefe, final int id) {
-        for (final Bahnhof bahnhof : bahnhoefe) {
+    private Station findById(final Station[] bahnhoefe, final int id) {
+        for (final Station bahnhof : bahnhoefe) {
             if (bahnhof.getId() == id) {
                 return bahnhof;
             }

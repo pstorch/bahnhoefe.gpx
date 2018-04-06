@@ -6,7 +6,7 @@ import com.jcabi.http.mock.MkGrizzlyContainer;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-import org.railwaystations.api.model.Bahnhof;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
 
 import java.io.IOException;
@@ -36,9 +36,9 @@ public class BahnhoefeLoaderDeTest {
 			final BahnhoefeLoader loader = new BahnhoefeLoaderDe(new Country("de"), container.home().toURL(),
 					container.home().toURL());
 
-			final Map<Integer, Bahnhof> bahnhoefe = loader.loadBahnhoefe(new HashMap<>(), "http://www.deutschlands-bahnhoefe.org");
+			final Map<Integer, Station> bahnhoefe = loader.loadBahnhoefe(new HashMap<>(), "http://www.deutschlands-bahnhoefe.org");
 
-			final Bahnhof zweibruecken = bahnhoefe.get(7066);
+			final Station zweibruecken = bahnhoefe.get(7066);
 			assertThat(zweibruecken.getId(), CoreMatchers.is(7066));
 			assertThat(zweibruecken.getTitle(), CoreMatchers.is("Zweibrücken Hbf"));
 			assertThat(zweibruecken.getLat(), CoreMatchers.is(49.2467252285295));
@@ -47,10 +47,10 @@ public class BahnhoefeLoaderDeTest {
 			assertThat(zweibruecken.getPhotographer(), CoreMatchers.is("@hessenpfaelzer"));
 			assertThat(zweibruecken.getDS100(), CoreMatchers.is("SZW"));
 			assertThat(zweibruecken.getPhotoUrl(), CoreMatchers.is("http://www.deutschlands-bahnhoefe.org/sites/default/files/previewbig/7066_1.jpg"));
-			assertThat(zweibruecken.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0) "));
-			assertThat(zweibruecken.getCreatedAt(), CoreMatchers.is(1457327447000L));
+			assertThat(zweibruecken.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0)"));
+			assertThat(zweibruecken.getCreatedAt(), CoreMatchers.is(1523044367000L));
 
-			final Bahnhof albersdorf = bahnhoefe.get(41);
+			final Station albersdorf = bahnhoefe.get(41);
 			assertThat(albersdorf.getId(), CoreMatchers.is(41));
 			assertThat(albersdorf.getTitle(), CoreMatchers.is("Albersdorf"));
 			assertThat(albersdorf.getLat(), CoreMatchers.is(54.1461697552048));
