@@ -59,19 +59,53 @@ public class PhotoImporterTest {
     }
 
     @Test
-    public void testImport() throws IOException {
+    public void testImportHappyPath() throws IOException {
         final File importFile = createFile("de", "@storchp", 8009);
         final Map<String, String> result = importer.importPhotos();
-        assertThat(result.get(importFile.getAbsolutePath()), is("imported"));
-        assertThat(postedBahnhofsfoto.getPhotographer(), is("@storchp"));
-        assertThat(postedBahnhofsfoto.getCountryCode(), is("de"));
-        assertThat(postedBahnhofsfoto.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
-        assertThat(postedBahnhofsfoto.getUrl(), is("/fotos/de/8009.jpg"));
-        assertThat(postedBahnhofsfoto.getId(), is(8009));
-        assertThat(postedBahnhofsfoto.getFlag(), is("0"));
-        assertThat(postedBahnhofsfoto.getCreatedAt() / 10000, is(System.currentTimeMillis() / 10000));
+        assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for @storchp"));
+        assertPostedPhoto("@storchp","de", 8009, "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
+    }
+
+    @Test
+    public void testImportNoStationData() throws IOException {
+        final File importFile = createFile("cz", "@storchp", 4711);
+        final Map<String, String> result = importer.importPhotos();
+        assertThat(result.get(importFile.getAbsolutePath()), is("imported unknown station for @storchp"));
+        assertPostedPhoto("@storchp","cz", 4711, "0");
+        assertThat(importFile.exists(), is(false));
+        assertThat(new File(photoDir.toFile(), "cz/4711.jpg").exists(), is(true));
+    }
+
+    @Test
+    public void testImportPhotographerLevenshteinMatch() throws IOException {
+        final File importFile = createFile("de", "@GabyBecker", 8009);
+        final Map<String, String> result = importer.importPhotos();
+        assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for Gaby Becker"));
+        assertPostedPhoto("Gaby Becker", "de", 8009, "0");
+        assertThat(importFile.exists(), is(false));
+        assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
+    }
+
+    @Test
+    public void testImportFlag() throws IOException {
+        final File importFile = createFile("de", "@RecumbentTravel", 8009);
+        final Map<String, String> result = importer.importPhotos();
+        assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for Anonym"));
+        assertPostedPhoto("Anonym", "de", 8009, "1");
+        assertThat(importFile.exists(), is(false));
+        assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
+    }
+
+    private void assertPostedPhoto(final String photographerName, final String countryCode, final int stationId, final String flag) {
+        assertThat(postedBahnhofsfoto.getPhotographer(), is(photographerName));
+        assertThat(postedBahnhofsfoto.getCountryCode(), is(countryCode));
+        assertThat(postedBahnhofsfoto.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
+        assertThat(postedBahnhofsfoto.getUrl(), is("/fotos/" + countryCode + "/" + stationId + ".jpg"));
+        assertThat(postedBahnhofsfoto.getId(), is(stationId));
+        assertThat(postedBahnhofsfoto.getFlag(), is(flag));
+        assertThat(postedBahnhofsfoto.getCreatedAt() / 10000, is(System.currentTimeMillis() / 10000));
     }
 
     @Test

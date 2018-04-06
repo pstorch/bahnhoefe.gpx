@@ -94,8 +94,9 @@ public class PhotoImporter {
                 }
 
                 final Integer stationId = Integer.valueOf(matcher.group(2));
+                Station station = null;
                 if (country.isPresent()) {
-                    final Station station = repository.get(countryCode).get(stationId);
+                    station = repository.get(countryCode).get(stationId);
                     if (station == null) {
                         report.put(importFile.getAbsolutePath(), "Station " + stationId + " not found");
                         break;
@@ -112,7 +113,10 @@ public class PhotoImporter {
                     photographerName = "Anonym";
                 }
 
-                final Photographer photographer = repository.getPhotographer(photographerName);
+                Photographer photographer = repository.getPhotographer(photographerName);
+                if (photographer == null) {
+                    photographer = repository.findPhotographerByLevenshtein(photographerName).orElse(null);
+                }
                 if (photographer == null) {
                     report.put(importFile.getAbsolutePath(), "Photographer " + photographerName + " not found");
                     break;
@@ -130,7 +134,7 @@ public class PhotoImporter {
                 LOG.info("Photo " + importFile.getAbsolutePath() + " imported");
                 importCount++;
 
-                report.put(importFile.getAbsolutePath(), "imported");
+                report.put(importFile.getAbsolutePath(), "imported " + (station != null ? station.getTitle() : "unknown station") + " for " + photographer.getName());
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
                 report.put(importFile.getAbsolutePath(), "Import Error: " + e.getMessage());

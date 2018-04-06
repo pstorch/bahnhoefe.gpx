@@ -4,11 +4,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.railwaystations.api.loader.BahnhoefeLoader;
 import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photographer;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Statistic;
 import org.railwaystations.api.monitoring.Monitor;
 
@@ -18,6 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class BahnhoefeRepository {
+
+    private static final LevenshteinDistance LEVENSHTEIN_DISTANCE = new LevenshteinDistance();
 
     private final LoadingCache<String, Map<Integer, Station>> cache;
     private final Set<Country> countries;
@@ -119,6 +122,13 @@ public class BahnhoefeRepository {
 
     public Optional<Country> getCountry(final String countryCode) {
         return countries.stream().filter(c -> c.getCode().equals(countryCode)).findFirst();
+    }
+
+    public Optional<Photographer> findPhotographerByLevenshtein(final String photographerName) {
+        return photographerLoader.loadPhotographers()
+                .values().stream().filter(p -> LEVENSHTEIN_DISTANCE.apply(p.getName(), photographerName) < 3)
+                .sorted((p1, p2) -> LEVENSHTEIN_DISTANCE.apply(p1.getName(), photographerName).compareTo(LEVENSHTEIN_DISTANCE.apply(p2.getName(), photographerName)))
+                .findFirst();
     }
 
     private static class BahnhoefeCacheLoader extends CacheLoader<String, Map<Integer, Station>> {
