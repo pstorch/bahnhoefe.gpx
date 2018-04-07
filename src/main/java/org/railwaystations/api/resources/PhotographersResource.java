@@ -1,6 +1,6 @@
 package org.railwaystations.api.resources;
 
-import org.railwaystations.api.BahnhoefeRepository;
+import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.writer.PhotographersTxtWriter;
 
@@ -18,9 +18,9 @@ public class PhotographersResource {
 
     private static final String COUNTRY = "country";
 
-    private final BahnhoefeRepository repository;
+    private final StationsRepository repository;
 
-    public PhotographersResource(final BahnhoefeRepository repository) {
+    public PhotographersResource(final StationsRepository repository) {
         this.repository = repository;
     }
 

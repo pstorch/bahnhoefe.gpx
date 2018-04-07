@@ -8,14 +8,14 @@ import org.railwaystations.api.model.Photo;
 import java.net.URL;
 import java.util.Map;
 
-public class BahnhoefeLoaderCh extends BaseBahnhoefeLoader {
+public class StationLoaderCh extends BaseStationLoader {
 
-    public BahnhoefeLoaderCh(final Country country, final URL photosUrl, final URL bahnhoefeUrl) {
-        super(country, photosUrl, bahnhoefeUrl);
+    public StationLoaderCh(final Country country, final URL photosUrl, final URL stationsUrl) {
+        super(country, photosUrl, stationsUrl);
     }
 
     @Override
-    protected Station createBahnhofFromElasticSourceElement(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
+    protected Station createStationFromElastic(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
         final JsonNode fieldsJson = sourceJson.get("fields");
         final Integer id = fieldsJson.get("nummer").asInt();
         final JsonNode abkuerzung = fieldsJson.get("abkuerzung");

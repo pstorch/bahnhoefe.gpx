@@ -7,7 +7,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.Before;
 import org.junit.Test;
-import org.railwaystations.api.loader.BahnhoefeLoaderDe;
+import org.railwaystations.api.loader.StationLoaderDe;
 import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
@@ -38,10 +38,10 @@ public class PhotoImporterTest {
     @Before
     public void setUp() throws IOException {
         final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
-        final BahnhoefeLoaderDe loaderDe = new BahnhoefeLoaderDe(new Country("de"), new URL("file:./src/test/resources/photosDe.json"), new URL("file:./src/test/resources/bahnhoefeDe.json"));
+        final StationLoaderDe loaderDe = new StationLoaderDe(new Country("de"), new URL("file:./src/test/resources/photosDe.json"), new URL("file:./src/test/resources/stationsDe.json"));
         uploadDir = Files.createTempDirectory("rsapiUpload");
         photoDir = Files.createTempDirectory("rsapiPhoto");
-        importer = new PhotoImporter(new BahnhoefeRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, ""), uploadDir.toString(), photoDir.toString()) {
+        importer = new PhotoImporter(new StationsRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, ""), uploadDir.toString(), photoDir.toString()) {
 
             @Override
             protected Optional<StatusLine> postToElastic(final Bahnhofsfoto bahnhofsfoto) {

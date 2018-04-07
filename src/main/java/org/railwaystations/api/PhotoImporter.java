@@ -28,12 +28,12 @@ public class PhotoImporter {
     private static final Logger LOG = LoggerFactory.getLogger(PhotoImporter.class);
     private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-(\\d+).jpg");
 
-    private final BahnhoefeRepository repository;
+    private final StationsRepository repository;
     private final File uploadDir;
     private final File photoDir;
     private final BackendHttpClient httpClient;
 
-    public PhotoImporter(final BahnhoefeRepository repository, final String uploadDir, final String photoDir) {
+    public PhotoImporter(final StationsRepository repository, final String uploadDir, final String photoDir) {
         this.repository = repository;
         this.uploadDir = new File(uploadDir);
         this.photoDir = new File(photoDir);

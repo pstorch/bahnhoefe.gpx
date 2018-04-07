@@ -13,17 +13,17 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class BahnhoefeGpxWriterTest {
+public class StationsGpxWriterTest {
 
 	@Test
 	public void testWriteTo() throws WebApplicationException, IOException {
-		final List<Station> bahnhoefe = new ArrayList<>();
-		bahnhoefe.add(new Station(4711, "", "Test", new Coordinates(50d, 9d), null, null));
-		bahnhoefe.add(new Station(4712, "", "Foo", new Coordinates(51d, 8d), null, null));
+		final List<Station> stations = new ArrayList<>();
+		stations.add(new Station(4711, "", "Test", new Coordinates(50d, 9d), null, null));
+		stations.add(new Station(4712, "", "Foo", new Coordinates(51d, 8d), null, null));
 		
-		final BahnhoefeGpxWriter writer = new BahnhoefeGpxWriter();
+		final StationsGpxWriter writer = new StationsGpxWriter();
 		final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();
-		writer.writeTo(bahnhoefe, null, null, null, null, null, entityStream);
+		writer.writeTo(stations, null, null, null, null, null, entityStream);
 		
 		final String gpx = entityStream.toString("UTF-8");
 		assertThat(gpx,

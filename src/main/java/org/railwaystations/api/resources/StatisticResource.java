@@ -1,6 +1,6 @@
 package org.railwaystations.api.resources;
 
-import org.railwaystations.api.BahnhoefeRepository;
+import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.model.Statistic;
 import org.railwaystations.api.writer.StatisticTxtWriter;
 
@@ -13,9 +13,9 @@ public class StatisticResource {
 
     private static final String COUNTRY = "country";
 
-    private final BahnhoefeRepository repository;
+    private final StationsRepository repository;
 
-    public StatisticResource(final BahnhoefeRepository repository) {
+    public StatisticResource(final StationsRepository repository) {
         this.repository = repository;
     }
 

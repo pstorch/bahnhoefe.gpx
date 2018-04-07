@@ -6,9 +6,9 @@ import org.railwaystations.api.model.Photographer;
 
 import java.util.Map;
 
-public interface BahnhoefeLoader {
+public interface StationLoader {
 
-    Map<Integer, Station> loadBahnhoefe(final Map<String, Photographer> photographers, String photoBaseUrl);
+    Map<Integer, Station> loadStations(final Map<String, Photographer> photographers, String photoBaseUrl);
 
     Country getCountry();
 

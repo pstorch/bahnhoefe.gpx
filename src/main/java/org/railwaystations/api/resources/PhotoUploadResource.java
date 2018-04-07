@@ -6,7 +6,7 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.InputStreamEntity;
 import org.eclipse.jetty.util.URIUtil;
-import org.railwaystations.api.BahnhoefeRepository;
+import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.monitoring.Monitor;
@@ -29,13 +29,13 @@ public class PhotoUploadResource {
     private static final String IMAGE_PNG = "image/png";
     private static final String IMAGE_JPEG = "image/jpeg";
 
-    private final BahnhoefeRepository repository;
+    private final StationsRepository repository;
     private final String apiKey;
     private final TokenGenerator tokenGenerator;
     private final File uploadDir;
     private final Monitor monitor;
 
-    public PhotoUploadResource(final BahnhoefeRepository repository, final String apiKey, final TokenGenerator tokenGenerator, final String uploadDir, final Monitor monitor) {
+    public PhotoUploadResource(final StationsRepository repository, final String apiKey, final TokenGenerator tokenGenerator, final String uploadDir, final Monitor monitor) {
         this.repository = repository;
         this.apiKey = apiKey;
         this.tokenGenerator = tokenGenerator;

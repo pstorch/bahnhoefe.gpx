@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class BahnhoefeLoaderDeTest {
+public class StationLoaderDeTest {
 
 	@Test
 	public void test() throws IOException {
@@ -28,17 +28,17 @@ public class BahnhoefeLoaderDeTest {
 			);
 			container.next(
 				new MkAnswer.Simple(
-						IOUtils.resourceToString("/bahnhoefeDe.json", Charset.forName("UTF-8"))
+						IOUtils.resourceToString("/stationsDe.json", Charset.forName("UTF-8"))
 				).withHeader("Content-Type", "application/json; charset=UTF-8")
 			);
 			container.start();
 
-			final BahnhoefeLoader loader = new BahnhoefeLoaderDe(new Country("de"), container.home().toURL(),
+			final StationLoader loader = new StationLoaderDe(new Country("de"), container.home().toURL(),
 					container.home().toURL());
 
-			final Map<Integer, Station> bahnhoefe = loader.loadBahnhoefe(new HashMap<>(), "http://www.deutschlands-bahnhoefe.org");
+			final Map<Integer, Station> stations = loader.loadStations(new HashMap<>(), "http://www.deutschlands-bahnhoefe.org");
 
-			final Station zweibruecken = bahnhoefe.get(7066);
+			final Station zweibruecken = stations.get(7066);
 			assertThat(zweibruecken.getId(), CoreMatchers.is(7066));
 			assertThat(zweibruecken.getTitle(), CoreMatchers.is("Zweibrücken Hbf"));
 			assertThat(zweibruecken.getLat(), CoreMatchers.is(49.2467252285295));
@@ -50,7 +50,7 @@ public class BahnhoefeLoaderDeTest {
 			assertThat(zweibruecken.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0)"));
 			assertThat(zweibruecken.getCreatedAt(), CoreMatchers.is(1523044367000L));
 
-			final Station albersdorf = bahnhoefe.get(41);
+			final Station albersdorf = stations.get(41);
 			assertThat(albersdorf.getId(), CoreMatchers.is(41));
 			assertThat(albersdorf.getTitle(), CoreMatchers.is("Albersdorf"));
 			assertThat(albersdorf.getLat(), CoreMatchers.is(54.1461697552048));

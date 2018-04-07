@@ -15,15 +15,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
-@Produces(BahnhoefeTxtWriter.TEXT_PLAIN)
-public class BahnhoefeTxtWriter implements MessageBodyWriter<List<Station>> {
+@Produces(StationsTxtWriter.TEXT_PLAIN)
+public class StationsTxtWriter implements MessageBodyWriter<List<Station>> {
 
     public static final String TEXT_PLAIN = "text/plain";
 
-    private static void bahnhofToTxt(final PrintWriter pw, final Station bahnhof) {
-        pw.println(String.format("%s\t%s\t%s\t%s\t%s\t10,10\t0,-10", Double.toString(bahnhof.getLat()),
-                Double.toString(bahnhof.getLon()), bahnhof.getTitle(), bahnhof.getTitle(),
-                bahnhof.hasPhoto() ? "gruenpunkt.png" : "rotpunkt.png"));
+    private static void stationToTxt(final PrintWriter pw, final Station station) {
+        pw.println(String.format("%s\t%s\t%s\t%s\t%s\t10,10\t0,-10", Double.toString(station.getLat()),
+                Double.toString(station.getLon()), station.getTitle(), station.getTitle(),
+                station.hasPhoto() ? "gruenpunkt.png" : "rotpunkt.png"));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class BahnhoefeTxtWriter implements MessageBodyWriter<List<Station>> {
                         final OutputStream entityStream) throws IOException, WebApplicationException {
         final PrintWriter pw = new PrintWriter(new OutputStreamWriter(entityStream, "UTF-8"));
         pw.println("lat	lon	title	description	icon	iconSize	iconOffset");
-        t.forEach(bahnhof -> bahnhofToTxt(pw, bahnhof));
+        t.forEach(station -> stationToTxt(pw, station));
         pw.flush();
     }
 

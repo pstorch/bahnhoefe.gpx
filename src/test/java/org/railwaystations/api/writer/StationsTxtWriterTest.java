@@ -14,17 +14,17 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class BahnhoefeTxtWriterTest {
+public class StationsTxtWriterTest {
 
     @Test
     public void test() throws WebApplicationException, IOException {
-        final List<Station> bahnhoefe = new ArrayList<>();
-        bahnhoefe.add(new Station(4711, "", "Test", new Coordinates(50d, 9d), new Photo(4711, null, "@pstorch", null, null, null, null)));
-        bahnhoefe.add(new Station(4712, "", "Foo", new Coordinates(51d, 8d), null, null));
+        final List<Station> stations = new ArrayList<>();
+        stations.add(new Station(4711, "", "Test", new Coordinates(50d, 9d), new Photo(4711, null, "@pstorch", null, null, null, null)));
+        stations.add(new Station(4712, "", "Foo", new Coordinates(51d, 8d), null, null));
 
-        final BahnhoefeTxtWriter writer = new BahnhoefeTxtWriter();
+        final StationsTxtWriter writer = new StationsTxtWriter();
         final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();
-        writer.writeTo(bahnhoefe, null, null, null, null, null, entityStream);
+        writer.writeTo(stations, null, null, null, null, null, entityStream);
 
         final String txt = entityStream.toString("UTF-8");
         final String[] lines = txt.split("\n");

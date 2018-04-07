@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.loader.BahnhoefeLoaderFactory;
+import org.railwaystations.api.loader.StationLoaderFactory;
 import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.LongVariable")
-public class BahnhoefeServiceConfiguration extends Configuration {
+public class RsApiConfiguration extends Configuration {
 
     private static final String IDENT = "@class";
 
@@ -41,12 +41,12 @@ public class BahnhoefeServiceConfiguration extends Configuration {
     @JsonProperty
     @NotNull
     @Valid
-    private List<BahnhoefeLoaderFactory> loaders;
+    private List<StationLoaderFactory> loaders;
 
     private String photoDir;
 
-    public BahnhoefeRepository getRepository() {
-        return new BahnhoefeRepository(monitor, loaders.stream().map(BahnhoefeLoaderFactory::createLoader).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);
+    public StationsRepository getRepository() {
+        return new StationsRepository(monitor, loaders.stream().map(StationLoaderFactory::createLoader).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
@@ -87,7 +87,7 @@ public class BahnhoefeServiceConfiguration extends Configuration {
         return mailer;
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = BahnhoefeServiceConfiguration.IDENT)
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = RsApiConfiguration.IDENT)
     public void setMailer(final Mailer mailer) {
         this.mailer = mailer;
     }

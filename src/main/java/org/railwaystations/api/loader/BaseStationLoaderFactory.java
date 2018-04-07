@@ -7,7 +7,7 @@ import org.railwaystations.api.model.Country;
 import java.net.URL;
 
 @JsonTypeName("baseLoader")
-public class BaseBahnhoefeLoaderFactory implements BahnhoefeLoaderFactory {
+public class BaseStationLoaderFactory implements StationLoaderFactory {
 
     @JsonProperty
     protected Country country;
@@ -16,11 +16,11 @@ public class BaseBahnhoefeLoaderFactory implements BahnhoefeLoaderFactory {
     protected URL photosUrl;
 
     @JsonProperty
-    protected URL bahnhoefeUrl;
+    protected URL stationsUrl;
 
     @Override
-    public BahnhoefeLoader createLoader() {
-        return new BaseBahnhoefeLoader(country, photosUrl, bahnhoefeUrl);
+    public StationLoader createLoader() {
+        return new BaseStationLoader(country, photosUrl, stationsUrl);
     }
 
 }

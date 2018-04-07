@@ -11,14 +11,13 @@ import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
-@Produces(BahnhoefeGpxWriter.GPX_MIME_TYPE)
-public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Station>> {
+@Produces(StationsGpxWriter.GPX_MIME_TYPE)
+public class StationsGpxWriter implements MessageBodyWriter<List<Station>> {
 
     public static final String GPX_MIME_TYPE = "application/service+xml";
 
@@ -32,13 +31,13 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Station>> {
 
     private static final String LAT_ELEMENT = "lat";
 
-    private static void bahnhofToXml(final XMLStreamWriter xmlw, final Station bahnhof) {
+    private static void stationToXml(final XMLStreamWriter xmlw, final Station station) {
         try {
-            xmlw.writeStartElement(BahnhoefeGpxWriter.WPT_ELEMENT);
-            xmlw.writeAttribute(BahnhoefeGpxWriter.LAT_ELEMENT, Double.toString(bahnhof.getLat()));
-            xmlw.writeAttribute(BahnhoefeGpxWriter.LON_ELEMENT, Double.toString(bahnhof.getLon()));
-            xmlw.writeStartElement(BahnhoefeGpxWriter.NAME_ELEMENT);
-            xmlw.writeCharacters(bahnhof.getTitle());
+            xmlw.writeStartElement(StationsGpxWriter.WPT_ELEMENT);
+            xmlw.writeAttribute(StationsGpxWriter.LAT_ELEMENT, Double.toString(station.getLat()));
+            xmlw.writeAttribute(StationsGpxWriter.LON_ELEMENT, Double.toString(station.getLon()));
+            xmlw.writeStartElement(StationsGpxWriter.NAME_ELEMENT);
+            xmlw.writeCharacters(station.getTitle());
             xmlw.writeEndElement();
             xmlw.writeEndElement();
             xmlw.writeCharacters("\n");
@@ -56,16 +55,16 @@ public class BahnhoefeGpxWriter implements MessageBodyWriter<List<Station>> {
     @Override
     public void writeTo(final List<Station> t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
-                        final OutputStream entityStream) throws IOException, WebApplicationException {
+                        final OutputStream entityStream) throws WebApplicationException {
         try {
-            final XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(entityStream, BahnhoefeGpxWriter.UTF_8);
-            xmlw.writeStartDocument(BahnhoefeGpxWriter.UTF_8, "1.0");
+            final XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(entityStream, StationsGpxWriter.UTF_8);
+            xmlw.writeStartDocument(StationsGpxWriter.UTF_8, "1.0");
             xmlw.writeCharacters("\n");
             xmlw.writeStartElement("service");
             xmlw.writeDefaultNamespace("http://www.topografix.com/GPX/1/1");
             xmlw.writeAttribute("version", "1.1");
             xmlw.writeCharacters("\n");
-            t.forEach(bahnhof -> bahnhofToXml(xmlw, bahnhof));
+            t.forEach(station -> stationToXml(xmlw, station));
             xmlw.writeEndElement();
             xmlw.flush();
         } catch (final XMLStreamException | FactoryConfigurationError e) {

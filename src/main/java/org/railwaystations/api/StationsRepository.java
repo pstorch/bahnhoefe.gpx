@@ -5,7 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.railwaystations.api.loader.BahnhoefeLoader;
+import org.railwaystations.api.loader.StationLoader;
 import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photographer;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class BahnhoefeRepository {
+public class StationsRepository {
 
     private static final LevenshteinDistance LEVENSHTEIN_DISTANCE = new LevenshteinDistance();
 
@@ -27,12 +27,12 @@ public class BahnhoefeRepository {
     private final Monitor monitor;
     private final PhotographerLoader photographerLoader;
 
-    public BahnhoefeRepository(final Monitor monitor, final List<BahnhoefeLoader> loaders, final PhotographerLoader photographerLoader, final String photoBaseUrl) {
+    public StationsRepository(final Monitor monitor, final List<StationLoader> loaders, final PhotographerLoader photographerLoader, final String photoBaseUrl) {
         super();
         this.monitor = monitor;
         this.cache = CacheBuilder.newBuilder().refreshAfterWrite(60, TimeUnit.MINUTES).build(
-                new BahnhoefeCacheLoader(monitor, loaders, photographerLoader, photoBaseUrl));
-        this.countries = loaders.stream().map(BahnhoefeLoader::getCountry).collect(Collectors.toSet());
+                new StationsCacheLoader(monitor, loaders, photographerLoader, photoBaseUrl));
+        this.countries = loaders.stream().map(StationLoader::getCountry).collect(Collectors.toSet());
         this.photographerLoader = photographerLoader;
     }
 
@@ -73,9 +73,9 @@ public class BahnhoefeRepository {
 
     public Station findById(final Integer id) {
         for (final Country country : getCountries()) {
-            final Station bahnhof = get(country.getCode()).get(id);
-            if (bahnhof != null) {
-                return bahnhof;
+            final Station station = get(country.getCode()).get(id);
+            if (station != null) {
+                return station;
             }
         }
         return null;
@@ -87,7 +87,7 @@ public class BahnhoefeRepository {
             found.addAll(get(country.getCode())
                     .values()
                     .stream()
-                    .filter(bahnhof -> StringUtils.containsIgnoreCase(bahnhof.getTitle(), name))
+                    .filter(station -> StringUtils.containsIgnoreCase(station.getTitle(), name))
                     .collect(Collectors.toList()));
         }
         return found;
@@ -131,13 +131,13 @@ public class BahnhoefeRepository {
                 .findFirst();
     }
 
-    private static class BahnhoefeCacheLoader extends CacheLoader<String, Map<Integer, Station>> {
+    private static class StationsCacheLoader extends CacheLoader<String, Map<Integer, Station>> {
         private final Monitor monitor;
-        private final List<BahnhoefeLoader> loaders;
+        private final List<StationLoader> loaders;
         private final PhotographerLoader photographerLoader;
         private final String photoBaseUrl;
 
-        public BahnhoefeCacheLoader(final Monitor slack, final List<BahnhoefeLoader> loaders, final PhotographerLoader photographerLoader, final String photoBaseUrl) {
+        public StationsCacheLoader(final Monitor slack, final List<StationLoader> loaders, final PhotographerLoader photographerLoader, final String photoBaseUrl) {
             this.monitor = slack;
             this.loaders = loaders;
             this.photographerLoader = photographerLoader;
@@ -146,9 +146,9 @@ public class BahnhoefeRepository {
 
         public Map<Integer, Station> load(final String countryCode) {
             try {
-                for (final BahnhoefeLoader loader : loaders) {
+                for (final StationLoader loader : loaders) {
                     if (loader.getCountry().getCode().equals(countryCode)) {
-                        return loader.loadBahnhoefe(photographerLoader.loadPhotographers(), photoBaseUrl);
+                        return loader.loadStations(photographerLoader.loadPhotographers(), photoBaseUrl);
                     }
                 }
             } catch (final Exception e) {

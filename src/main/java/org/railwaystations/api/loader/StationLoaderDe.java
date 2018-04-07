@@ -9,14 +9,14 @@ import org.railwaystations.api.model.Photo;
 import java.net.URL;
 import java.util.Map;
 
-public class BahnhoefeLoaderDe extends BaseBahnhoefeLoader {
+public class StationLoaderDe extends BaseStationLoader {
 
-    public BahnhoefeLoaderDe(final Country country, final URL photosUrl, final URL bahnhoefeUrl) {
-        super(country, photosUrl, bahnhoefeUrl);
+    public StationLoaderDe(final Country country, final URL photosUrl, final URL stationsUrl) {
+        super(country, photosUrl, stationsUrl);
     }
 
     @Override
-    protected Station createBahnhofFromElasticSourceElement(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
+    protected Station createStationFromElastic(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
         final Integer id = sourceJson.get("BahnhofNr").asInt();
         return new Station(id,
                 getCountry().getCode(),

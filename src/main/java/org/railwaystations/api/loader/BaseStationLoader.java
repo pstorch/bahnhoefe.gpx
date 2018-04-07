@@ -14,24 +14,24 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaseBahnhoefeLoader implements BahnhoefeLoader {
+public class BaseStationLoader implements StationLoader {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String HITS_ELEMENT = "hits";
     private static final String SOURCE_ELEMENT = "_source";
-    private static final Logger LOG = LoggerFactory.getLogger(BaseBahnhoefeLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BaseStationLoader.class);
 
-    private final URL bahnhoefeUrl;
+    private final URL stationsUrl;
     private final URL photosUrl;
     private final Country country;
 
     private final BackendHttpClient httpclient;
 
-    BaseBahnhoefeLoader(final Country country, final URL photosUrl, final URL bahnhoefeUrl) {
+    BaseStationLoader(final Country country, final URL photosUrl, final URL stationsUrl) {
         super();
         this.country = country;
         this.photosUrl = photosUrl;
-        this.bahnhoefeUrl = bahnhoefeUrl;
+        this.stationsUrl = stationsUrl;
         this.httpclient = new BackendHttpClient();
     }
 
@@ -40,9 +40,9 @@ public class BaseBahnhoefeLoader implements BahnhoefeLoader {
     }
 
     @Override
-    public final Map<Integer, Station> loadBahnhoefe(final Map<String, Photographer> photographers, final String photoBaseUrl) {
+    public final Map<Integer, Station> loadStations(final Map<String, Photographer> photographers, final String photoBaseUrl) {
         try {
-            return fetchBahnhoefe(fetchPhotos(new HashMap<>(), photographers, photoBaseUrl));
+            return fetchStations(fetchPhotos(new HashMap<>(), photographers, photoBaseUrl));
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
@@ -50,10 +50,10 @@ public class BaseBahnhoefeLoader implements BahnhoefeLoader {
 
     private Map<Integer, Photo> fetchPhotos(final Map<Integer, Photo> photos, final Map<String, Photographer> photographers, final String photoBaseUrl) throws Exception {
         final JsonNode hits = httpclient.readJsonFromUrl(photosUrl)
-                .get(BaseBahnhoefeLoader.HITS_ELEMENT)
-                .get(BaseBahnhoefeLoader.HITS_ELEMENT);
+                .get(BaseStationLoader.HITS_ELEMENT)
+                .get(BaseStationLoader.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
-            final Photo photo = createPhoto(hits.get(i).get(BaseBahnhoefeLoader.SOURCE_ELEMENT), photographers, photoBaseUrl);
+            final Photo photo = createPhoto(hits.get(i).get(BaseStationLoader.SOURCE_ELEMENT), photographers, photoBaseUrl);
             if (photos.get(photo.getStationId()) != null) {
                 LOG.info("Photo for Station " + photo.getStationId() + " has duplicates");
             }
@@ -75,20 +75,20 @@ public class BaseBahnhoefeLoader implements BahnhoefeLoader {
         return photographer != null ? photographer.getUrl() : null;
     }
 
-    private Map<Integer, Station> fetchBahnhoefe(final Map<Integer, Photo> photos) throws Exception {
-        final Map<Integer, Station> bahnhoefe = new HashMap<>();
+    private Map<Integer, Station> fetchStations(final Map<Integer, Photo> photos) throws Exception {
+        final Map<Integer, Station> stations = new HashMap<>();
 
-        final JsonNode hits = httpclient.readJsonFromUrl(bahnhoefeUrl)
-                                .get(BaseBahnhoefeLoader.HITS_ELEMENT)
-                                .get(BaseBahnhoefeLoader.HITS_ELEMENT);
+        final JsonNode hits = httpclient.readJsonFromUrl(stationsUrl)
+                                .get(BaseStationLoader.HITS_ELEMENT)
+                                .get(BaseStationLoader.HITS_ELEMENT);
         for (int i = 0; i < hits.size(); i++) {
-            final Station bahnhof = createBahnhofFromElasticSourceElement(photos, hits.get(i).get(BaseBahnhoefeLoader.SOURCE_ELEMENT));
-            bahnhoefe.put(bahnhof.getId(), bahnhof);
+            final Station station = createStationFromElastic(photos, hits.get(i).get(BaseStationLoader.SOURCE_ELEMENT));
+            stations.put(station.getId(), station);
         }
-        return bahnhoefe;
+        return stations;
     }
 
-    protected Station createBahnhofFromElasticSourceElement(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
+    protected Station createStationFromElastic(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
         final JsonNode propertiesJson = sourceJson.get("properties");
         final Integer id = propertiesJson.get("UICIBNR").asInt();
         final JsonNode abkuerzung = propertiesJson.get("abkuerzung");

@@ -35,81 +35,81 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressFBWarnings("BC_UNCONFIRMED_CAST_OF_RETURN_VALUE")
-public class BahnhoefeServiceAppTest {
+public class RsApiAppTest {
 
     @ClassRule
-    public static final DropwizardAppRule<BahnhoefeServiceConfiguration> RULE =
-            new DropwizardAppRule<>(BahnhoefeServiceApp.class, ResourceHelpers.resourceFilePath("config.yml"));
+    public static final DropwizardAppRule<RsApiConfiguration> RULE =
+            new DropwizardAppRule<>(RsApiApp.class, ResourceHelpers.resourceFilePath("config.yml"));
 
     private Client client;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         client = ClientBuilder.newClient();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         client.close();
     }
 
     @Test
     public void stationsAllCountries() throws IOException {
-        final Station[] bahnhoefe = assertLoadBahnhoefe("/stations", 200);
-        assertThat(findById(bahnhoefe, 41), notNullValue());
-        assertThat(findById(bahnhoefe, 8501042), notNullValue());
+        final Station[] stations = assertLoadStations("/stations", 200);
+        assertThat(findById(stations, 41), notNullValue());
+        assertThat(findById(stations, 8501042), notNullValue());
     }
 
     @Test
     public void stationById() throws IOException {
         final Response response = loadRaw("/de/stations/41", 200);
-        final Station bahnhof = response.readEntity(Station.class);
-        assertThat(bahnhof.getId(), is(41));
-        assertThat(bahnhof.getTitle(), is( "Albersdorf"));
+        final Station station = response.readEntity(Station.class);
+        assertThat(station.getId(), is(41));
+        assertThat(station.getTitle(), is( "Albersdorf"));
     }
 
     @Test
     public void stationsDe() throws IOException {
-        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s", "stations"), 200);
-        assertThat(findById(bahnhoefe, 41), notNullValue());
-        assertThat(findById(bahnhoefe, 8501042), nullValue());
+        final Station[] stations = assertLoadStations(String.format("/de/%s", "stations"), 200);
+        assertThat(findById(stations, 41), notNullValue());
+        assertThat(findById(stations, 8501042), nullValue());
     }
 
     @Test
     public void stationsDeQueryParam() throws IOException {
-        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/%s?country=de", "stations"), 200);
-        assertThat(findById(bahnhoefe, 41), notNullValue());
-        assertThat(findById(bahnhoefe, 8501042), nullValue());
+        final Station[] stations = assertLoadStations(String.format("/%s?country=de", "stations"), 200);
+        assertThat(findById(stations, 41), notNullValue());
+        assertThat(findById(stations, 8501042), nullValue());
     }
 
     @Test
     public void stationsDePhotograph() throws IOException {
-        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=@hessenpfaelzer", "stations"), 200);
-        assertThat(findById(bahnhoefe, 7066), notNullValue());
+        final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=@hessenpfaelzer", "stations"), 200);
+        assertThat(findById(stations, 7066), notNullValue());
     }
 
     @Test
     public void stationsCh() throws IOException {
-        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/ch/%s", "stations"), 200);
-        assertThat(findById(bahnhoefe, 8501042), notNullValue());
-        assertThat(findById(bahnhoefe, 41), nullValue());
+        final Station[] stations = assertLoadStations(String.format("/ch/%s", "stations"), 200);
+        assertThat(findById(stations, 8501042), notNullValue());
+        assertThat(findById(stations, 41), nullValue());
     }
 
     @Test
     public void stationsUnknownCountry() throws IOException {
-        assertLoadBahnhoefe(String.format("/jp/%s", "stations"), 404);
+        assertLoadStations(String.format("/jp/%s", "stations"), 404);
     }
 
     @Test
     public void stationsDeFromAnonym() throws IOException {
-        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?photographer=Anonym", "stations"), 200);
-        assertThat(bahnhoefe.length, is(9));
+        final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=Anonym", "stations"), 200);
+        assertThat(stations.length, is(9));
     }
 
     @Test
     public void stationsDeFromDgerkrathWithinMax5km() throws IOException {
-        final Station[] bahnhoefe = assertLoadBahnhoefe(String.format("/de/%s?maxDistance=5&lat=51.2670337567818&lon=7.19520717859267&photographer=@Dgerkrath", "stations"), 200);
-        assertThat(bahnhoefe.length, is(3));
+        final Station[] stations = assertLoadStations(String.format("/de/%s?maxDistance=5&lat=51.2670337567818&lon=7.19520717859267&photographer=@Dgerkrath", "stations"), 200);
+        assertThat(stations.length, is(3));
     }
 
     @Test
@@ -161,7 +161,7 @@ public class BahnhoefeServiceAppTest {
         return new String(buffer, "UTF-8").trim();
     }
 
-    private Station[] assertLoadBahnhoefe(final String path, final int expectedStatus) throws IOException {
+    private Station[] assertLoadStations(final String path, final int expectedStatus) throws IOException {
         final Response response = loadRaw(path, expectedStatus);
 
         if (response == null) {
@@ -183,10 +183,10 @@ public class BahnhoefeServiceAppTest {
         return null;
     }
 
-    private Station findById(final Station[] bahnhoefe, final int id) {
-        for (final Station bahnhof : bahnhoefe) {
-            if (bahnhof.getId() == id) {
-                return bahnhof;
+    private Station findById(final Station[] stations, final int id) {
+        for (final Station station : stations) {
+            if (station.getId() == id) {
+                return station;
             }
         }
         return null;

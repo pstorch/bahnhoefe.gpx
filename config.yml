@@ -25,7 +25,7 @@ loaders:
       code: de
       name: Deutschland
       timetableUrlTemplate: https://mobile.bahn.de/bin/mobil/bhftafel.exe/dox?bt=dep&max=10&rt=1&use_realtime_filter=1&start=yes&input={title}
-    bahnhoefeUrl: http://94.136.168.53/bahnhoefe/_search?size=7000
+    stationsUrl: http://94.136.168.53/bahnhoefe/_search?size=7000
     photosUrl: http://94.136.168.53/bahnhofsfotosde/_search?size=7000
   - type: chLoader
     country:
@@ -34,42 +34,42 @@ loaders:
       email: "fotos@schweizer-bahnhoefe.ch"
       twitterTags: "@BahnhoefeCH, @android_oma, #BahnhofsfotoCH"
       timetableUrlTemplate: http://fahrplan.sbb.ch/bin/stboard.exe/dn?input={title}&REQTrain_name=&boardType=dep&time=now&maxJourneys=20&selectDate=today&productsFilter=1111111111&start=yes
-    bahnhoefeUrl: http://94.136.168.53/bahnhoefech/_search?size=6000
+    stationsUrl: http://94.136.168.53/bahnhoefech/_search?size=6000
     photosUrl: http://94.136.168.53/bahnhofsfotosch/_search?size=6000
   - type: baseLoader
     country:
       code: fi
       name: Finnland
       timetableUrlTemplate: https://www.junat.net/en/
-    bahnhoefeUrl: http://94.136.168.53/bahnhoefefi/_search?size=500
+    stationsUrl: http://94.136.168.53/bahnhoefefi/_search?size=500
     photosUrl: http://94.136.168.53/bahnhofsfotosfi/_search?size=500
   - type: baseLoader
     country:
       code: uk
       name: United Kingdom
       timetableUrlTemplate: http://ojp.nationalrail.co.uk/service/ldbboard/dep/{DS100}
-    bahnhoefeUrl: http://94.136.168.53/bahnhoefeuk/_search?size=3000
+    stationsUrl: http://94.136.168.53/bahnhoefeuk/_search?size=3000
     photosUrl: http://94.136.168.53/bahnhofsfotosuk/_search?size=3000
   - type: baseLoader
     country:
       code: fr
       name: France
       timetableUrlTemplate: http://m.sncf.com/sncf/gare?libelleGare={title}
-    bahnhoefeUrl: http://94.136.168.53/bahnhoefefr/_search?size=5000
+    stationsUrl: http://94.136.168.53/bahnhoefefr/_search?size=5000
     photosUrl: http://94.136.168.53/bahnhofsfotosfr/_search?size=5000
   - type: baseLoader
     country:
       code: es
       name: España
       timetableUrlTemplate: http://www.adif.es/AdifWeb/estacionesMapa.jsp?i=en_US&dest=&pes=informacion&e={DS100}
-    bahnhoefeUrl: http://94.136.168.53/bahnhoefees/_search?size=2000
+    stationsUrl: http://94.136.168.53/bahnhoefees/_search?size=2000
     photosUrl: http://94.136.168.53/bahnhofsfotoses/_search?size=2000
   - type: baseLoader
     country:
       code: pl
       name: Polska
       timetableUrlTemplate: http://mt.rozklad-pkp.pl/de/sq?input={id}&maxJourneys=15&start=start
-    bahnhoefeUrl: http://94.136.168.53/bahnhoefepl/_search?size=5000
+    stationsUrl: http://94.136.168.53/bahnhoefepl/_search?size=5000
     photosUrl: http://94.136.168.53/bahnhofsfotospl/_search?size=5000
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

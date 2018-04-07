@@ -208,7 +208,7 @@
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>org.railwaystations.api.BahnhoefeServiceApp</mainClass>
+									<mainClass>org.railwaystations.api.RsApiApp</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>

@@ -1,6 +1,6 @@
 package org.railwaystations.api.resources;
 
-import org.railwaystations.api.BahnhoefeRepository;
+import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.model.Country;
 
 import javax.ws.rs.GET;
@@ -12,9 +12,9 @@ import java.util.Set;
 @Path("/")
 public class CountriesResource {
 
-    private final BahnhoefeRepository repository;
+    private final StationsRepository repository;
 
-    public CountriesResource(final BahnhoefeRepository repository) {
+    public CountriesResource(final StationsRepository repository) {
         this.repository = repository;
     }
 

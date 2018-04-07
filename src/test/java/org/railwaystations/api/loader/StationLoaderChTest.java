@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class BahnhoefeLoaderChTest {
+public class StationLoaderChTest {
 
 	@Test
 	public void test() throws IOException {
@@ -28,24 +28,24 @@ public class BahnhoefeLoaderChTest {
 			);
 			container.next(
 				new MkAnswer.Simple(
-						IOUtils.resourceToString("/bahnhoefeCh.json", Charset.forName("UTF-8"))
+						IOUtils.resourceToString("/stationsCh.json", Charset.forName("UTF-8"))
 				).withHeader("Content-Type", "application/json; charset=UTF-8")
 			);
 			container.start();
 
-			final BahnhoefeLoader loader = new BahnhoefeLoaderCh(new Country("ch"), container.home().toURL(),
+			final StationLoader loader = new StationLoaderCh(new Country("ch"), container.home().toURL(),
 					container.home().toURL());
 
-			final Map<Integer, Station> bahnhoefe = loader.loadBahnhoefe(new HashMap<>(), "https://railway-stations.org");
+			final Map<Integer, Station> stations = loader.loadStations(new HashMap<>(), "https://railway-stations.org");
 
-			final Station etoy = bahnhoefe.get(8501042);
+			final Station etoy = stations.get(8501042);
 			assertThat(etoy.getId(), CoreMatchers.is(8501042));
 			assertThat(etoy.getTitle(), CoreMatchers.is("Etoy"));
 			assertThat(etoy.getLat(), CoreMatchers.is(46.47515995026246));
 			assertThat(etoy.getLon(), CoreMatchers.is(6.427139085981211));
 			assertThat(etoy.hasPhoto(), CoreMatchers.is(false));
 
-			final Station zweidlen = bahnhoefe.get(8503405);
+			final Station zweidlen = stations.get(8503405);
 			assertThat(zweidlen.getId(), CoreMatchers.is(8503405));
 			assertThat(zweidlen.getTitle(), CoreMatchers.is("Zweidlen"));
 			assertThat(zweidlen.getLat(), CoreMatchers.is(47.57044026489993));

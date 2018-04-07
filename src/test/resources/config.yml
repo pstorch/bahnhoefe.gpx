@@ -12,7 +12,7 @@ loaders:
       code: de
       name: Deutschland
       timetableUrlTemplate: https://mobile.bahn.de/bin/mobil/bhftafel.exe/dox?bt=dep&max=10&rt=1&use_realtime_filter=1&start=yes&input={title}
-    bahnhoefeUrl: file:./src/test/resources/bahnhoefeDe.json
+    stationsUrl: file:./src/test/resources/stationsDe.json
     photosUrl: file:./src/test/resources/photosDe.json
   - type: chLoader
     country:
@@ -21,20 +21,20 @@ loaders:
       email: "fotos@schweizer-bahnhoefe.ch"
       twitterTags: "@BahnhoefeCH, @android_oma, #BahnhofsfotoCH"
       timetableUrlTemplate: http://fahrplan.sbb.ch/bin/stboard.exe/dn?input={title}&REQTrain_name=&boardType=dep&time=now&maxJourneys=20&selectDate=today&productsFilter=1111111111&start=yes
-    bahnhoefeUrl: file:./src/test/resources/bahnhoefeCh.json
+    stationsUrl: file:./src/test/resources/stationsCh.json
     photosUrl: file:./src/test/resources/photosCh.json
   - type: baseLoader
     country:
       code: fi
       name: Finnland
       timetableUrlTemplate: https://www.junat.net/en/
-    bahnhoefeUrl: file:./src/test/resources/bahnhoefeFi.json
+    stationsUrl: file:./src/test/resources/stationsFi.json
     photosUrl: file:./src/test/resources/photosFi.json
   - type: baseLoader
     country:
       code: uk
       name: United Kingdom
       timetableUrlTemplate: http://ojp.nationalrail.co.uk/service/ldbboard/dep/{DS100}
-    bahnhoefeUrl: file:./src/test/resources/bahnhoefeUk.json
+    stationsUrl: file:./src/test/resources/stationsUk.json
     photosUrl: file:./src/test/resources/photosUk.json
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

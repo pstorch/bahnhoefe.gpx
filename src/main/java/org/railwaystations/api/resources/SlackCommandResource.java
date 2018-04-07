@@ -2,7 +2,7 @@ package org.railwaystations.api.resources;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.BahnhoefeRepository;
+import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.PhotoImporter;
 import org.railwaystations.api.model.Station;
 
@@ -20,11 +20,11 @@ public class SlackCommandResource {
     private static final Pattern PATTERN_SEARCH = Pattern.compile("\\s*search\\s*(.*)");
     private static final Pattern PATTERN_SHOW = Pattern.compile("\\s*show\\s\\s*(\\d*)");
 
-    private final BahnhoefeRepository repository;
+    private final StationsRepository repository;
     private final String verificationToken;
     private final PhotoImporter photoImporter;
 
-    public SlackCommandResource(final BahnhoefeRepository repository, final String verificationToken, final PhotoImporter photoImporter) {
+    public SlackCommandResource(final StationsRepository repository, final String verificationToken, final PhotoImporter photoImporter) {
         this.repository = repository;
         this.verificationToken = verificationToken;
         this.photoImporter = photoImporter;
@@ -49,35 +49,35 @@ public class SlackCommandResource {
         }
         final Matcher matcherSearch = PATTERN_SEARCH.matcher(text);
         if (matcherSearch.matches()) {
-            final List<Station> bahnhofList = repository.findByName(matcherSearch.group(1));
-            if (bahnhofList.size() == 1) {
-                return new SlackResponse(ResponseType.in_channel, toMessage(bahnhofList.get(0)));
-            } else if (bahnhofList.size() > 1){
-                return new SlackResponse(ResponseType.in_channel, toMessage(bahnhofList));
+            final List<Station> stationList = repository.findByName(matcherSearch.group(1));
+            if (stationList.size() == 1) {
+                return new SlackResponse(ResponseType.in_channel, toMessage(stationList.get(0)));
+            } else if (stationList.size() > 1){
+                return new SlackResponse(ResponseType.in_channel, toMessage(stationList));
             }
             return new SlackResponse(ResponseType.in_channel, "No stations found");
         }
         final Matcher matcherShow = PATTERN_SHOW.matcher(text);
         if (matcherShow.matches()) {
             final Integer id = Integer.valueOf(matcherShow.group(1));
-            final Station bahnhof = repository.findById(id);
-            if (bahnhof == null) {
+            final Station station = repository.findById(id);
+            if (station == null) {
                 return new SlackResponse(ResponseType.in_channel, "Station with id " + id + " not found");
             } else {
-                return new SlackResponse(ResponseType.in_channel, toMessage(bahnhof));
+                return new SlackResponse(ResponseType.in_channel, toMessage(station));
             }
         }
         return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <station-id>%n- '/rsapi import'%n"));
     }
 
-    private String toMessage(final List<Station> bahnhofList) {
+    private String toMessage(final List<Station> stationList) {
         final StringBuilder sb = new StringBuilder(String.format("Found:%n"));
-        bahnhofList.forEach(bahnhof -> sb.append(String.format("- %s: %d%n", bahnhof.getTitle(), bahnhof.getId())));
+        stationList.forEach(station -> sb.append(String.format("- %s: %d%n", station.getTitle(), station.getId())));
         return sb.toString();
     }
 
-    private String toMessage(final Station bahnhof) {
-        return String.format("Station: %d - %s%nCountry: %s%nLocation: %f,%f%nPhotographer: %s%nLicense: %s%nPhoto: %s%n", bahnhof.getId(), bahnhof.getTitle(), bahnhof.getCountry(), bahnhof.getLat(), bahnhof.getLon(), bahnhof.getPhotographer(), bahnhof.getLicense(), bahnhof.getPhotoUrl());
+    private String toMessage(final Station station) {
+        return String.format("Station: %d - %s%nCountry: %s%nLocation: %f,%f%nPhotographer: %s%nLicense: %s%nPhoto: %s%n", station.getId(), station.getTitle(), station.getCountry(), station.getLat(), station.getLon(), station.getPhotographer(), station.getLicense(), station.getPhotoUrl());
     }
 
 
