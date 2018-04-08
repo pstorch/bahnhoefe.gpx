@@ -68,7 +68,7 @@ With the following query parameter:
 - `maxDistance`, `lat`, `lon`: select trainstations within a max distance of km of the given reference point
 - `country`: select trainstations from a given country, this parameter is an alternative to the `{country}` path
 
-A more detailed API documentation can be found in the [swagger](swagger.yml) file or online at [developer.deutschebahn.com](https://developer.deutschebahn.com/store/apis/list).
+A more detailed API documentation can be found in the [swagger](swagger.yaml) file or online at [developer.deutschebahn.com](https://developer.deutschebahn.com/store/apis/list).
 
 ### Examples
 - all german trainstations: http://localhost:8080/de/stations
