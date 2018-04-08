@@ -71,5 +71,12 @@ loaders:
       timetableUrlTemplate: http://mt.rozklad-pkp.pl/de/sq?input={id}&maxJourneys=15&start=start
     stationsUrl: http://94.136.168.53/bahnhoefepl/_search?size=5000
     photosUrl: http://94.136.168.53/bahnhofsfotospl/_search?size=5000
+  - type: baseLoader
+    country:
+      code: nl
+      name: Nederland
+      timetableUrlTemplate: https://www.ns.nl/actuele-vertrektijden/avt?station={title}
+    stationsUrl: http://94.136.168.53/bahnhoefenl/_search?size=500
+    photosUrl: http://94.136.168.53/bahnhofsfotosnl/_search?size=500
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
