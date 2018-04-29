@@ -10,10 +10,17 @@ The latest addition are the trainstations from switzerland, via country code `ch
 This API is hosted at https://api.railway-stations.org or at the Deutsche Bahn developer site: https://developer.deutschebahn.com/store/apis/list where you can also find an online and executable version of the swagger documentation.
 
 ## build
-To build the project, you need Maven and Java 8.
+To build the project, you need at least Maven 3.5.x, Java 9 and Docker.
+
+Build and test:
+1. build the dropwizard-logging-patched module with ```mvn clean install``` in that directory
+  
+   This is necessary until the split package problem of dropwizard-logging with logback-core is resolved, see https://github.com/dropwizard/dropwizard/issues/2312 
+  
+1. build the main app by running ```mvn clean install``` in the root directory
 
 Run:
-```mvn clean install```
+```./run.sh```
 
 Release:
 - `mvn release:prepare`
