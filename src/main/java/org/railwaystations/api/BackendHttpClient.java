@@ -8,6 +8,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -56,7 +57,7 @@ public class BackendHttpClient {
         });
     }
 
-    public CloseableHttpResponse post(final URL url, final String content) throws Exception {
+    public CloseableHttpResponse post(final URL url, final String content, final ContentType contentType) throws Exception {
         final HttpPost httpPost = new HttpPost(url.toURI());
         httpPost.setEntity(new StringEntity(content));
         return httpclient.execute(httpPost);

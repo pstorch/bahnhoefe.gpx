@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.entity.ContentType;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photographer;
 import org.railwaystations.api.model.Station;
@@ -50,7 +51,8 @@ public class PhotoImporter {
         if (files != null) {
             for (final File countryDir : files) {
                 if (!countryDir.isDirectory()) {
-                    break;
+                    LOG.info("skipping '" + countryDir + " for import");
+                    continue;
                 }
                 final String countryCode = countryDir.getName();
                 final File importDir = new File(countryDir, "import");
@@ -148,7 +150,7 @@ public class PhotoImporter {
 
     protected Optional<StatusLine> postToElastic(final Bahnhofsfoto bahnhofsfoto) throws Exception {
         final StatusLine statusLine;
-        try (final CloseableHttpResponse response = httpClient.post(getPhotoUrl(bahnhofsfoto.getCountryCode()), MAPPER.writeValueAsString(bahnhofsfoto))) {
+        try (final CloseableHttpResponse response = httpClient.post(getPhotoUrl(bahnhofsfoto.getCountryCode()), MAPPER.writeValueAsString(bahnhofsfoto), ContentType.APPLICATION_JSON)) {
             statusLine = response.getStatusLine();
         }
         return Optional.of(statusLine);
@@ -161,6 +163,7 @@ public class PhotoImporter {
     private URL getPhotoUrl(final String countryCode) throws MalformedURLException {
         // TODO: make this configurable and testable
         return new URL("http://localhost:9200/bahnhofsfotos" + countryCode + "/bahnhofsfoto");
+        //return new URL("http://localhost:9200/elastictest/bahnhofsfoto");
     }
 
     private void moveFile(final File importFile, final File countryDir, final Integer stationId) throws IOException {
