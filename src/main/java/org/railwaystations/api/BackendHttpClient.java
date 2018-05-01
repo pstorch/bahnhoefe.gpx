@@ -59,7 +59,7 @@ public class BackendHttpClient {
 
     public CloseableHttpResponse post(final URL url, final String content, final ContentType contentType) throws Exception {
         final HttpPost httpPost = new HttpPost(url.toURI());
-        httpPost.setEntity(new StringEntity(content));
+        httpPost.setEntity(new StringEntity(content, contentType));
         return httpclient.execute(httpPost);
     }
 
