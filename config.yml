@@ -78,5 +78,19 @@ loaders:
       timetableUrlTemplate: https://www.ns.nl/actuele-vertrektijden/avt?station={title}
     stationsUrl: http://94.136.168.53/bahnhoefenl/_search?size=500
     photosUrl: http://94.136.168.53/bahnhofsfotosnl/_search?size=500
+  - type: baseLoader
+    country:
+      code: at
+      name: Österreich
+      timetableUrlTemplate: http://fahrplan.oebb.at/bin/stboard.exe/dn?L=vs_liveticker&evaId={id}&boardType=dep&productsFilter=1111111111111111&dirInput=&tickerID=dep&start=yes&eqstops=false&showJourneys=12&additionalTime=0
+    stationsUrl: http://94.136.168.53/bahnhoefeat/_search?size=2000
+    photosUrl: http://94.136.168.53/bahnhofsfotosat/_search?size=2000
+  - type: baseLoader
+    country:
+      code: in
+      name: India
+      timetableUrlTemplate: https://enquiry.indianrail.gov.in/ntes/
+    stationsUrl: http://94.136.168.53/bahnhoefein/_search?size=9000
+    photosUrl: http://94.136.168.53/bahnhofsfotosin/_search?size=9000
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
