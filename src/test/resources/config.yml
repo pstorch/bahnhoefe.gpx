@@ -1,4 +1,4 @@
-workDir: ${UPLOAD_DIR:-/tmp/rsapi}
+workDir: ${UPLOAD_DIR:-/var/rsapi}
 photoDir: ${PHOTO_DIR:-/tmp/railway-station-photos}
 apiKey: ${API_KEY:-dummy}
 salt: ${SALT:-dummy}

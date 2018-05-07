@@ -29,21 +29,10 @@ This project can be run as a Docker container. The docker image is automatically
   - Download the image from docker hub:
   ```docker pull pstorch/rsapi:<version>```
   
-  - Configure environment variables. Place ```rsapi.env``` file in current directory:
-  ```
-    SLACK_MONITOR_URL=https://hooks.slack.com/services/...
-    SLACK_VERIFICATION_TOKEN=...
-    API_KEY=...
-    SALT=...
-    SMTP_HOST=...
-    SMTP_USER=...
-    SMTP_PASSWD=...
-    SMTP_FROM=...
-    SMTP_PORT=587
-  ```
+  - Configure the ```config.yml``` file from current directory and put it into the rsapi work directory
 
   - Run as background service:
-  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi --env-file rsapi.env -v <photo-upload-dir>:/tmp/rsapi -v <photo-main-dir>:/tmp/railway-station-photos pstorch/rsapi:<version>```
+  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -v <photo-main-dir>:/tmp/railway-station-photos pstorch/rsapi:<version>```
 
   - Remove the (running) container:
   ```docker rm -f rsapi```
@@ -56,6 +45,9 @@ This project can be run as a Docker container. The docker image is automatically
   
   - Attach to container:
   ```docker attach --sig-proxy=false rsapi```
+
+  - Restart (e.g. after config change):
+  ```docker restart rsapi```
   
 Ready to use images are published at https://hub.docker.com/r/pstorch/rsapi/
 
