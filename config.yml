@@ -17,6 +17,8 @@ mailer:
   user: ${SMTP_USER:-}
   passwd: ${SMTP_PASSWD:-}
   from: ${SMTP_FROM:-}
+slackMonitorUrl: ${SLACK_MONITOR_URL:-}
+slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
 photographersUrl: http://94.136.168.53/fotografen/_search?size=500
 photoBaseUrl: https://fotos.railway-stations.org
 loaders:
@@ -92,5 +94,10 @@ loaders:
       timetableUrlTemplate: https://enquiry.indianrail.gov.in/ntes/
     stationsUrl: http://94.136.168.53/bahnhoefein/_search?size=9000
     photosUrl: http://94.136.168.53/bahnhofsfotosin/_search?size=9000
-slackMonitorUrl: ${SLACK_MONITOR_URL:-}
-slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
+  - type: baseLoader
+    country:
+      code: ie
+      name: Ireland
+      timetableUrlTemplate: http://www.irishrail.ie/timetables/live-departure-times?code={DS100}
+    stationsUrl: http://94.136.168.53/bahnhoefeie/_search?size=200
+    photosUrl: http://94.136.168.53/bahnhofsfotosie/_search?size=200
