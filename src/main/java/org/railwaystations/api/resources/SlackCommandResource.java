@@ -2,15 +2,14 @@ package org.railwaystations.api.resources;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.PhotoImporter;
+import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.model.Station;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,8 +43,8 @@ public class SlackCommandResource {
             return new SlackResponse(ResponseType.in_channel, "Refreshing caches");
         }
         if (StringUtils.equals("import", text)) {
-            final Map<String, String> report = photoImporter.importPhotos();
-            return new SlackResponse(ResponseType.in_channel, photoImporter.reportToMessage(report));
+            photoImporter.importPhotosAsync(responseUrl);
+            return new SlackResponse(ResponseType.in_channel, "Importing photos");
         }
         final Matcher matcherSearch = PATTERN_SEARCH.matcher(text);
         if (matcherSearch.matches()) {

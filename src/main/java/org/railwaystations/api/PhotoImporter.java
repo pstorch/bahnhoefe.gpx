@@ -9,6 +9,7 @@ import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photographer;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
+import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +31,25 @@ public class PhotoImporter {
     private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-(\\d+).jpg");
 
     private final StationsRepository repository;
+    private final Monitor monitor;
     private final File uploadDir;
     private final File photoDir;
     private final BackendHttpClient httpClient;
 
-    public PhotoImporter(final StationsRepository repository, final String uploadDir, final String photoDir) {
+    public PhotoImporter(final StationsRepository repository, final Monitor monitor, final String uploadDir, final String photoDir) {
         this.repository = repository;
+        this.monitor = monitor;
         this.uploadDir = new File(uploadDir);
         this.photoDir = new File(photoDir);
         this.httpClient = new BackendHttpClient();
+    }
+
+    public void importPhotosAsync(final String responseUrl) {
+        final Thread importer = new Thread(() -> {
+            final Map<String, String> report = importPhotos();
+            monitor.sendMessage(responseUrl, reportToMessage(report));
+        });
+        importer.start();
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")

@@ -41,7 +41,7 @@ public class PhotoImporterTest {
         final StationLoaderDe loaderDe = new StationLoaderDe(new Country("de"), new URL("file:./src/test/resources/photosDe.json"), new URL("file:./src/test/resources/stationsDe.json"));
         uploadDir = Files.createTempDirectory("rsapiUpload");
         photoDir = Files.createTempDirectory("rsapiPhoto");
-        importer = new PhotoImporter(new StationsRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, ""), uploadDir.toString(), photoDir.toString()) {
+        importer = new PhotoImporter(new StationsRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, ""), new LoggingMonitor(), uploadDir.toString(), photoDir.toString()) {
 
             @Override
             protected Optional<StatusLine> postToElastic(final Bahnhofsfoto bahnhofsfoto) {
