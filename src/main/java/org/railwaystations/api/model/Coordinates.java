@@ -2,20 +2,24 @@ package org.railwaystations.api.model;
 
 public class Coordinates {
 
-    private final double latitude;
+    private final double lat;
 
-    private final double longitude;
+    private final double lon;
 
-    public Coordinates(final double latitude, final double longitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
+    public Coordinates() {
+        this(0.0,0.0);
     }
 
-    public double getLatitude() {
-        return latitude;
+    public Coordinates(final double lat, final double lon) {
+        this.lat = lat;
+        this.lon = lon;
     }
 
-    public double getLongitude() {
-        return longitude;
+    public double getLat() {
+        return lat;
+    }
+
+    public double getLon() {
+        return lon;
     }
 }

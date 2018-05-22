@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Bahnhofsfoto {
 
     @JsonProperty("BahnhofsID")
-    private int id;
+    private String id;
 
     @JsonProperty("bahnhofsfoto")
     private String url;
@@ -29,7 +29,7 @@ public class Bahnhofsfoto {
         super();
     }
 
-    public Bahnhofsfoto(final int id, final String url, final String license, final String photographer, final long createdAt, final String flag, final String countryCode) {
+    public Bahnhofsfoto(final String id, final String url, final String license, final String photographer, final long createdAt, final String flag, final String countryCode) {
         this.id = id;
         this.url = url;
         this.license = license;
@@ -39,11 +39,11 @@ public class Bahnhofsfoto {
         this.countryCode = countryCode;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(final int id) {
+    public void setId(final String id) {
         this.id = id;
     }
 

@@ -42,9 +42,11 @@ public class PhotoUploadResourceTest {
     public void setUp() throws IOException {
         final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
         final StationLoader loader = Mockito.mock(StationLoader.class);
-        final Map<Integer, Station> stationsMap = new HashMap<>(2);
-        stationsMap.put(4711, new Station(4711, "de", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
-        stationsMap.put(1234, new Station(1234, "de", "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(4711, "URL", "Jim Knopf", "photographerUrl", null, "CC0", null)));
+        final Map<Station.Key, Station> stationsMap = new HashMap<>(2);
+        final Station.Key key4711 = new Station.Key("de", "4711");
+        stationsMap.put(key4711, new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
+        final Station.Key key1234 = new Station.Key("de", "1234");
+        stationsMap.put(key1234, new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", "Jim Knopf", "photographerUrl", null, "CC0", null)));
         Mockito.when(loader.loadStations(Mockito.anyMap(), Mockito.anyString())).thenReturn(stationsMap);
         Mockito.when(loader.getCountry()).thenReturn(new Country("de", null, null, null, null));
 

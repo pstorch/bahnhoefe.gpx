@@ -21,8 +21,8 @@ public class StationsTxtWriter implements MessageBodyWriter<List<Station>> {
     public static final String TEXT_PLAIN = "text/plain";
 
     private static void stationToTxt(final PrintWriter pw, final Station station) {
-        pw.println(String.format("%s\t%s\t%s\t%s\t%s\t10,10\t0,-10", Double.toString(station.getLat()),
-                Double.toString(station.getLon()), station.getTitle(), station.getTitle(),
+        pw.println(String.format("%s\t%s\t%s\t%s\t%s\t10,10\t0,-10", Double.toString(station.getCoordinates().getLat()),
+                Double.toString(station.getCoordinates().getLon()), station.getTitle(), station.getTitle(),
                 station.hasPhoto() ? "gruenpunkt.png" : "rotpunkt.png"));
     }
 

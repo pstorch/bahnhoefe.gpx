@@ -36,20 +36,20 @@ public class StationLoaderChTest {
 			final StationLoader loader = new StationLoaderCh(new Country("ch"), container.home().toURL(),
 					container.home().toURL());
 
-			final Map<Integer, Station> stations = loader.loadStations(new HashMap<>(), "https://railway-stations.org");
+			final Map<Station.Key, Station> stations = loader.loadStations(new HashMap<>(), "https://railway-stations.org");
 
-			final Station etoy = stations.get(8501042);
-			assertThat(etoy.getId(), CoreMatchers.is(8501042));
+			final Station etoy = stations.get(new Station.Key("ch", "8501042"));
+			assertThat(etoy.getKey().getId(), CoreMatchers.is("8501042"));
 			assertThat(etoy.getTitle(), CoreMatchers.is("Etoy"));
-			assertThat(etoy.getLat(), CoreMatchers.is(46.47515995026246));
-			assertThat(etoy.getLon(), CoreMatchers.is(6.427139085981211));
+			assertThat(etoy.getCoordinates().getLat(), CoreMatchers.is(46.47515995026246));
+			assertThat(etoy.getCoordinates().getLon(), CoreMatchers.is(6.427139085981211));
 			assertThat(etoy.hasPhoto(), CoreMatchers.is(false));
 
-			final Station zweidlen = stations.get(8503405);
-			assertThat(zweidlen.getId(), CoreMatchers.is(8503405));
+			final Station zweidlen = stations.get(new Station.Key("ch", "8503405"));
+			assertThat(zweidlen.getKey().getId(), CoreMatchers.is("8503405"));
 			assertThat(zweidlen.getTitle(), CoreMatchers.is("Zweidlen"));
-			assertThat(zweidlen.getLat(), CoreMatchers.is(47.57044026489993));
-			assertThat(zweidlen.getLon(), CoreMatchers.is(8.467892062115798));
+			assertThat(zweidlen.getCoordinates().getLat(), CoreMatchers.is(47.57044026489993));
+			assertThat(zweidlen.getCoordinates().getLon(), CoreMatchers.is(8.467892062115798));
 			assertThat(zweidlen.hasPhoto(), CoreMatchers.is(true));
 			assertThat(zweidlen.getPhotographer(), CoreMatchers.is("@Mac4Me"));
 			assertThat(zweidlen.getPhotoUrl(), CoreMatchers.is("https://railway-stations.org/sites/default/files/previewbig/%40Mac4Me-8503405_BF.jpg"));

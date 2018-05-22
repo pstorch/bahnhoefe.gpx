@@ -133,8 +133,7 @@ paths:
           in: path
           description: id of the station
           required: true
-          type: number
-          format: integer
+          type: string
       responses:
         '200':
           description: successful operation
@@ -314,10 +313,13 @@ definitions:
   Station:
     type: object
     properties:
+      idStr:
+        type: string
+        description: Unique ID of the station per country
       id:
         type: integer
         format: int64
-        description: Unique ID of the station per country
+        description: DEPRECATED! Unique (numeric) ID of the station per country
       country:
         type: string
         description: Two character country code

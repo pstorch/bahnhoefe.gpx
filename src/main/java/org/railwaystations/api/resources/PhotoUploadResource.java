@@ -76,12 +76,12 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.UNAUTHORIZED);
         }
 
-        final Map<Integer, Station> stationsMap = repository.get(country);
+        final Map<Station.Key, Station> stationsMap = repository.get(country);
         if (stationsMap.isEmpty()) {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
-        final Station station = stationsMap.get(Integer.valueOf(stationId));
+        final Station station = stationsMap.get(new Station.Key(country, stationId));
         if (station == null) {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }

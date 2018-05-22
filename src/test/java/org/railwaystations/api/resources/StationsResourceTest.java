@@ -32,14 +32,16 @@ public class StationsResourceTest {
         final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
 
         final StationLoader loaderXY = Mockito.mock(StationLoader.class);
-        final Map<Integer, Station> stationsXY = new HashMap<>(2);
-        stationsXY.put(5, new Station(5, "xy", "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(5, "URL", "Jim Knopf", "photographerUrl", null, "CC0", "licenseUrl")));
+        final Map<Station.Key, Station> stationsXY = new HashMap<>(2);
+        final Station.Key key5 = new Station.Key("xy", "5");
+        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "URL", "Jim Knopf", "photographerUrl", null, "CC0", "licenseUrl")));
         Mockito.when(loaderXY.loadStations(Mockito.anyMap(), Mockito.anyString())).thenReturn(stationsXY);
         Mockito.when(loaderXY.getCountry()).thenReturn(new Country("xy", null, null, null, null));
 
         final StationLoader loaderAB = Mockito.mock(StationLoader.class);
-        final Map<Integer, Station> stations = new HashMap<>(2);
-        stations.put(3, new Station(3, "ab", "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(3, "URL2", "Peter Pan", "photographerUrl2", null, "CC0 by SA", "licenseUrl2")));
+        final Map<Station.Key, Station> stations = new HashMap<>(2);
+        final Station.Key key3 = new Station.Key("ab", "3");
+        stations.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "URL2", "Peter Pan", "photographerUrl2", null, "CC0 by SA", "licenseUrl2")));
         Mockito.when(loaderAB.loadStations(Mockito.anyMap(), Mockito.anyString())).thenReturn(stations);
         Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", null, null, null, null));
 
@@ -51,10 +53,10 @@ public class StationsResourceTest {
         final List<Station> resultXY = resource.get("xy", null, null, null, null, null);
         final Station stationXY = resultXY.get(0);
         assertThat(stationXY, notNullValue());
-        assertThat(stationXY.getId(), equalTo(5));
+        assertThat(stationXY.getKey(), equalTo(new Station.Key("xy", "5")));
         assertThat(stationXY.getTitle(), equalTo("Lummerland"));
-        assertThat(stationXY.getLat(), equalTo(50.0));
-        assertThat(stationXY.getLon(), equalTo(9.0));
+        assertThat(stationXY.getCoordinates().getLat(), equalTo(50.0));
+        assertThat(stationXY.getCoordinates().getLon(), equalTo(9.0));
         assertThat(stationXY.getPhotographer(), equalTo("Jim Knopf"));
         assertThat(stationXY.getDS100(), equalTo("XYZ"));
         assertThat(stationXY.getPhotoUrl(), equalTo("URL"));
@@ -71,10 +73,10 @@ public class StationsResourceTest {
 
     private void assertNimmerland(final Station station) {
         assertThat(station, notNullValue());
-        assertThat(station.getId(), equalTo(3));
+        assertThat(station.getKey(), equalTo(new Station.Key("ab", "3")));
         assertThat(station.getTitle(), equalTo("Nimmerland"));
-        assertThat(station.getLat(), equalTo(40.0));
-        assertThat(station.getLon(), equalTo(6.0));
+        assertThat(station.getCoordinates().getLat(), equalTo(40.0));
+        assertThat(station.getCoordinates().getLon(), equalTo(6.0));
         assertThat(station.getPhotographer(), equalTo("Peter Pan"));
         assertThat(station.getPhotoUrl(), equalTo("URL2"));
         assertThat(station.getDS100(), equalTo("ABC"));
@@ -84,7 +86,7 @@ public class StationsResourceTest {
 
     @Test
     public void testGetById() {
-        final Station station = resource.getById("ab", 3);
+        final Station station = resource.getById("ab", "3");
         assertNimmerland(station);
     }
 

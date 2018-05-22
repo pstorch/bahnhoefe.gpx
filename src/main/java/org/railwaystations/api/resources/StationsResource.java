@@ -59,12 +59,12 @@ public class StationsResource {
     @Path("{country}/stations/{id}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
     public Station getById(@PathParam(StationsResource.COUNTRY) final String country,
-                           @PathParam(StationsResource.ID) final Integer id) {
-        return getStationsMap(country).get(id);
+                           @PathParam(StationsResource.ID) final String id) {
+        return getStationsMap(country).get(new Station.Key(country, id));
     }
 
-    private Map<Integer, Station> getStationsMap(final String country) {
-        final Map<Integer, Station> stationMap = repository.get(country);
+    private Map<Station.Key, Station> getStationsMap(final String country) {
+        final Map<Station.Key, Station> stationMap = repository.get(country);
         if (stationMap.isEmpty()) {
             throw new WebApplicationException(404);
         }

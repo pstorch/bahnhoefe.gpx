@@ -10,6 +10,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +18,8 @@ import java.util.regex.Pattern;
 public class SlackCommandResource {
 
     private static final Pattern PATTERN_SEARCH = Pattern.compile("\\s*search\\s*(.*)");
-    private static final Pattern PATTERN_SHOW = Pattern.compile("\\s*show\\s\\s*(\\d*)");
+    private static final Pattern PATTERN_SHOW = Pattern.compile("\\s*show\\s\\s*([a-z]{1,3})\\s\\s*(\\w*)");
+    private static final Pattern PATTERN_SHOW_LEGACY = Pattern.compile("\\s*show\\s\\s*(\\d*)");
 
     private final StationsRepository repository;
     private final String verificationToken;
@@ -58,7 +60,19 @@ public class SlackCommandResource {
         }
         final Matcher matcherShow = PATTERN_SHOW.matcher(text);
         if (matcherShow.matches()) {
-            final Integer id = Integer.valueOf(matcherShow.group(1));
+            final String country = matcherShow.group(1).toLowerCase(Locale.ENGLISH);
+            final String id = matcherShow.group(2);
+            final Station.Key key = new Station.Key(country, id);
+            final Station station = repository.findByKey(key);
+            if (station == null) {
+                return new SlackResponse(ResponseType.in_channel, "Station with " + key + " not found");
+            } else {
+                return new SlackResponse(ResponseType.in_channel, toMessage(station));
+            }
+        }
+        final Matcher matcherShowLegacy = PATTERN_SHOW_LEGACY.matcher(text);
+        if (matcherShowLegacy.matches()) {
+            final String id = matcherShowLegacy.group(1);
             final Station station = repository.findById(id);
             if (station == null) {
                 return new SlackResponse(ResponseType.in_channel, "Station with id " + id + " not found");
@@ -66,17 +80,17 @@ public class SlackCommandResource {
                 return new SlackResponse(ResponseType.in_channel, toMessage(station));
             }
         }
-        return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <station-id>%n- '/rsapi import'%n"));
+        return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <country-code> <station-id>%n- '/rsapi import'%n"));
     }
 
     private String toMessage(final List<Station> stationList) {
         final StringBuilder sb = new StringBuilder(String.format("Found:%n"));
-        stationList.forEach(station -> sb.append(String.format("- %s: %d%n", station.getTitle(), station.getId())));
+        stationList.forEach(station -> sb.append(String.format("- %s: %s%n", station.getTitle(), station.getKey())));
         return sb.toString();
     }
 
     private String toMessage(final Station station) {
-        return String.format("Station: %d - %s%nCountry: %s%nLocation: %f,%f%nPhotographer: %s%nLicense: %s%nPhoto: %s%n", station.getId(), station.getTitle(), station.getCountry(), station.getLat(), station.getLon(), station.getPhotographer(), station.getLicense(), station.getPhotoUrl());
+        return String.format("Station: %s - %s%nCountry: %s%nLocation: %f,%f%nPhotographer: %s%nLicense: %s%nPhoto: %s%n", station.getKey().getId(), station.getTitle(), station.getKey().getCountry(), station.getCoordinates().getLat(), station.getCoordinates().getLon(), station.getPhotographer(), station.getLicense(), station.getPhotoUrl());
     }
 
 

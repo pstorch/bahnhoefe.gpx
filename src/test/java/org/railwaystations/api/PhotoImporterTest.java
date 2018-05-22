@@ -63,7 +63,7 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@storchp", 8009);
         final Map<String, String> result = importer.importPhotos();
         assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for @storchp"));
-        assertPostedPhoto("@storchp","de", 8009, "0");
+        assertPostedPhoto("@storchp","de", "8009", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
     }
@@ -73,7 +73,7 @@ public class PhotoImporterTest {
         final File importFile = createFile("cz", "@storchp", 4711);
         final Map<String, String> result = importer.importPhotos();
         assertThat(result.get(importFile.getAbsolutePath()), is("imported unknown station for @storchp"));
-        assertPostedPhoto("@storchp","cz", 4711, "0");
+        assertPostedPhoto("@storchp","cz", "4711", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "cz/4711.jpg").exists(), is(true));
     }
@@ -83,7 +83,7 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@GabyBecker", 8009);
         final Map<String, String> result = importer.importPhotos();
         assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for Gaby Becker"));
-        assertPostedPhoto("Gaby Becker", "de", 8009, "0");
+        assertPostedPhoto("Gaby Becker", "de", "8009", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
     }
@@ -93,12 +93,12 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@RecumbentTravel", 8009);
         final Map<String, String> result = importer.importPhotos();
         assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for Anonym"));
-        assertPostedPhoto("Anonym", "de", 8009, "1");
+        assertPostedPhoto("Anonym", "de", "8009", "1");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
     }
 
-    private void assertPostedPhoto(final String photographerName, final String countryCode, final int stationId, final String flag) {
+    private void assertPostedPhoto(final String photographerName, final String countryCode, final String stationId, final String flag) {
         assertThat(postedBahnhofsfoto.getPhotographer(), is(photographerName));
         assertThat(postedBahnhofsfoto.getCountryCode(), is(countryCode));
         assertThat(postedBahnhofsfoto.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));

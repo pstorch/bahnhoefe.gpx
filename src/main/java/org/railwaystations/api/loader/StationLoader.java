@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface StationLoader {
 
-    Map<Integer, Station> loadStations(final Map<String, Photographer> photographers, String photoBaseUrl);
+    Map<Station.Key, Station> loadStations(final Map<String, Photographer> photographers, String photoBaseUrl);
 
     Country getCountry();
 

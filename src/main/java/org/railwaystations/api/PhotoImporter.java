@@ -106,16 +106,17 @@ public class PhotoImporter {
                     break;
                 }
 
-                final Integer stationId = Integer.valueOf(matcher.group(2));
+                final String stationId = matcher.group(2);
+                final Station.Key key = new Station.Key(countryCode, stationId);
                 Station station = null;
                 if (country.isPresent()) {
-                    station = repository.get(countryCode).get(stationId);
+                    station = repository.get(countryCode).get(key);
                     if (station == null) {
-                        report.put(importFile.getAbsolutePath(), "Station " + stationId + " not found");
+                        report.put(importFile.getAbsolutePath(), "Station " + key.getId() + " not found");
                         break;
                     }
                     if (station.hasPhoto()) {
-                        report.put(importFile.getAbsolutePath(), "Station " + stationId + " has already a photo");
+                        report.put(importFile.getAbsolutePath(), "Station " + key.getId() + " has already a photo");
                         break;
                     }
                 }
@@ -177,7 +178,7 @@ public class PhotoImporter {
         //return new URL("http://localhost:9200/elastictest/bahnhofsfoto");
     }
 
-    private void moveFile(final File importFile, final File countryDir, final Integer stationId) throws IOException {
+    private void moveFile(final File importFile, final File countryDir, final String stationId) throws IOException {
         FileUtils.moveFile(importFile, new File(countryDir, stationId + ".jpg"));
     }
 

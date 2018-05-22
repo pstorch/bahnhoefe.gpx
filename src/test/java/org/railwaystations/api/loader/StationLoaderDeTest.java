@@ -36,13 +36,13 @@ public class StationLoaderDeTest {
 			final StationLoader loader = new StationLoaderDe(new Country("de"), container.home().toURL(),
 					container.home().toURL());
 
-			final Map<Integer, Station> stations = loader.loadStations(new HashMap<>(), "http://www.deutschlands-bahnhoefe.org");
+			final Map<Station.Key, Station> stations = loader.loadStations(new HashMap<>(), "http://www.deutschlands-bahnhoefe.org");
 
-			final Station zweibruecken = stations.get(7066);
-			assertThat(zweibruecken.getId(), CoreMatchers.is(7066));
+			final Station zweibruecken = stations.get(new Station.Key("de", "7066"));
+			assertThat(zweibruecken.getKey().getId(), CoreMatchers.is("7066"));
 			assertThat(zweibruecken.getTitle(), CoreMatchers.is("Zweibrücken Hbf"));
-			assertThat(zweibruecken.getLat(), CoreMatchers.is(49.2467252285295));
-			assertThat(zweibruecken.getLon(), CoreMatchers.is(7.35692381858826));
+			assertThat(zweibruecken.getCoordinates().getLat(), CoreMatchers.is(49.2467252285295));
+			assertThat(zweibruecken.getCoordinates().getLon(), CoreMatchers.is(7.35692381858826));
 			assertThat(zweibruecken.hasPhoto(), CoreMatchers.is(true));
 			assertThat(zweibruecken.getPhotographer(), CoreMatchers.is("@hessenpfaelzer"));
 			assertThat(zweibruecken.getDS100(), CoreMatchers.is("SZW"));
@@ -50,11 +50,11 @@ public class StationLoaderDeTest {
 			assertThat(zweibruecken.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0)"));
 			assertThat(zweibruecken.getCreatedAt(), CoreMatchers.is(1523044367000L));
 
-			final Station albersdorf = stations.get(41);
-			assertThat(albersdorf.getId(), CoreMatchers.is(41));
+			final Station albersdorf = stations.get(new Station.Key("de", "41"));
+			assertThat(albersdorf.getKey().getId(), CoreMatchers.is("41"));
 			assertThat(albersdorf.getTitle(), CoreMatchers.is("Albersdorf"));
-			assertThat(albersdorf.getLat(), CoreMatchers.is(54.1461697552048));
-			assertThat(albersdorf.getLon(), CoreMatchers.is(9.29245591163636));
+			assertThat(albersdorf.getCoordinates().getLat(), CoreMatchers.is(54.1461697552048));
+			assertThat(albersdorf.getCoordinates().getLon(), CoreMatchers.is(9.29245591163636));
 			assertThat(albersdorf.hasPhoto(), CoreMatchers.is(false));
 			assertThat(albersdorf.getDS100(), CoreMatchers.is("AAL"));
 		}

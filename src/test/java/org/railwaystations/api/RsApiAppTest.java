@@ -56,70 +56,71 @@ public class RsApiAppTest {
     @Test
     public void stationsAllCountries() throws IOException {
         final Station[] stations = assertLoadStations("/stations", 200);
-        assertThat(findById(stations, 41), notNullValue());
-        assertThat(findById(stations, 8501042), notNullValue());
+        assertThat(stations.length, is(7604));
+        assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), notNullValue());
     }
 
     @Test
     public void stationById() throws IOException {
         final Response response = loadRaw("/de/stations/41", 200);
         final Station station = response.readEntity(Station.class);
-        assertThat(station.getId(), is(41));
+        assertThat(station.getKey().getId(), is("41"));
         assertThat(station.getTitle(), is( "Albersdorf"));
     }
 
     @Test
     public void stationsDe() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/de/%s", "stations"), 200);
-        assertThat(findById(stations, 41), notNullValue());
-        assertThat(findById(stations, 8501042), nullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), nullValue());
     }
 
     @Test
     public void stationsDeQueryParam() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/%s?country=de", "stations"), 200);
-        assertThat(findById(stations, 41), notNullValue());
-        assertThat(findById(stations, 8501042), nullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), nullValue());
     }
 
     @Test
     public void stationsDePhotograph() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=@hessenpfaelzer", "stations"), 200);
-        assertThat(findById(stations, 7066), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "7066")), notNullValue());
     }
 
     @Test
     public void stationsCh() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/ch/%s", "stations"), 200);
-        assertThat(findById(stations, 8501042), notNullValue());
-        assertThat(findById(stations, 41), nullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "41")), nullValue());
     }
 
     @Test
     public void stationsUnknownCountry() throws IOException {
-        assertLoadStations(String.format("/jp/%s", "stations"), 404);
+        assertLoadStations("/jp/stations", 404);
     }
 
     @Test
     public void stationsDeFromAnonym() throws IOException {
-        final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=Anonym", "stations"), 200);
+        final Station[] stations = assertLoadStations("/de/stations?photographer=Anonym", 200);
         assertThat(stations.length, is(9));
     }
 
     @Test
     public void stationsDeFromDgerkrathWithinMax5km() throws IOException {
-        final Station[] stations = assertLoadStations(String.format("/de/%s?maxDistance=5&lat=51.2670337567818&lon=7.19520717859267&photographer=@Dgerkrath", "stations"), 200);
+        final Station[] stations = assertLoadStations("/de/stations?maxDistance=5&lat=51.2670337567818&lon=7.19520717859267&photographer=@Dgerkrath", 200);
         assertThat(stations.length, is(3));
     }
 
     @Test
     public void stationsJson() throws IOException {
-        final Response response = loadRaw(String.format("/de/%s.json", "stations"), 200);
+        final Response response = loadRaw("/de/stations.json", 200);
         final ObjectMapper mapper = new ObjectMapper();
         final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isArray(), is(true));
-        assertThat(jsonNode.size(), is(5652));
+        assertThat(jsonNode.size(), is(5653));
     }
 
     @Test
@@ -136,7 +137,7 @@ public class RsApiAppTest {
                 final Matcher matcher = pattern.matcher(line);
                 assertThat(matcher.matches(), is(true));
             }
-            assertThat(count, is(5652));
+            assertThat(count, is(5653));
         }
     }
 
@@ -170,7 +171,7 @@ public class RsApiAppTest {
         return response.readEntity(Station[].class);
     }
 
-    private Response loadRaw(final String path, final int expectedStatus) throws IOException {
+    private Response loadRaw(final String path, final int expectedStatus) {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), path))
                 .request()
@@ -183,9 +184,9 @@ public class RsApiAppTest {
         return null;
     }
 
-    private Station findById(final Station[] stations, final int id) {
+    private Station findByKey(final Station[] stations, final Station.Key key) {
         for (final Station station : stations) {
-            if (station.getId() == id) {
+            if (station.getKey().equals(key)) {
                 return station;
             }
         }
@@ -203,8 +204,18 @@ public class RsApiAppTest {
     }
 
     @Test
+    public void photographersAllJson() throws IOException {
+        final Response response = loadRaw("/photographers.json", 200);
+        final ObjectMapper mapper = new ObjectMapper();
+        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        assertThat(jsonNode, notNullValue());
+        assertThat(jsonNode.isObject(), is(true));
+        assertThat(jsonNode.size(), is(35));
+    }
+
+    @Test
     public void photographersTxt() throws IOException {
-        final Response response = loadRaw(String.format("/de/%s.txt", "photographers"), 200);
+        final Response response = loadRaw("/de/photographers.txt", 200);
         try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
             final String header = br.readLine();
             assertThat(header, is("count\tphotographer"));
@@ -222,7 +233,7 @@ public class RsApiAppTest {
 
     @Test
     public void statisticJson() throws IOException {
-        final Response response = loadRaw(String.format("/de/%s.json", "stats"), 200);
+        final Response response = loadRaw("/de/stats.json", 200);
         final ObjectMapper mapper = new ObjectMapper();
         final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
@@ -232,7 +243,7 @@ public class RsApiAppTest {
 
     @Test
     public void statisticTxt() throws IOException {
-        final Response response = loadRaw(String.format("/de/%s.txt", "stats"), 200);
+        final Response response = loadRaw("/de/stats.txt", 200);
         try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
             final String header = br.readLine();
             assertThat(header, is("name\tvalue"));

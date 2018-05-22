@@ -15,16 +15,16 @@ public class StationLoaderCh extends BaseStationLoader {
     }
 
     @Override
-    protected Station createStationFromElastic(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
+    protected Station createStationFromElastic(final Map<Station.Key, Photo> photos, final JsonNode sourceJson) {
         final JsonNode fieldsJson = sourceJson.get("fields");
-        final Integer id = fieldsJson.get("nummer").asInt();
+        final String id = fieldsJson.get("nummer").asText();
         final JsonNode abkuerzung = fieldsJson.get("abkuerzung");
-        return new Station(id,
-                getCountry().getCode(),
+        final Station.Key key = new Station.Key(getCountry().getCode(), id);
+        return new Station(key,
                 fieldsJson.get("name").asText(),
                 readCoordinates(sourceJson),
                 abkuerzung != null ? abkuerzung.asText() : null,
-                photos.get(id));
+                photos.get(key));
     }
 
 }

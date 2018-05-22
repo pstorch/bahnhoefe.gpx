@@ -34,8 +34,8 @@ public class StationsGpxWriter implements MessageBodyWriter<List<Station>> {
     private static void stationToXml(final XMLStreamWriter xmlw, final Station station) {
         try {
             xmlw.writeStartElement(StationsGpxWriter.WPT_ELEMENT);
-            xmlw.writeAttribute(StationsGpxWriter.LAT_ELEMENT, Double.toString(station.getLat()));
-            xmlw.writeAttribute(StationsGpxWriter.LON_ELEMENT, Double.toString(station.getLon()));
+            xmlw.writeAttribute(StationsGpxWriter.LAT_ELEMENT, Double.toString(station.getCoordinates().getLat()));
+            xmlw.writeAttribute(StationsGpxWriter.LON_ELEMENT, Double.toString(station.getCoordinates().getLon()));
             xmlw.writeStartElement(StationsGpxWriter.NAME_ELEMENT);
             xmlw.writeCharacters(station.getTitle());
             xmlw.writeEndElement();

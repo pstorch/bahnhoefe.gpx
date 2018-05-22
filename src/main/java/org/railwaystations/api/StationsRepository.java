@@ -22,7 +22,7 @@ public class StationsRepository {
 
     private static final LevenshteinDistance LEVENSHTEIN_DISTANCE = new LevenshteinDistance();
 
-    private final LoadingCache<String, Map<Integer, Station>> cache;
+    private final LoadingCache<String, Map<Station.Key, Station>> cache;
     private final Set<Country> countries;
     private final Monitor monitor;
     private final PhotographerLoader photographerLoader;
@@ -36,9 +36,9 @@ public class StationsRepository {
         this.photographerLoader = photographerLoader;
     }
 
-    public Map<Integer, Station> get(final String countryCode) {
+    public Map<Station.Key, Station> get(final String countryCode) {
         if (countryCode == null) {
-            final Map<Integer, Station> map = new HashMap<>();
+            final Map<Station.Key, Station> map = new HashMap<>();
             for (final Country aCountry : countries) {
                 map.putAll(cache.getUnchecked(aCountry.getCode()));
             }
@@ -71,9 +71,10 @@ public class StationsRepository {
         refresher.start();
     }
 
-    public Station findById(final Integer id) {
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    public Station findById(final String id) {
         for (final Country country : getCountries()) {
-            final Station station = get(country.getCode()).get(id);
+            final Station station = get(country.getCode()).get(new Station.Key(country.getCode(), id));
             if (station != null) {
                 return station;
             }
@@ -131,7 +132,15 @@ public class StationsRepository {
                 .findFirst();
     }
 
-    private static class StationsCacheLoader extends CacheLoader<String, Map<Integer, Station>> {
+    public Station findByKey(final Station.Key key) {
+        final Map<Station.Key, Station> keyStationMap = get(key.getCountry());
+        if (keyStationMap != null) {
+            return keyStationMap.get(key);
+        }
+        return null;
+    }
+
+    private static class StationsCacheLoader extends CacheLoader<String, Map<Station.Key, Station>> {
         private final Monitor monitor;
         private final List<StationLoader> loaders;
         private final PhotographerLoader photographerLoader;
@@ -144,7 +153,7 @@ public class StationsRepository {
             this.photoBaseUrl = photoBaseUrl;
         }
 
-        public Map<Integer, Station> load(final String countryCode) {
+        public Map<Station.Key, Station> load(final String countryCode) {
             try {
                 for (final StationLoader loader : loaders) {
                     if (loader.getCountry().getCode().equals(countryCode)) {

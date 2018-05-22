@@ -16,15 +16,15 @@ public class StationLoaderDe extends BaseStationLoader {
     }
 
     @Override
-    protected Station createStationFromElastic(final Map<Integer, Photo> photos, final JsonNode sourceJson) {
-        final Integer id = sourceJson.get("BahnhofNr").asInt();
-        return new Station(id,
-                getCountry().getCode(),
+    protected Station createStationFromElastic(final Map<Station.Key, Photo> photos, final JsonNode sourceJson) {
+        final String id = sourceJson.get("BahnhofNr").asText();
+        final Station.Key key = new Station.Key(getCountry().getCode(), id);
+        return new Station(key,
                 sourceJson.get("title").asText(),
                 new Coordinates(sourceJson.get("lat").asDouble(),
                         sourceJson.get("lon").asDouble()),
                 sourceJson.get("DS100").asText(),
-                photos.get(id));
+                photos.get(key));
     }
 
 }

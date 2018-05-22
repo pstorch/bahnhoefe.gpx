@@ -6,7 +6,6 @@ import org.railwaystations.api.writer.PhotographersTxtWriter;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,14 +26,14 @@ public class PhotographersResource {
     @GET
     @Path("photographers")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", PhotographersTxtWriter.TEXT_PLAIN + ";charset=UTF-8"})
-    public Map<String, Long> get(@QueryParam(PhotographersResource.COUNTRY) final String country) throws IOException {
+    public Map<String, Long> get(@QueryParam(PhotographersResource.COUNTRY) final String country) {
         return getWithCountry(country);
     }
 
     @GET
     @Path("{country}/photographers")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", PhotographersTxtWriter.TEXT_PLAIN + ";charset=UTF-8"})
-    public Map<String, Long> getWithCountry(@PathParam(PhotographersResource.COUNTRY) final String country) throws IOException {
+    public Map<String, Long> getWithCountry(@PathParam(PhotographersResource.COUNTRY) final String country) {
         return getPhotographerMap(country);
     }
 

@@ -2,7 +2,7 @@ package org.railwaystations.api.model;
 
 public class Photo {
 
-    private final int stationId;
+    private final Station.Key stationKey;
     private final String url;
     private final String photographer;
     private final String photographerUrl;
@@ -10,12 +10,12 @@ public class Photo {
     private final String license;
     private final String statUser;
 
-    public Photo(final int stationId, final String url, final String photographer, final String photographerUrl, final Long createdAt, final String license) {
-        this(stationId, url, photographer, photographerUrl, createdAt, license, photographer);
+    public Photo(final Station.Key stationKey, final String url, final String photographer, final String photographerUrl, final Long createdAt, final String license) {
+        this(stationKey, url, photographer, photographerUrl, createdAt, license, photographer);
     }
 
-    public Photo(final int stationId, final String url, final String photographer, final String photographerUrl, final Long createdAt, final String license, final String statUser) {
-        this.stationId = stationId;
+    public Photo(final Station.Key stationKey, final String url, final String photographer, final String photographerUrl, final Long createdAt, final String license, final String statUser) {
+        this.stationKey = stationKey;
         this.url = url;
         this.photographer = photographer;
         this.photographerUrl = photographerUrl;
@@ -32,8 +32,8 @@ public class Photo {
         return photographer;
     }
 
-    public int getStationId() {
-        return stationId;
+    public Station.Key getStationKey() {
+        return stationKey;
     }
 
     public String getLicense() {
