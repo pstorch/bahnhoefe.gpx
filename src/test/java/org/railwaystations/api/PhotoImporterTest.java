@@ -38,7 +38,7 @@ public class PhotoImporterTest {
     @Before
     public void setUp() throws IOException {
         final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
-        final StationLoaderDe loaderDe = new StationLoaderDe(new Country("de"), new URL("file:./src/test/resources/photosDe.json"), new URL("file:./src/test/resources/stationsDe.json"));
+        final StationLoaderDe loaderDe = new StationLoaderDe(new Country("de"), new URL("file:./src/test/resources/photosDe.json"), new URL("file:./src/test/resources/stationsDe.json"), new LoggingMonitor());
         uploadDir = Files.createTempDirectory("rsapiUpload");
         photoDir = Files.createTempDirectory("rsapiPhoto");
         importer = new PhotoImporter(new StationsRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, ""), new LoggingMonitor(), uploadDir.toString(), photoDir.toString()) {

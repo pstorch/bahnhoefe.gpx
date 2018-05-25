@@ -46,7 +46,7 @@ public class RsApiConfiguration extends Configuration {
     private String photoDir;
 
     public StationsRepository getRepository() {
-        return new StationsRepository(monitor, loaders.stream().map(StationLoaderFactory::createLoader).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);
+        return new StationsRepository(monitor, loaders.stream().map(factory -> factory.createLoader(monitor)).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {

@@ -8,6 +8,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
+import org.railwaystations.api.monitoring.LoggingMonitor;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -34,7 +35,7 @@ public class StationLoaderFiTest {
 			container.start();
 
 			final StationLoader loader = new BaseStationLoader(new Country("fi"), container.home().toURL(),
-					container.home().toURL());
+					container.home().toURL(), new LoggingMonitor());
 
 			final Map<Station.Key, Station> stations = loader.loadStations(new HashMap<>(), "https://railway-stations.org");
 

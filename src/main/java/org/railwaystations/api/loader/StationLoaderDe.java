@@ -5,14 +5,15 @@ import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
+import org.railwaystations.api.monitoring.Monitor;
 
 import java.net.URL;
 import java.util.Map;
 
 public class StationLoaderDe extends BaseStationLoader {
 
-    public StationLoaderDe(final Country country, final URL photosUrl, final URL stationsUrl) {
-        super(country, photosUrl, stationsUrl);
+    public StationLoaderDe(final Country country, final URL photosUrl, final URL stationsUrl, final Monitor monitor) {
+        super(country, photosUrl, stationsUrl, monitor);
     }
 
     @Override

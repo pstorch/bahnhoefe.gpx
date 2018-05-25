@@ -45,6 +45,7 @@ public class SlackMonitor implements Monitor {
     }
 
     protected void sendMessageInternal(final String message, final String url) {
+        LOG.info("Sending message: {}", message);
         try {
             final String json = MAPPER.writeValueAsString(new SlackMessage(message));
             final HttpPost httpPost = new HttpPost(url);

@@ -4,14 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
+import org.railwaystations.api.monitoring.Monitor;
 
 import java.net.URL;
 import java.util.Map;
 
 public class StationLoaderCh extends BaseStationLoader {
 
-    public StationLoaderCh(final Country country, final URL photosUrl, final URL stationsUrl) {
-        super(country, photosUrl, stationsUrl);
+    public StationLoaderCh(final Country country, final URL photosUrl, final URL stationsUrl, final Monitor monitor) {
+        super(country, photosUrl, stationsUrl, monitor);
     }
 
     @Override

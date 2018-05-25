@@ -3,6 +3,7 @@ package org.railwaystations.api.loader;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.railwaystations.api.model.Country;
+import org.railwaystations.api.monitoring.Monitor;
 
 import java.net.URL;
 
@@ -19,8 +20,8 @@ public class BaseStationLoaderFactory implements StationLoaderFactory {
     protected URL stationsUrl;
 
     @Override
-    public StationLoader createLoader() {
-        return new BaseStationLoader(country, photosUrl, stationsUrl);
+    public StationLoader createLoader(final Monitor monitor) {
+        return new BaseStationLoader(country, photosUrl, stationsUrl, monitor);
     }
 
 }

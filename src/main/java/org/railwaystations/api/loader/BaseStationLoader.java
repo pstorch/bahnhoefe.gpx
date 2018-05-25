@@ -6,8 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.BackendHttpClient;
 import org.railwaystations.api.model.*;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.railwaystations.api.monitoring.Monitor;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,20 +19,21 @@ public class BaseStationLoader implements StationLoader {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String HITS_ELEMENT = "hits";
     private static final String SOURCE_ELEMENT = "_source";
-    private static final Logger LOG = LoggerFactory.getLogger(BaseStationLoader.class);
 
     private final URL stationsUrl;
     private final URL photosUrl;
     private final Country country;
+    private final Monitor monitor;
 
     private final BackendHttpClient httpclient;
 
-    BaseStationLoader(final Country country, final URL photosUrl, final URL stationsUrl) {
+    BaseStationLoader(final Country country, final URL photosUrl, final URL stationsUrl, final Monitor monitor) {
         super();
         this.country = country;
         this.photosUrl = photosUrl;
         this.stationsUrl = stationsUrl;
         this.httpclient = new BackendHttpClient();
+        this.monitor = monitor;
     }
 
     public Country getCountry() {
@@ -56,7 +56,7 @@ public class BaseStationLoader implements StationLoader {
         for (int i = 0; i < hits.size(); i++) {
             final Photo photo = createPhoto(hits.get(i).get(BaseStationLoader.SOURCE_ELEMENT), photographers, photoBaseUrl);
             if (photos.get(photo.getStationKey()) != null) {
-                LOG.info("Photo for Station " + photo.getStationKey() + " has duplicates");
+                monitor.sendMessage("Station " + photo.getStationKey() + " has duplicate photos");
             }
             photos.put(photo.getStationKey(), photo);
         }
