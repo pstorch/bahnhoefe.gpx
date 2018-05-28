@@ -3,8 +3,8 @@ package org.railwaystations.api.resources;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.TokenGenerator;
@@ -38,7 +38,7 @@ public class PhotoUploadResourceTest {
     private Path tempDir;
     private PhotoUploadResource resource;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
         final StationLoader loader = Mockito.mock(StationLoader.class);

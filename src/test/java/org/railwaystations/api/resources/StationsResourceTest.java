@@ -1,7 +1,7 @@
 package org.railwaystations.api.resources;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.loader.PhotographerLoader;
@@ -27,7 +27,7 @@ public class StationsResourceTest {
 
     private StationsResource resource;
 
-    @Before
+    @BeforeEach
     public void setUp() throws MalformedURLException {
         final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
 

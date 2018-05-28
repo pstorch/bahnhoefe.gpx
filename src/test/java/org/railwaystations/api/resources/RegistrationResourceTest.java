@@ -3,8 +3,8 @@ package org.railwaystations.api.resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.assertj.core.util.Files;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.mail.MockMailer;
 import org.railwaystations.api.model.Registration;
@@ -28,7 +28,7 @@ public class RegistrationResourceTest {
     private RegistrationResource resource;
     private String workDir;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         monitor = new MockMonitor();
         mailer = new MockMailer();

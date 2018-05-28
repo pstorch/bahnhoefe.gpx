@@ -5,8 +5,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.message.BasicStatusLine;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.railwaystations.api.loader.StationLoaderDe;
 import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.model.Country;
@@ -35,7 +35,7 @@ public class PhotoImporterTest {
     private Path photoDir;
     private Bahnhofsfoto postedBahnhofsfoto;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
         final StationLoaderDe loaderDe = new StationLoaderDe(new Country("de"), new URL("file:./src/test/resources/photosDe.json"), new URL("file:./src/test/resources/stationsDe.json"), new LoggingMonitor());

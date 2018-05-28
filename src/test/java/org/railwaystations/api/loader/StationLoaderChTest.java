@@ -5,7 +5,7 @@ import com.jcabi.http.mock.MkContainer;
 import com.jcabi.http.mock.MkGrizzlyContainer;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.monitoring.LoggingMonitor;

@@ -1,7 +1,7 @@
 package org.railwaystations.api.writer;
 
+import org.junit.jupiter.api.Test;
 import org.railwaystations.api.model.Station;
-import org.junit.Test;
 import org.railwaystations.api.model.Coordinates;
 
 import javax.ws.rs.WebApplicationException;

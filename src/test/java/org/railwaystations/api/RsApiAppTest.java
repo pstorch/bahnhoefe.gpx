@@ -4,15 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.dropwizard.testing.ResourceHelpers;
-import io.dropwizard.testing.junit.DropwizardAppRule;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.railwaystations.api.mail.MockMailer;
-import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Photographer;
+import org.railwaystations.api.model.Station;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -35,20 +36,19 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressFBWarnings("BC_UNCONFIRMED_CAST_OF_RETURN_VALUE")
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class RsApiAppTest {
 
-    @ClassRule
-    public static final DropwizardAppRule<RsApiConfiguration> RULE =
-            new DropwizardAppRule<>(RsApiApp.class, ResourceHelpers.resourceFilePath("config.yml"));
+    public static final DropwizardAppExtension<RsApiConfiguration> RULE = MySuite.DROPWIZARD;
 
     private Client client;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         client.close();
     }
@@ -347,6 +347,10 @@ public class RsApiAppTest {
         assertThat(photographer.getName(), is("SimoneDoerfling"));
         assertThat(photographer.getUrl(), is("http://www.deutschlands-bahnhoefe.de/"));
         assertThat(photographer.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
+    }
+
+    public static final class MySuite {
+        public static final DropwizardAppExtension<RsApiConfiguration> DROPWIZARD = new DropwizardAppExtension<>(RsApiApp.class, ResourceHelpers.resourceFilePath("config.yml"));
     }
 
 }

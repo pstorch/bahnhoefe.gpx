@@ -1,7 +1,7 @@
 package org.railwaystations.api.writer;
 
+import org.junit.jupiter.api.Test;
 import org.railwaystations.api.model.Statistic;
-import org.junit.Test;
 
 import javax.ws.rs.WebApplicationException;
 import java.io.ByteArrayOutputStream;

@@ -1,7 +1,7 @@
 package org.railwaystations.api.monitoring;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SlackMonitorTest {
 

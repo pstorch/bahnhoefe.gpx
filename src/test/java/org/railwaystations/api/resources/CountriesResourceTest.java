@@ -1,7 +1,7 @@
 package org.railwaystations.api.resources;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.loader.StationLoader;
