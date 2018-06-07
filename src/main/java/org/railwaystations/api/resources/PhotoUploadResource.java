@@ -87,9 +87,9 @@ public class PhotoUploadResource {
         }
 
         final File uploadCountryDir = new File(uploadDir, country);
-        final boolean duplicate = isDuplicate(stationId, station, uploadCountryDir);
-        final String fileName = String.format("%s-%s.%s", nickname, stationId, mimeToExtension(contentType));
-        final File file = new File(uploadCountryDir, fileName);
+        final String filename = toFilename(stationId, contentType, nickname);
+        final boolean duplicate = isDuplicate(station, uploadCountryDir, filename);
+        final File file = new File(uploadCountryDir, filename);
         LOG.info("Writing photo to {}", file);
         try {
             FileUtils.forceMkdir(uploadCountryDir);
@@ -102,7 +102,7 @@ public class PhotoUploadResource {
             if (duplicate) {
                 duplicateInfo = " (possible duplicate!)";
             }
-            monitor.sendMessage(String.format("New photo upload for %s: http://inbox.railway-stations.org/%s/%s%s", station.getTitle(), country, URIUtil.encodePath(fileName), duplicateInfo));
+            monitor.sendMessage(String.format("New photo upload for %s: http://inbox.railway-stations.org/%s/%s%s", station.getTitle(), country, URIUtil.encodePath(filename), duplicateInfo));
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
             return consumeBodyAndReturn(body, Response.Status.INTERNAL_SERVER_ERROR);
@@ -111,12 +111,16 @@ public class PhotoUploadResource {
         return duplicate ? Response.status(Response.Status.CONFLICT).build() : Response.accepted().build();
     }
 
-    private boolean isDuplicate(@NotNull @HeaderParam("Station-Id") final String stationId, final Station station, final File uploadCountryDir) {
+    private String toFilename(final String stationId, final String contentType, final String nickname) {
+        return String.format("%s-%s.%s", nickname, stationId, mimeToExtension(contentType));
+    }
+
+    private boolean isDuplicate(final Station station, final File uploadCountryDir, final String filename) {
         boolean duplicate = station.hasPhoto();
         if (!duplicate) {
             final File[] listFiles = uploadCountryDir.listFiles(pathname -> {
-                final String stationIdentifier = "-" + stationId + ".";
-                return pathname.getName().contains(stationIdentifier);
+                final String stationIdentifier = "-" + station.getKey().getId() + ".";
+                return pathname.getName().contains(stationIdentifier) && !pathname.getName().equals(filename);
             });
             duplicate = listFiles != null && listFiles.length > 0;
         }

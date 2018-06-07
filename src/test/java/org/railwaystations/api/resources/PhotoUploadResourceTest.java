@@ -54,62 +54,64 @@ public class PhotoUploadResourceTest {
         resource = new PhotoUploadResource(new StationsRepository(monitor, Collections.singletonList(loader), photographerLoader, ""), "apiKey", tokenGenerator, tempDir.toString(), monitor);
     }
 
+    private Response whenPostImage(final String content, final String uploadToken, final String nickname, final String email, final String stationId, final String country) throws UnsupportedEncodingException {
+        final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
+        final InputStream is = new ByteArrayInputStream(inputBytes);
+        return resource.post(is, "apiKey", uploadToken, nickname, email,stationId, country, "image/jpeg");
+    }
+
     @Test
     public void testPost() throws IOException {
-        final byte[] inputBytes = "image-content".getBytes(Charset.defaultCharset());
-        final InputStream is = new ByteArrayInputStream(inputBytes);
-
-        final Response response = resource.post(is, "apiKey", "d913467f14e7f1c2bbbc74c07d5ab0689f4b4759", "@nick name", "nickname@example.com","4711", "de", "image/jpeg");
+        final Response response = whenPostImage("image-content", "d913467f14e7f1c2bbbc74c07d5ab0689f4b4759", "@nick name", "nickname@example.com","4711", "de");
 
         assertThat(response.getStatus(), equalTo(202));
-
-        final File image = new File(tempDir.toFile(), "de/@nick name-4711.jpg");
-        assertThat(image.exists(), equalTo(true));
-
-        final byte[] outputBytes = new byte[inputBytes.length];
-        IOUtils.readFully(new FileInputStream(image), outputBytes);
-        assertThat(outputBytes, equalTo(inputBytes));
-
+        assertFileWithContentExistsInInbox("image-content", "de/@nick name-4711.jpg");
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland: http://inbox.railway-stations.org/de/@nick%20name-4711.jpg"));
     }
 
     @Test
     public void testPostDuplicateInbox() throws IOException {
-        final byte[] inputBytes = "image-content".getBytes(Charset.defaultCharset());
-        final InputStream is = new ByteArrayInputStream(inputBytes);
-        final File existing = new File(tempDir.toFile(), "de/@other_nick-4711.jpg");
-        FileUtils.write(existing, "dummy", "UTF-8");
+        givenFileExistsInInbox("de/@other_nick-4711.jpg");
 
-        final Response response = resource.post(is, "apiKey", "d913467f14e7f1c2bbbc74c07d5ab0689f4b4759", "@nick name", "nickname@example.com","4711", "de", "image/jpeg");
+        final Response response = whenPostImage("image-content", "d913467f14e7f1c2bbbc74c07d5ab0689f4b4759", "@nick name", "nickname@example.com","4711", "de");
 
         assertThat(response.getStatus(), equalTo(409));
-
-        final File image = new File(tempDir.toFile(), "de/@nick name-4711.jpg");
-        assertThat(image.exists(), equalTo(true));
-
-        final byte[] outputBytes = new byte[inputBytes.length];
-        IOUtils.readFully(new FileInputStream(image), outputBytes);
-        assertThat(outputBytes, equalTo(inputBytes));
-
+        assertFileWithContentExistsInInbox("image-content", "de/@nick name-4711.jpg");
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland: http://inbox.railway-stations.org/de/@nick%20name-4711.jpg (possible duplicate!)"));
     }
 
     @Test
-    public void testPostDuplicate() throws IOException {
-        final byte[] inputBytes = "image-content".getBytes(Charset.defaultCharset());
-        final InputStream is = new ByteArrayInputStream(inputBytes);
+    public void testPostDuplicateInboxSameUser() throws IOException {
+        givenFileExistsInInbox("de/@nick name-4711.jpg");
 
-        final Response response = resource.post(is, "apiKey", "d913467f14e7f1c2bbbc74c07d5ab0689f4b4759", "@nick name", "nickname@example.com","1234", "de", "image/jpeg");
+        final Response response = whenPostImage("image-content", "d913467f14e7f1c2bbbc74c07d5ab0689f4b4759", "@nick name", "nickname@example.com","4711", "de");
 
-        assertThat(response.getStatus(), equalTo(409));
+        assertThat(response.getStatus(), equalTo(202));
+        assertFileWithContentExistsInInbox("image-content", "de/@nick name-4711.jpg");
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland: http://inbox.railway-stations.org/de/@nick%20name-4711.jpg"));
+    }
 
-        final File image = new File(tempDir.toFile(), "de/@nick name-1234.jpg");
+    private void assertFileWithContentExistsInInbox(final String content, final String filename) throws IOException {
+        final File image = new File(tempDir.toFile(), filename);
         assertThat(image.exists(), equalTo(true));
 
+        final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final byte[] outputBytes = new byte[inputBytes.length];
         IOUtils.readFully(new FileInputStream(image), outputBytes);
         assertThat(outputBytes, equalTo(inputBytes));
+    }
 
+    private void givenFileExistsInInbox(final String filename) throws IOException {
+        final File existing = new File(tempDir.toFile(), filename);
+        FileUtils.write(existing, "dummy", "UTF-8");
+    }
+
+    @Test
+    public void testPostDuplicate() throws IOException {
+        final Response response = whenPostImage("image-content", "d913467f14e7f1c2bbbc74c07d5ab0689f4b4759", "@nick name", "nickname@example.com","1234", "de");
+
+        assertThat(response.getStatus(), equalTo(409));
+        assertFileWithContentExistsInInbox("image-content", "de/@nick name-1234.jpg");
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Neverland: http://inbox.railway-stations.org/de/@nick%20name-1234.jpg (possible duplicate!)"));
     }
 
