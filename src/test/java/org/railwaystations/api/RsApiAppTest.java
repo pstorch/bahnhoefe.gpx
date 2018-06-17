@@ -56,7 +56,7 @@ public class RsApiAppTest {
     @Test
     public void stationsAllCountries() throws IOException {
         final Station[] stations = assertLoadStations("/stations", 200);
-        assertThat(stations.length, is(7604));
+        assertThat(stations.length, is(6098));
         assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
         assertThat(findByKey(stations, new Station.Key("ch", "8501042")), notNullValue());
     }

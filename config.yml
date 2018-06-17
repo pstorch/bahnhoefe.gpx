@@ -29,14 +29,14 @@ loaders:
       timetableUrlTemplate: https://mobile.bahn.de/bin/mobil/bhftafel.exe/dox?bt=dep&max=10&rt=1&use_realtime_filter=1&start=yes&input={title}
     stationsUrl: http://94.136.168.53/bahnhoefe/_search?size=7000
     photosUrl: http://94.136.168.53/bahnhofsfotosde/_search?size=7000
-  - type: chLoader
+  - type: baseLoader
     country:
       code: ch
       name: Schweiz
       email: "fotos@schweizer-bahnhoefe.ch"
       twitterTags: "@BahnhoefeCH, @android_oma, #BahnhofsfotoCH"
       timetableUrlTemplate: http://fahrplan.sbb.ch/bin/stboard.exe/dn?input={title}&REQTrain_name=&boardType=dep&time=now&maxJourneys=20&selectDate=today&productsFilter=1111111111&start=yes
-    stationsUrl: http://94.136.168.53/bahnhoefech/_search?size=6000
+    stationsUrl: http://94.136.168.53/bahnhoefec2/_search?size=6000
     photosUrl: http://94.136.168.53/bahnhofsfotosch/_search?size=6000
   - type: baseLoader
     country:
@@ -101,3 +101,10 @@ loaders:
       timetableUrlTemplate: http://www.irishrail.ie/timetables/live-departure-times?code={DS100}
     stationsUrl: http://94.136.168.53/bahnhoefeie/_search?size=200
     photosUrl: http://94.136.168.53/bahnhofsfotosie/_search?size=200
+  - type: baseLoader
+    country:
+      code: "no"
+      name: Norge
+      timetableUrlTemplate: https://www.nsb.no/en/frontpage
+    stationsUrl: http://94.136.168.53/bahnhoefeno/_search?size=200
+    photosUrl: http://94.136.168.53/bahnhofsfotosno/_search?size=200
