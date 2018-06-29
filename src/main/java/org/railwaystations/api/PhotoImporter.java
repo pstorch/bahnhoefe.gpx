@@ -17,10 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,33 +90,21 @@ public class PhotoImporter {
             return;
         }
         final Optional<Country> country = repository.getCountry(countryCode);
-        int importCount = 0;
         final Collection<File> files = FileUtils.listFiles(importDir, new String[]{"jpg"}, false);
         if (country.isPresent() && files.size() > 0) {
             repository.refreshCountry(countryCode);
         }
+
+        final Map<File, Bahnhofsfoto> fotosToImport = new HashMap<>();
         for (final File importFile : files) {
             try {
                 final Matcher matcher = IMPORT_FILE_PATTERN.matcher(importFile.getName());
                 if (!matcher.find()) {
                     report.put(importFile.getAbsolutePath(), "File doesn't match pattern: $photographer-$stationid.jpg");
-                    break;
+                    continue;
                 }
 
                 final String stationId = matcher.group(2);
-                final Station.Key key = new Station.Key(countryCode, stationId);
-                Station station = null;
-                if (country.isPresent()) {
-                    station = repository.get(countryCode).get(key);
-                    if (station == null) {
-                        report.put(importFile.getAbsolutePath(), "Station " + key.getId() + " not found");
-                        break;
-                    }
-                    if (station.hasPhoto()) {
-                        report.put(importFile.getAbsolutePath(), "Station " + key.getId() + " has already a photo");
-                        break;
-                    }
-                }
 
                 String photographerName = matcher.group(1);
                 final String flag = photographerName.equals("@RecumbentTravel") ? "1" : "0";
@@ -133,27 +118,60 @@ public class PhotoImporter {
                 }
                 if (photographer == null) {
                     report.put(importFile.getAbsolutePath(), "Photographer " + photographerName + " not found");
-                    break;
+                    continue;
                 }
 
                 final Bahnhofsfoto bahnhofsfoto = new Bahnhofsfoto(stationId, "/fotos/" + countryCode + "/" + stationId + ".jpg",
                         getLicense(photographer.getLicense(), countryCode), photographer.getName(), System.currentTimeMillis(), flag, countryCode);
-                final Optional<StatusLine> status = postToElastic(bahnhofsfoto);
-                if (status.isPresent() && status.get().getStatusCode() != 201) {
-                    report.put(importFile.getAbsolutePath(), "Elastic error response: " + status.get().toString());
-                    break;
-                }
-
-                moveFile(importFile, countryDir, stationId);
-                LOG.info("Photo " + importFile.getAbsolutePath() + " imported");
-                importCount++;
-
-                report.put(importFile.getAbsolutePath(), "imported " + (station != null ? station.getTitle() : "unknown station") + " for " + photographer.getName());
+                fotosToImport.put(importFile, bahnhofsfoto);
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
                 report.put(importFile.getAbsolutePath(), "Import Error: " + e.getMessage());
             }
         }
+
+        int importCount = 0;
+        for (final Map.Entry<File, Bahnhofsfoto> fotoToImport : fotosToImport.entrySet()) {
+            final File importFile = fotoToImport.getKey();
+            final Bahnhofsfoto bahnhofsfoto = fotoToImport.getValue();
+            final Optional<StatusLine> status;
+            try {
+                final Station.Key key = new Station.Key(countryCode, bahnhofsfoto.getId());
+                Station station = null;
+                if (country.isPresent()) {
+                    station = repository.get(countryCode).get(key);
+                    if (station == null) {
+                        report.put(importFile.getAbsolutePath(), "Station " + key.getId() + " not found");
+                        continue;
+                    }
+                    if (station.hasPhoto()) {
+                        report.put(importFile.getAbsolutePath(), "Station " + key.getId() + " has already a photo");
+                        continue;
+                    }
+                }
+
+                if (fotosToImport.entrySet().stream().anyMatch(e -> e.getKey() != importFile && e.getValue().getId().equals(bahnhofsfoto.getId()))) {
+                    report.put(importFile.getAbsolutePath(), "conflict with another photo in inbox");
+                    continue;
+                }
+
+                status = postToElastic(bahnhofsfoto);
+                if (status.isPresent() && status.get().getStatusCode() != 201) {
+                    report.put(importFile.getAbsolutePath(), "Elastic error response: " + status.get().toString());
+                    continue;
+                }
+
+                moveFile(importFile, countryDir, bahnhofsfoto.getId());
+                LOG.info("Photo " + importFile.getAbsolutePath() + " imported");
+                importCount++;
+
+                report.put(importFile.getAbsolutePath(), "imported " + (station != null ? station.getTitle() : "unknown station") + " for " + bahnhofsfoto.getPhotographer());
+            } catch (Exception e) {
+                LOG.error("Error importing photo " + importFile, e);
+                report.put(importFile.getAbsolutePath(), "Import Error: " + e.getMessage());
+            }
+        }
+
         if (importCount > 0) {
             LOG.info("Imported " + importCount + " for " + countryCode);
             repository.refreshCountry(countryCode);

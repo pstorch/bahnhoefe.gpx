@@ -69,6 +69,27 @@ public class PhotoImporterTest {
     }
 
     @Test
+    public void testImportStationHasPhoto() throws IOException {
+        final File importFile = createFile("de", "@storchp", 6913);
+        final Map<String, String> result = importer.importPhotos();
+        assertThat(result.get(importFile.getAbsolutePath()), is("Station 6913 has already a photo"));
+        assertThat(postedBahnhofsfoto, nullValue());
+        assertThat(importFile.exists(), is(true));
+    }
+
+    @Test
+    public void testImportDuplicates() throws IOException {
+        final File importFile1 = createFile("de", "@storchp", 8009);
+        final File importFile2 = createFile("de", "Anonym", 8009);
+        final Map<String, String> result = importer.importPhotos();
+        assertThat(result.get(importFile1.getAbsolutePath()), is("conflict with another photo in inbox"));
+        assertThat(result.get(importFile2.getAbsolutePath()), is("conflict with another photo in inbox"));
+        assertThat(postedBahnhofsfoto, nullValue());
+        assertThat(importFile1.exists(), is(true));
+        assertThat(importFile2.exists(), is(true));
+    }
+
+    @Test
     public void testImportNoStationData() throws IOException {
         final File importFile = createFile("cz", "@storchp", 4711);
         final Map<String, String> result = importer.importPhotos();
@@ -119,7 +140,7 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportStationNotFound() throws IOException {
-        final File importFile = createFile("de", "@unknown", 99999999);
+        final File importFile = createFile("de", "Anonym", 99999999);
         final Map<String, String> result = importer.importPhotos();
         assertThat(result.get(importFile.getAbsolutePath()), is("Station 99999999 not found"));
         assertThat(postedBahnhofsfoto, nullValue());
