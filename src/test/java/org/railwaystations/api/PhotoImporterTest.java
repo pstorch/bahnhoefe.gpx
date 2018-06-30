@@ -53,7 +53,11 @@ public class PhotoImporterTest {
     }
 
     private File createFile(final String countryCode, final String photographer, final int stationId) throws IOException {
-        final File importFile = new File(uploadDir.toFile(), countryCode + "/import/" + photographer + "-" + stationId + ".jpg");
+        return createFile(countryCode, photographer, stationId, ".jpg");
+    }
+
+    private File createFile(final String countryCode, final String photographer, final int stationId, final String extension) throws IOException {
+        final File importFile = new File(uploadDir.toFile(), countryCode + "/import/" + photographer + "-" + stationId + extension);
         FileUtils.write(importFile, "test", Charset.forName("UTF-8"));
         return importFile;
     }
@@ -79,8 +83,8 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportDuplicates() throws IOException {
-        final File importFile1 = createFile("de", "@storchp", 8009);
-        final File importFile2 = createFile("de", "Anonym", 8009);
+        final File importFile1 = createFile("de", "@storchp", 8009, ".Jpg");
+        final File importFile2 = createFile("de", "Anonym", 8009, ".jpeg");
         final Map<String, String> result = importer.importPhotos();
         assertThat(result.get(importFile1.getAbsolutePath()), is("conflict with another photo in inbox"));
         assertThat(result.get(importFile2.getAbsolutePath()), is("conflict with another photo in inbox"));
@@ -101,7 +105,7 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportPhotographerLevenshteinMatch() throws IOException {
-        final File importFile = createFile("de", "@GabyBecker", 8009);
+        final File importFile = createFile("de", "@GabyBecker", 8009, ".JPG");
         final Map<String, String> result = importer.importPhotos();
         assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for Gaby Becker"));
         assertPostedPhoto("Gaby Becker", "de", "8009", "0");

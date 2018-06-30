@@ -25,7 +25,7 @@ public class PhotoImporter {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final Logger LOG = LoggerFactory.getLogger(PhotoImporter.class);
-    private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-(\\d+).jpg");
+    private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-(\\d+).jpe?g", Pattern.CASE_INSENSITIVE);
 
     private final StationsRepository repository;
     private final Monitor monitor;
@@ -90,7 +90,7 @@ public class PhotoImporter {
             return;
         }
         final Optional<Country> country = repository.getCountry(countryCode);
-        final Collection<File> files = FileUtils.listFiles(importDir, new String[]{"jpg"}, false);
+        final Collection<File> files = FileUtils.listFiles(importDir, null, false);
         if (country.isPresent() && files.size() > 0) {
             repository.refreshCountry(countryCode);
         }
