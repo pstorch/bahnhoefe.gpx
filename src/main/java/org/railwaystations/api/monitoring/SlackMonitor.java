@@ -58,8 +58,8 @@ public class SlackMonitor implements Monitor {
             } else {
                 LOG.error("Error reading json from {}, status {}: {}", url, status, content);
             }
-        } catch (final RuntimeException | IOException ignored) {
-            LOG.warn("Error sending SlackMonitor message", ignored);
+        } catch (final RuntimeException | IOException e) {
+            LOG.warn("Error sending SlackMonitor message", e);
         }
     }
 
