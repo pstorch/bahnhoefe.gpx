@@ -45,7 +45,7 @@ public class SlackCommandResource {
             return new SlackResponse(ResponseType.in_channel, "Refreshing caches");
         }
         if (StringUtils.equals("import", text)) {
-            photoImporter.importPhotosAsync(responseUrl);
+            photoImporter.importPhotosAsync();
             return new SlackResponse(ResponseType.in_channel, "Importing photos");
         }
         final Matcher matcherSearch = PATTERN_SEARCH.matcher(text);

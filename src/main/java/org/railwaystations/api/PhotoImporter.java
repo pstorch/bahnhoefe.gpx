@@ -41,10 +41,10 @@ public class PhotoImporter {
         this.httpClient = new BackendHttpClient();
     }
 
-    public void importPhotosAsync(final String responseUrl) {
+    public void importPhotosAsync() {
         final Thread importer = new Thread(() -> {
             final Map<String, String> report = importPhotos();
-            monitor.sendMessage(responseUrl, reportToMessage(report));
+            monitor.sendMessage(reportToMessage(report));
         });
         importer.start();
     }
