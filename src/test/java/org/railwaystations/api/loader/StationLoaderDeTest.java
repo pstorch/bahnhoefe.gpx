@@ -32,6 +32,11 @@ public class StationLoaderDeTest {
 						IOUtils.resourceToString("/stationsDe.json", Charset.forName("UTF-8"))
 				).withHeader("Content-Type", "application/json; charset=UTF-8")
 			);
+			container.next(
+					new MkAnswer.Simple(
+							IOUtils.resourceToString("/stationsDe2.json", Charset.forName("UTF-8"))
+					).withHeader("Content-Type", "application/json; charset=UTF-8")
+			);
 			container.start();
 
 			final StationLoader loader = new StationLoaderDe(new Country("de"), container.home().toURL(),

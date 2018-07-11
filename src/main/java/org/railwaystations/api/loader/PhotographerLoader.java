@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 public class PhotographerLoader {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final String HITS_ELEMENT = "hits";
 
     private final LoadingCache<String, Map<String, Photographer>> cache;
 
@@ -48,25 +47,28 @@ public class PhotographerLoader {
             this.httpclient = new BackendHttpClient();
         }
 
-        public Map<String, Photographer> load(final String key) {
+        public Map<String, Photographer> load(final String key) throws Exception {
             final Map<String, Photographer> photographers = new HashMap<>();
-            try {
-                final JsonNode hits = httpclient.readJsonFromUrl(photographersUrl)
-                        .get(PhotographerLoader.HITS_ELEMENT)
-                        .get(PhotographerLoader.HITS_ELEMENT);
-                for (int i = 0; i < hits.size(); i++) {
-                    final JsonNode sourceJson = hits.get(i).get("_source");
-                    final Photographer photographer = createPhotographerFromElastic(sourceJson);
-                    photographers.put(photographer.getName(), photographer);
-                }
-            } catch (final Exception e) {
-                throw new RuntimeException(e);
-            }
+            httpclient.fetchAll(photographersUrl, 0, hits -> fetchPhotographer(photographers, hits));
             return photographers;
         }
 
-        private Photographer createPhotographerFromElastic(final JsonNode sourceJson) throws JsonProcessingException {
-            final Fotograf fotograf = MAPPER.treeToValue(sourceJson, Fotograf.class);
+        private Void fetchPhotographer(final Map<String, Photographer> photographers, final JsonNode hits) {
+            for (int i = 0; i < hits.size(); i++) {
+                final JsonNode sourceJson = hits.get(i).get("_source");
+                final Photographer photographer = createPhotographerFromElastic(sourceJson);
+                photographers.put(photographer.getName(), photographer);
+            }
+            return null;
+        }
+
+        private Photographer createPhotographerFromElastic(final JsonNode sourceJson) {
+            final Fotograf fotograf;
+            try {
+                fotograf = MAPPER.treeToValue(sourceJson, Fotograf.class);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
             return new Photographer(fotograf.getName(), fotograf.getUrl(), StringUtils.trimToEmpty(fotograf.getLicense()));
         }
 

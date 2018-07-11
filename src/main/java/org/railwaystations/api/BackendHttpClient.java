@@ -17,13 +17,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.function.Function;
 
 public class BackendHttpClient {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final JsonFactory FACTORY = MAPPER.getFactory();
+    private static final String HITS_ELEMENT = "hits";
 
     private static final Logger LOG = LoggerFactory.getLogger(BackendHttpClient.class);
+    private static final int BATCH_SIZE = 1000;
 
     private final CloseableHttpClient httpclient;
 
@@ -55,6 +58,16 @@ public class BackendHttpClient {
                 throw new ClientProtocolException(String.format("Unexpected response status: %d", status));
             }
         });
+    }
+
+    public void fetchAll(final URL url, final int from, final Function<JsonNode, Void> readHits) throws Exception {
+        final JsonNode hits = readJsonFromUrl(new URL(url + "?size=" + BATCH_SIZE + "&from=" + from))
+                .get(HITS_ELEMENT);
+        final int total = hits.get("total").asInt();
+        readHits.apply(hits.get(HITS_ELEMENT));
+        if (total > from + BATCH_SIZE) {
+            fetchAll(url, from + BATCH_SIZE, readHits);
+        }
     }
 
     public CloseableHttpResponse post(final URL url, final String content, final ContentType contentType) throws Exception {
