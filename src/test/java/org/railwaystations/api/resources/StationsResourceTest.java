@@ -3,6 +3,7 @@ package org.railwaystations.api.resources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.loader.StationLoader;
@@ -13,7 +14,6 @@ import org.railwaystations.api.model.Station;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +29,7 @@ public class StationsResourceTest {
 
     @BeforeEach
     public void setUp() throws MalformedURLException {
-        final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
+        final PhotographerLoader photographerLoader = new PhotographerLoader( "file:./src/test/resources/photographers.json", new ElasticBackend(""));
 
         final StationLoader loaderXY = Mockito.mock(StationLoader.class);
         final Map<Station.Key, Station> stationsXY = new HashMap<>(2);

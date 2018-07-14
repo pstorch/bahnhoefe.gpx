@@ -1,0 +1,1 @@
+{"bahnhoefepl":{"mappings":{"bahnhofpl":{"properties":{"geometry":{"properties":{"coordinates":{"type":"double"},"type":{"type":"string"}}},"properties":{"properties":{"UIC":{"type":"long"},"UICIBNR":{"type":"long"},"name":{"type":"string"}}},"type":{"type":"string"}}}}}}

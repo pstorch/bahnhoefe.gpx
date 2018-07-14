@@ -4,6 +4,8 @@ apiKey: ${API_KEY:-dummy}
 salt: ${SALT:-dummy}
 mailer:
   "@class": org.railwaystations.api.mail.MockMailer
+elasticBackend:
+  baseUrl: ${ELASTIC_BASE_URL:-}
 photographersUrl: file:./src/test/resources/photographers.json
 photoBaseUrl: https://fotos.railway-stations.org
 loaders:

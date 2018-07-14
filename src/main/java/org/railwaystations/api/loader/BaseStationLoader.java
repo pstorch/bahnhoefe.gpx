@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.BackendHttpClient;
+import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.model.*;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
 import org.railwaystations.api.monitoring.Monitor;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -19,19 +18,19 @@ public class BaseStationLoader implements StationLoader {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String SOURCE_ELEMENT = "_source";
 
-    private final URL stationsUrl;
-    private final URL photosUrl;
+    private final String stationsUrl;
+    private final String photosUrl;
     private final Country country;
     private final Monitor monitor;
 
-    private final BackendHttpClient httpclient;
+    private final ElasticBackend elasticBackend;
 
-    BaseStationLoader(final Country country, final URL photosUrl, final URL stationsUrl, final Monitor monitor) {
+    BaseStationLoader(final Country country, final String photosUrl, final String stationsUrl, final Monitor monitor, final ElasticBackend elasticBackend) {
         super();
         this.country = country;
         this.photosUrl = photosUrl;
         this.stationsUrl = stationsUrl;
-        this.httpclient = new BackendHttpClient();
+        this.elasticBackend = elasticBackend;
         this.monitor = monitor;
     }
 
@@ -49,7 +48,7 @@ public class BaseStationLoader implements StationLoader {
     }
 
     private Map<Station.Key, Photo> fetchPhotos(final Map<Station.Key, Photo> photos, final Map<String, Photographer> photographers, final String photoBaseUrl) throws Exception {
-        httpclient.fetchAll(photosUrl, 0, hits -> fetchPhotos(photos, photographers, photoBaseUrl, hits));
+        elasticBackend.fetchAll(photosUrl, 0, hits -> fetchPhotos(photos, photographers, photoBaseUrl, hits));
         return photos;
     }
 
@@ -84,7 +83,7 @@ public class BaseStationLoader implements StationLoader {
 
     private Map<Station.Key, Station> fetchStations(final Map<Station.Key, Photo> photos) throws Exception {
         final Map<Station.Key, Station> stations = new HashMap<>();
-        httpclient.fetchAll(stationsUrl, 0, hits -> fetchStations(photos, stations, hits));
+        elasticBackend.fetchAll(stationsUrl, 0, hits -> fetchStations(photos, stations, hits));
         return stations;
     }
 

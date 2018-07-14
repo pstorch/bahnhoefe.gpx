@@ -6,19 +6,19 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.TokenGenerator;
-import org.railwaystations.api.loader.StationLoader;
 import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.model.Station;
+import org.railwaystations.api.loader.StationLoader;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,7 +40,7 @@ public class PhotoUploadResourceTest {
 
     @BeforeEach
     public void setUp() throws IOException {
-        final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
+        final PhotographerLoader photographerLoader = new PhotographerLoader( "file:./src/test/resources/photographers.json", new ElasticBackend(""));
         final StationLoader loader = Mockito.mock(StationLoader.class);
         final Map<Station.Key, Station> stationsMap = new HashMap<>(2);
         final Station.Key key4711 = new Station.Key("de", "4711");

@@ -6,6 +6,7 @@ import com.jcabi.http.mock.MkGrizzlyContainer;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
+import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.monitoring.LoggingMonitor;
@@ -39,8 +40,8 @@ public class StationLoaderDeTest {
 			);
 			container.start();
 
-			final StationLoader loader = new StationLoaderDe(new Country("de"), container.home().toURL(),
-					container.home().toURL(), new LoggingMonitor());
+			final StationLoader loader = new StationLoaderDe(new Country("de"), container.home().toURL().toString(),
+					container.home().toURL().toString(), new LoggingMonitor(), new ElasticBackend(""));
 
 			final Map<Station.Key, Station> stations = loader.loadStations(new HashMap<>(), "http://www.deutschlands-bahnhoefe.org");
 

@@ -5,6 +5,7 @@ import com.jcabi.http.mock.MkContainer;
 import com.jcabi.http.mock.MkGrizzlyContainer;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
+import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.model.Photographer;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class PhotographerLoaderTest {
 			);
 			container.start();
 
-			final PhotographerLoader loader = new PhotographerLoader(container.home().toURL());
+			final PhotographerLoader loader = new PhotographerLoader(container.home().toURL().toString(), new ElasticBackend(""));
 
 			final Map<String, Photographer> photographers = loader.loadPhotographers();
 			assertThat(photographers.size(), CoreMatchers.is(1));

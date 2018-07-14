@@ -1,19 +1,19 @@
 package org.railwaystations.api.loader;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.railwaystations.api.model.Station;
+import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.monitoring.Monitor;
 
-import java.net.URL;
 import java.util.Map;
 
 public class StationLoaderDe extends BaseStationLoader {
 
-    public StationLoaderDe(final Country country, final URL photosUrl, final URL stationsUrl, final Monitor monitor) {
-        super(country, photosUrl, stationsUrl, monitor);
+    public StationLoaderDe(final Country country, final String photosUrl, final String stationsUrl, final Monitor monitor, final ElasticBackend elasticBackend) {
+        super(country, photosUrl, stationsUrl, monitor, elasticBackend);
     }
 
     @Override

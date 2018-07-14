@@ -15,9 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,14 +32,14 @@ public class PhotoImporter {
     private final Monitor monitor;
     private final File uploadDir;
     private final File photoDir;
-    private final BackendHttpClient httpClient;
+    private final ElasticBackend elasticBackend;
 
-    public PhotoImporter(final StationsRepository repository, final Monitor monitor, final String uploadDir, final String photoDir) {
+    public PhotoImporter(final StationsRepository repository, final Monitor monitor, final String uploadDir, final String photoDir, final ElasticBackend elasticBackend) {
         this.repository = repository;
         this.monitor = monitor;
         this.uploadDir = new File(uploadDir);
         this.photoDir = new File(photoDir);
-        this.httpClient = new BackendHttpClient();
+        this.elasticBackend = elasticBackend;
     }
 
     public void importPhotosAsync() {
@@ -180,7 +181,7 @@ public class PhotoImporter {
 
     protected Optional<StatusLine> postToElastic(final Bahnhofsfoto bahnhofsfoto) throws Exception {
         final StatusLine statusLine;
-        try (final CloseableHttpResponse response = httpClient.post(getPhotoUrl(bahnhofsfoto.getCountryCode()), MAPPER.writeValueAsString(bahnhofsfoto), ContentType.APPLICATION_JSON)) {
+        try (final CloseableHttpResponse response = elasticBackend.post(getPhotoUrl(bahnhofsfoto.getCountryCode()), MAPPER.writeValueAsString(bahnhofsfoto), ContentType.APPLICATION_JSON)) {
             statusLine = response.getStatusLine();
         }
         return Optional.of(statusLine);
@@ -190,10 +191,8 @@ public class PhotoImporter {
         return "fr".equals(countryCode) ? "CC BY-NC 4.0 International" : photographerLicense;
     }
 
-    private URL getPhotoUrl(final String countryCode) throws MalformedURLException {
-        // TODO: make this configurable and testable
-        return new URL("http://localhost:9200/bahnhofsfotos" + countryCode + "/bahnhofsfoto");
-        //return new URL("http://localhost:9200/elastictest/bahnhofsfoto");
+    private String getPhotoUrl(final String countryCode) {
+        return "/bahnhofsfotos" + countryCode + "/bahnhofsfoto";
     }
 
     private void moveFile(final File importFile, final File countryDir, final String stationId) throws IOException {

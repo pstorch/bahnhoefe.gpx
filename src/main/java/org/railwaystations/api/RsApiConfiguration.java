@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.loader.StationLoaderFactory;
 import org.railwaystations.api.loader.PhotographerLoader;
+import org.railwaystations.api.loader.StationLoaderFactory;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
@@ -13,7 +13,6 @@ import org.railwaystations.api.monitoring.SlackMonitor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,9 +33,11 @@ public class RsApiConfiguration extends Configuration {
 
     private String slackVerificationToken;
 
-    private URL photographersUrl;
+    private String photographersUrl;
 
     private String photoBaseUrl;
+
+    private ElasticBackend elasticBackend;
 
     @JsonProperty
     @NotNull
@@ -46,7 +47,7 @@ public class RsApiConfiguration extends Configuration {
     private String photoDir;
 
     public StationsRepository getRepository() {
-        return new StationsRepository(monitor, loaders.stream().map(factory -> factory.createLoader(monitor)).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);
+        return new StationsRepository(monitor, loaders.stream().map(factory -> factory.createLoader(monitor, elasticBackend)).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
@@ -101,10 +102,10 @@ public class RsApiConfiguration extends Configuration {
     }
 
     public PhotographerLoader getPhotographerLoader() {
-        return new PhotographerLoader(photographersUrl);
+        return new PhotographerLoader(photographersUrl, elasticBackend);
     }
 
-    public void setPhotographersUrl(final URL photographersUrl) {
+    public void setPhotographersUrl(final String photographersUrl) {
         this.photographersUrl = photographersUrl;
     }
 
@@ -124,4 +125,11 @@ public class RsApiConfiguration extends Configuration {
         this.photoDir = photoDir;
     }
 
+    public ElasticBackend getElasticBackend() {
+        return elasticBackend;
+    }
+
+    public void setElasticBackend(final ElasticBackend elasticBackend) {
+        this.elasticBackend = elasticBackend;
+    }
 }

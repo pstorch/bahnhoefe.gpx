@@ -51,6 +51,12 @@ This project can be run as a Docker container. The docker image is automatically
   
 Ready to use images are published at https://hub.docker.com/r/pstorch/rsapi/
 
+## Elasticsearch
+
+Elasticsearch is used as backend for all the data (Stations, Photos and Photographers).
+
+For testing purpose is is possible to start a local Elasticsearch instance with `elastic-start.sh` with some testdata. Use `elastic-stop.sh` to shut it down. 
+
 ## Use
 Point your browser to http://localhost:8080/{country}/stations, where `country` can be "de", "ch", "fi" or "uk"
 

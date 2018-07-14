@@ -7,15 +7,14 @@ import org.apache.http.StatusLine;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.railwaystations.api.loader.StationLoaderDe;
 import org.railwaystations.api.loader.PhotographerLoader;
+import org.railwaystations.api.loader.StationLoaderDe;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,11 +36,11 @@ public class PhotoImporterTest {
 
     @BeforeEach
     public void setUp() throws IOException {
-        final PhotographerLoader photographerLoader = new PhotographerLoader( new URL("file:./src/test/resources/photographers.json"));
-        final StationLoaderDe loaderDe = new StationLoaderDe(new Country("de"), new URL("file:./src/test/resources/photosDe.json"), new URL("file:./src/test/resources/stationsDe.json"), new LoggingMonitor());
+        final PhotographerLoader photographerLoader = new PhotographerLoader( "file:./src/test/resources/photographers.json", new ElasticBackend(""));
+        final StationLoaderDe loaderDe = new StationLoaderDe(new Country("de"), "file:./src/test/resources/photosDe.json", "file:./src/test/resources/stationsDe.json", new LoggingMonitor(), new ElasticBackend(""));
         uploadDir = Files.createTempDirectory("rsapiUpload");
         photoDir = Files.createTempDirectory("rsapiPhoto");
-        importer = new PhotoImporter(new StationsRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, ""), new LoggingMonitor(), uploadDir.toString(), photoDir.toString()) {
+        importer = new PhotoImporter(new StationsRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, ""), new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), new ElasticBackend("")) {
 
             @Override
             protected Optional<StatusLine> postToElastic(final Bahnhofsfoto bahnhofsfoto) {

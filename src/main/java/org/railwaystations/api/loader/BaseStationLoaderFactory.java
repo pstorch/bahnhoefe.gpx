@@ -2,10 +2,9 @@ package org.railwaystations.api.loader;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.monitoring.Monitor;
-
-import java.net.URL;
 
 @JsonTypeName("baseLoader")
 public class BaseStationLoaderFactory implements StationLoaderFactory {
@@ -14,14 +13,14 @@ public class BaseStationLoaderFactory implements StationLoaderFactory {
     protected Country country;
 
     @JsonProperty
-    protected URL photosUrl;
+    protected String photosUrl;
 
     @JsonProperty
-    protected URL stationsUrl;
+    protected String stationsUrl;
 
     @Override
-    public StationLoader createLoader(final Monitor monitor) {
-        return new BaseStationLoader(country, photosUrl, stationsUrl, monitor);
+    public StationLoader createLoader(final Monitor monitor, final ElasticBackend elasticBackend) {
+        return new BaseStationLoader(country, photosUrl, stationsUrl, monitor, elasticBackend);
     }
 
 }

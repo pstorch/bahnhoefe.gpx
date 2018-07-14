@@ -1,0 +1,1 @@
+{"bahnhofsfotosie":{"mappings":{"bahnhofsfoto":{"properties":{"BahnhofsID":{"type":"long"},"bahnhofsfoto":{"type":"string"},"erfasst":{"type":"long"},"flag":{"type":"string"},"fotografenname":{"type":"string"},"fotolizenz":{"type":"string"},"laenderkennzeichen":{"type":"string"}}}}}}

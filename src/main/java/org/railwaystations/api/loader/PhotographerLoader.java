@@ -7,11 +7,10 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.BackendHttpClient;
+import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.model.Photographer;
 import org.railwaystations.api.model.elastic.Fotograf;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -22,10 +21,10 @@ public class PhotographerLoader {
 
     private final LoadingCache<String, Map<String, Photographer>> cache;
 
-    public PhotographerLoader(final URL photographersUrl) {
+    public PhotographerLoader(final String photographersUrl, final ElasticBackend elasticBackend) {
         super();
         this.cache = CacheBuilder.newBuilder().refreshAfterWrite(60, TimeUnit.MINUTES).build(
-                new PhotographerCacheLoader(photographersUrl));
+                new PhotographerCacheLoader(photographersUrl, elasticBackend));
     }
 
     public final Map<String, Photographer> loadPhotographers() {
@@ -38,18 +37,18 @@ public class PhotographerLoader {
 
     private static class PhotographerCacheLoader extends CacheLoader<String, Map<String, Photographer>> {
 
-        private final URL photographersUrl;
+        private final String photographersUrl;
 
-        private final BackendHttpClient httpclient;
+        private final ElasticBackend elasticBackend;
 
-        private PhotographerCacheLoader(final URL photographersUrl) {
+        private PhotographerCacheLoader(final String photographersUrl, final ElasticBackend elasticBackend) {
             this.photographersUrl = photographersUrl;
-            this.httpclient = new BackendHttpClient();
+            this.elasticBackend = elasticBackend;
         }
 
         public Map<String, Photographer> load(final String key) throws Exception {
             final Map<String, Photographer> photographers = new HashMap<>();
-            httpclient.fetchAll(photographersUrl, 0, hits -> fetchPhotographer(photographers, hits));
+            elasticBackend.fetchAll(photographersUrl, 0, hits -> fetchPhotographer(photographers, hits));
             return photographers;
         }
 

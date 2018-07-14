@@ -1,0 +1,1 @@
+{"bahnhoefenl":{"mappings":{"bahnhofnl":{"properties":{"geometry":{"properties":{"coordinates":{"type":"double"},"type":{"type":"string"}}},"properties":{"properties":{"UICIBNR":{"type":"long"},"abkuerzung":{"type":"string"},"benerail_id":{"type":"string"},"countryCode":{"type":"string"},"name":{"type":"string"},"sncf_id":{"type":"string"}}},"type":{"type":"string"}}}}}}
