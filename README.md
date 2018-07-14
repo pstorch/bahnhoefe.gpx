@@ -29,8 +29,8 @@ This project can be run as a Docker container. The docker image is automatically
   - Download the image from docker hub:
   ```docker pull pstorch/rsapi:<version>```
   
-  - Configure the ```config.yml``` file from current directory and put it into the rsapi work directory
-
+  - Configure the ```config.yml``` file from current directory and put it into the rsapi work directory.
+  
   - Run as background service:
   ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -v <photo-main-dir>:/tmp/railway-station-photos pstorch/rsapi:<version>```
 
@@ -55,7 +55,11 @@ Ready to use images are published at https://hub.docker.com/r/pstorch/rsapi/
 
 Elasticsearch is used as backend for all the data (Stations, Photos and Photographers).
 
-For testing purpose is is possible to start a local Elasticsearch instance with `elastic-start.sh` with some testdata. Use `elastic-stop.sh` to shut it down. 
+For testing purpose is is possible to start a local Elasticsearch instance with `elastic-start.sh` with some testdata. Use `elastic-stop.sh` to shut it down.
+The testdata contains only a very small subset of the production Elastic. 
+
+By default RSAPI expects an Elasticsearch instance running on localhost port 9200. You can start this testinstance or as an alternative you can set the environment parameter to the production instance `-e "ELASTIC_BASE_URL=http://94.136.168.53"`.
+
 
 ## Use
 Point your browser to http://localhost:8080/{country}/stations, where `country` can be "de", "ch", "fi" or "uk"
