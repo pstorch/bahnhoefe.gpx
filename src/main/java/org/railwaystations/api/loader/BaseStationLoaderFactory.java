@@ -9,14 +9,19 @@ import org.railwaystations.api.monitoring.Monitor;
 @JsonTypeName("baseLoader")
 public class BaseStationLoaderFactory implements StationLoaderFactory {
 
-    @JsonProperty
-    protected Country country;
+    protected final Country country;
 
-    @JsonProperty
-    protected String photosUrl;
+    protected final String photosUrl;
 
-    @JsonProperty
-    protected String stationsUrl;
+    protected final String stationsUrl;
+
+    public BaseStationLoaderFactory(@JsonProperty("country") final Country country,
+                                    @JsonProperty("photosUrl") final String photosUrl,
+                                    @JsonProperty("stationsUrl") final String stationsUrl) {
+        this.country = country;
+        this.photosUrl = photosUrl;
+        this.stationsUrl = stationsUrl;
+    }
 
     @Override
     public StationLoader createLoader(final Monitor monitor, final ElasticBackend elasticBackend) {
