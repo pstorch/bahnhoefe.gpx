@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +29,7 @@ public class PhotoImporter {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final Logger LOG = LoggerFactory.getLogger(PhotoImporter.class);
     private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-(\\d+).jpe?g", Pattern.CASE_INSENSITIVE);
+    private static final Executor EXECUTOR = Executors.newSingleThreadExecutor();
 
     private final StationsRepository repository;
     private final Monitor monitor;
@@ -43,11 +46,10 @@ public class PhotoImporter {
     }
 
     public void importPhotosAsync() {
-        final Thread importer = new Thread(() -> {
+        EXECUTOR.execute(() -> {
             final Map<String, String> report = importPhotos();
             monitor.sendMessage(reportToMessage(report));
         });
-        importer.start();
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
