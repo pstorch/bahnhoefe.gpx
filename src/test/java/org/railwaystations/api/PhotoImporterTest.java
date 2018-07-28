@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.loader.StationLoaderDe;
 import org.railwaystations.api.model.Country;
+import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 
@@ -33,6 +34,7 @@ public class PhotoImporterTest {
     private Path uploadDir;
     private Path photoDir;
     private Bahnhofsfoto postedBahnhofsfoto;
+    private StationsRepository repository;
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -40,7 +42,8 @@ public class PhotoImporterTest {
         final StationLoaderDe loaderDe = new StationLoaderDe(new Country("de"), "file:./src/test/resources/photosDe.json", "file:./src/test/resources/stationsDe.json", new LoggingMonitor(), new ElasticBackend(""));
         uploadDir = Files.createTempDirectory("rsapiUpload");
         photoDir = Files.createTempDirectory("rsapiPhoto");
-        importer = new PhotoImporter(new StationsRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, ""), new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), new ElasticBackend("")) {
+        repository = new StationsRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, "https://railway-stations.org");
+        importer = new PhotoImporter(repository, new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), new ElasticBackend(""), "https://railway-stations.org") {
 
             @Override
             protected Optional<StatusLine> postToElastic(final Bahnhofsfoto bahnhofsfoto) {
@@ -64,11 +67,14 @@ public class PhotoImporterTest {
     @Test
     public void testImportHappyPath() throws IOException {
         final File importFile = createFile("de", "@storchp", 8009);
+        final Station.Key key = new Station.Key("de", "8009");
+        assertThat(repository.findByKey(key).hasPhoto(), is(false));
         final Map<String, String> result = importer.importPhotos();
         assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for @storchp"));
         assertPostedPhoto("@storchp","de", "8009", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
+        assertThat(repository.findByKey(key).hasPhoto(), is(true));
     }
 
     @Test
@@ -135,10 +141,13 @@ public class PhotoImporterTest {
     @Test
     public void testImportPhotograferNotFound() throws IOException {
         final File importFile = createFile("de", "@unknown", 8009);
+        final Station.Key key = new Station.Key("de", "8009");
+        assertThat(repository.findByKey(key).hasPhoto(), is(false));
         final Map<String, String> result = importer.importPhotos();
         assertThat(result.get(importFile.getAbsolutePath()), is("Photographer @unknown not found"));
         assertThat(postedBahnhofsfoto, nullValue());
         assertThat(importFile.exists(), is(true));
+        assertThat(repository.findByKey(key).hasPhoto(), is(false));
     }
 
     @Test

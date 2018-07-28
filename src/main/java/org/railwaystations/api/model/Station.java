@@ -21,25 +21,25 @@ public class Station {
     private final Coordinates coordinates;
 
     @JsonProperty
-    private final String photographer;
+    private String photographer;
 
     @JsonProperty
-    private final String photographerUrl;
+    private String photographerUrl;
 
     @JsonProperty("DS100")
     private final String ds100;
 
     @JsonProperty
-    private final String photoUrl;
+    private String photoUrl;
 
     @JsonProperty
-    private final String license;
+    private String license;
 
     @JsonProperty
-    private final Long createdAt;
+    private Long createdAt;
 
     @JsonIgnore
-    private final String statUser;
+    private String statUser;
 
     public Station() {
         this(new Key("", "0"), null, new Coordinates(0.0, 0.0), null);
@@ -55,6 +55,10 @@ public class Station {
         this.title = title;
         this.coordinates = coordinates;
         this.ds100 = ds100;
+        setPhoto(photo);
+    }
+
+    public void setPhoto(final Photo photo) {
         if (photo != null) {
             this.photographer = photo.getPhotographer();
             this.photoUrl = photo.getUrl();

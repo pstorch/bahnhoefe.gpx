@@ -67,13 +67,12 @@ public class BaseStationLoader implements StationLoader {
         final Bahnhofsfoto bahnhofsfoto;
         try {
             bahnhofsfoto = MAPPER.treeToValue(photoJson, Bahnhofsfoto.class);
-        } catch (JsonProcessingException e) {
+        } catch (final JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        final String statUser = "1".equals(photoJson.get("flag").asText()) ? "@RecumbentTravel" : bahnhofsfoto.getPhotographer();
         return new Photo(new Station.Key(bahnhofsfoto.getCountryCode().toLowerCase(Locale.ENGLISH), bahnhofsfoto.getId()), photoBaseUrl + bahnhofsfoto.getUrl(),
                 bahnhofsfoto.getPhotographer(), getPhotographerUrl(bahnhofsfoto.getPhotographer(), photographers),
-                bahnhofsfoto.getCreatedAt(), StringUtils.trimToEmpty(bahnhofsfoto.getLicense()), statUser);
+                bahnhofsfoto.getCreatedAt(), StringUtils.trimToEmpty(bahnhofsfoto.getLicense()), photoJson.get("flag").asText());
     }
 
     private String getPhotographerUrl(final String nickname, final Map<String, Photographer> photographers) {

@@ -42,9 +42,11 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new PhotoUploadResource(repository, config.getApiKey(),
                 config.getTokenGenerator(), config.getWorkDir(), config.getMonitor()));
         environment.jersey().register(new RegistrationResource(
-                config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer(), config.getWorkDir()));
+                config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer(),
+                config.getWorkDir()));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
-                new PhotoImporter(repository, config.getMonitor(), config.getWorkDir(), config.getPhotoDir(), config.getElasticBackend())));
+                new PhotoImporter(repository, config.getMonitor(), config.getWorkDir(), config.getPhotoDir(),
+                        config.getElasticBackend(), config.getPhotoBaseUrl())));
         environment.jersey().register(new StationsGpxWriter());
         environment.jersey().register(new StationsTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());

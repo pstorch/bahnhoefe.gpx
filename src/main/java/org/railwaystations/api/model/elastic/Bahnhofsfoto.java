@@ -1,6 +1,10 @@
 package org.railwaystations.api.model.elastic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.railwaystations.api.model.Photo;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class Bahnhofsfoto {
 
@@ -27,6 +31,11 @@ public class Bahnhofsfoto {
 
     public Bahnhofsfoto() {
         super();
+    }
+
+    public Bahnhofsfoto(final Photo photo) throws MalformedURLException {
+        this(photo.getStationKey().getId(), new URL(photo.getUrl()).getPath(),
+                photo.getLicense(), photo.getPhotographer(), photo.getCreatedAt(), photo.getFlag(), photo.getStationKey().getCountry());
     }
 
     public Bahnhofsfoto(final String id, final String url, final String license, final String photographer, final long createdAt, final String flag, final String countryCode) {

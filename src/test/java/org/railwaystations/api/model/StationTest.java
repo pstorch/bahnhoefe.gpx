@@ -25,7 +25,7 @@ public class StationTest {
 
     @Test
     public void appliesToPhotographer() {
-        final Station station = new Station(TEST_KEY, "", new Coordinates(0.0, 0.0), new Photo(TEST_KEY, "URL", "test", "photographerUrl", null, "CC0", null));
+        final Station station = new Station(TEST_KEY, "", new Coordinates(0.0, 0.0), new Photo(TEST_KEY, "URL", "test", "photographerUrl", null, "CC0"));
         assertThat(station.appliesTo(null, "test", null, null, null), is(true));
         assertThat(station.appliesTo(false, null, null, null, null), is(false));
         assertThat(station.appliesTo(true, null, null, null, null), is(true));
@@ -40,7 +40,7 @@ public class StationTest {
 
     @Test
     public void appliesToDistanceAndPhotographer() {
-        final Station station = new Station(TEST_KEY, "", new Coordinates(50.554550, 9.683787), new Photo(TEST_KEY, "URL", "test", "photographerUrl", null, "CC0", null));
+        final Station station = new Station(TEST_KEY, "", new Coordinates(50.554550, 9.683787), new Photo(TEST_KEY, "URL", "test", "photographerUrl", null, "CC0"));
         assertThat(station.appliesTo(null, "test", 50, 50.8, 9.8), is(true));
     }
 
