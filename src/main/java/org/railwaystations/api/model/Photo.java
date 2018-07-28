@@ -8,7 +8,7 @@ public class Photo {
     public static final String FLAG_DEFAULT = "0";
     private static final BiMap<String, String> FLAGS = HashBiMap.create();
 
-    {
+    static {
         FLAGS.put("1", "@RecumbentTravel");
     }
 
