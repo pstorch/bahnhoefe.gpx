@@ -55,20 +55,24 @@ public class StationsRepository {
         photographerLoader.refresh();
         cache.invalidateAll();
         final Thread refresher = new Thread(() -> {
-            final StringBuilder message = new StringBuilder("Data loaded: \n");
-            for (final Country aCountry : countries) {
-                final Statistic stat = getStatistic(aCountry.getCode());
-                message.append("- ")
-                        .append(aCountry.getCode())
-                        .append(": ")
-                        .append(stat.getWithPhoto())
-                        .append(" of ")
-                        .append(stat.getTotal())
-                        .append("\n");
-            }
-            monitor.sendMessage(responseUrl, message.toString());
+            monitor.sendMessage(responseUrl, getCountryStatisticMessage());
         });
         refresher.start();
+    }
+
+    public String getCountryStatisticMessage() {
+        final StringBuilder message = new StringBuilder("Countries statistic: \n");
+        for (final Country aCountry : countries) {
+            final Statistic stat = getStatistic(aCountry.getCode());
+            message.append("- ")
+                    .append(aCountry.getCode())
+                    .append(": ")
+                    .append(stat.getWithPhoto())
+                    .append(" of ")
+                    .append(stat.getTotal())
+                    .append("\n");
+        }
+        return message.toString();
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")

@@ -16,10 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -50,16 +47,17 @@ public class PhotoImporter {
 
     public void importPhotosAsync() {
         EXECUTOR.execute(() -> {
-            final Map<String, String> report = importPhotos();
+            final List<ReportEntry> report = importPhotos();
             monitor.sendMessage(reportToMessage(report));
+            monitor.sendMessage(repository.getCountryStatisticMessage());
         });
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    public Map<String, String> importPhotos() {
+    public List<ReportEntry> importPhotos() {
         LOG.info("starting import");
 
-        final Map<String, String> report = new HashMap<>();
+        final List<ReportEntry> report = new ArrayList<>();
 
         final File[] files = uploadDir.listFiles();
         if (files != null) {
@@ -80,19 +78,23 @@ public class PhotoImporter {
         return report;
     }
 
-    private String reportToMessage(final Map<String, String> report) {
+    protected static String reportToMessage(final List<ReportEntry> report) {
         final StringBuilder builder = new StringBuilder("Imported:\n");
-        for (final Map.Entry<String, String> entry : report.entrySet()) {
-            builder.append("- ").append(entry.getKey()).append(": ").append(entry.getValue()).append('\n');
-        }
+        report.stream().filter(e -> !e.isError()).forEach(e ->
+                builder.append("- ").append(e.getPath()).append(": ").append(e.getMessage()).append('\n')
+        );
+        builder.append("\nErrors:\n");
+        report.stream().filter(ReportEntry::isError).forEach(e ->
+                builder.append("- ").append(e.getPath()).append(": ").append(e.getMessage()).append('\n')
+        );
         return builder.toString();
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    private void importPhotosByCountry(final File importDir, final String countryCode, final Map<String, String> report) {
+    private void importPhotosByCountry(final File importDir, final String countryCode, final List<ReportEntry> report) {
         final File countryDir = new File(photoDir, countryCode);
         if (!countryDir.exists() && !countryDir.mkdirs()) {
-            report.put(countryDir.getAbsolutePath(), "does not exist and could not be created");
+            report.add(new ReportEntry(true, countryDir.getAbsolutePath(), "does not exist and could not be created"));
             return;
         }
         final Optional<Country> country = repository.getCountry(countryCode);
@@ -103,7 +105,7 @@ public class PhotoImporter {
             try {
                 final Matcher matcher = IMPORT_FILE_PATTERN.matcher(importFile.getName());
                 if (!matcher.find()) {
-                    report.put(importFile.getAbsolutePath(), "File doesn't match pattern: $photographer-$stationid.jpg");
+                    report.add(new ReportEntry(true, importFile.getAbsolutePath(), "File doesn't match pattern: $photographer-$stationid.jpg"));
                     continue;
                 }
 
@@ -120,7 +122,7 @@ public class PhotoImporter {
                     photographer = repository.findPhotographerByLevenshtein(photographerName).orElse(null);
                 }
                 if (photographer == null) {
-                    report.put(importFile.getAbsolutePath(), "Photographer " + photographerName + " not found");
+                    report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
                 }
 
@@ -128,7 +130,7 @@ public class PhotoImporter {
                 photosToImport.put(importFile, photo);
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
-                report.put(importFile.getAbsolutePath(), "Import Error: " + e.getMessage());
+                report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Exception: " + e.getMessage()));
             }
         }
 
@@ -142,23 +144,23 @@ public class PhotoImporter {
                 if (country.isPresent()) {
                     station = repository.findByKey(photo.getStationKey());
                     if (station == null) {
-                        report.put(importFile.getAbsolutePath(), "Station " + photo.getStationKey().getId() + " not found");
+                        report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Station " + photo.getStationKey().getId() + " not found"));
                         continue;
                     }
                     if (station.hasPhoto()) {
-                        report.put(importFile.getAbsolutePath(), "Station " + photo.getStationKey().getId() + " has already a photo");
+                        report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Station " + photo.getStationKey().getId() + " has already a photo"));
                         continue;
                     }
                 }
 
                 if (photosToImport.entrySet().stream().anyMatch(e -> e.getKey() != importFile && e.getValue().getStationKey().equals(photo.getStationKey()))) {
-                    report.put(importFile.getAbsolutePath(), "conflict with another photo in inbox");
+                    report.add(new ReportEntry(true, importFile.getAbsolutePath(), "conflict with another photo in inbox"));
                     continue;
                 }
 
                 status = postToElastic(new Bahnhofsfoto(photo));
                 if (status.isPresent() && status.get().getStatusCode() != 201) {
-                    report.put(importFile.getAbsolutePath(), "Elastic error response: " + status.get().toString());
+                    report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Elastic error response: " + status.get().toString()));
                     continue;
                 }
 
@@ -170,10 +172,10 @@ public class PhotoImporter {
                     station.setPhoto(photo);
                 }
 
-                report.put(importFile.getAbsolutePath(), "imported " + (station != null ? station.getTitle() : "unknown station") + " for " + photo.getPhotographer());
-            } catch (Exception e) {
+                report.add(new ReportEntry(false, importFile.getAbsolutePath(), "imported " + (station != null ? station.getTitle() : "unknown station") + " for " + photo.getPhotographer()));
+            } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
-                report.put(importFile.getAbsolutePath(), "Import Error: " + e.getMessage());
+                report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Exception: " + e.getMessage()));
             }
         }
 
@@ -198,6 +200,30 @@ public class PhotoImporter {
 
     private void moveFile(final File importFile, final File countryDir, final String stationId) throws IOException {
         FileUtils.moveFile(importFile, new File(countryDir, stationId + ".jpg"));
+    }
+
+    public static final class ReportEntry {
+        private final boolean error;
+        private final String path;
+        private final String message;
+
+        public ReportEntry(final boolean error, final String path, final String message) {
+            this.error = error;
+            this.path = path;
+            this.message = message;
+        }
+
+        public boolean isError() {
+            return error;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 
 }

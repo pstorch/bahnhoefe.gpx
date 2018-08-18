@@ -19,8 +19,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -69,8 +70,8 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@storchp", 8009);
         final Station.Key key = new Station.Key("de", "8009");
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
-        final Map<String, String> result = importer.importPhotos();
-        assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for @storchp"));
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        assertThat(result.get(0).getMessage(), is("imported Felde for @storchp"));
         assertPostedPhoto("@storchp","de", "8009", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
@@ -80,8 +81,8 @@ public class PhotoImporterTest {
     @Test
     public void testImportStationHasPhoto() throws IOException {
         final File importFile = createFile("de", "@storchp", 6913);
-        final Map<String, String> result = importer.importPhotos();
-        assertThat(result.get(importFile.getAbsolutePath()), is("Station 6913 has already a photo"));
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        assertThat(result.get(0).getMessage(), is("Station 6913 has already a photo"));
         assertThat(postedBahnhofsfoto, nullValue());
         assertThat(importFile.exists(), is(true));
     }
@@ -90,9 +91,9 @@ public class PhotoImporterTest {
     public void testImportDuplicates() throws IOException {
         final File importFile1 = createFile("de", "@storchp", 8009, ".Jpg");
         final File importFile2 = createFile("de", "Anonym", 8009, ".jpeg");
-        final Map<String, String> result = importer.importPhotos();
-        assertThat(result.get(importFile1.getAbsolutePath()), is("conflict with another photo in inbox"));
-        assertThat(result.get(importFile2.getAbsolutePath()), is("conflict with another photo in inbox"));
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        assertThat(result.get(0).getMessage(), is("conflict with another photo in inbox"));
+        assertThat(result.get(1).getMessage(), is("conflict with another photo in inbox"));
         assertThat(postedBahnhofsfoto, nullValue());
         assertThat(importFile1.exists(), is(true));
         assertThat(importFile2.exists(), is(true));
@@ -101,8 +102,8 @@ public class PhotoImporterTest {
     @Test
     public void testImportNoStationData() throws IOException {
         final File importFile = createFile("cz", "@storchp", 4711);
-        final Map<String, String> result = importer.importPhotos();
-        assertThat(result.get(importFile.getAbsolutePath()), is("imported unknown station for @storchp"));
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        assertThat(result.get(0).getMessage(), is("imported unknown station for @storchp"));
         assertPostedPhoto("@storchp","cz", "4711", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "cz/4711.jpg").exists(), is(true));
@@ -111,8 +112,8 @@ public class PhotoImporterTest {
     @Test
     public void testImportPhotographerLevenshteinMatch() throws IOException {
         final File importFile = createFile("de", "@GabyBecker", 8009, ".JPG");
-        final Map<String, String> result = importer.importPhotos();
-        assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for Gaby Becker"));
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        assertThat(result.get(0).getMessage(), is("imported Felde for Gaby Becker"));
         assertPostedPhoto("Gaby Becker", "de", "8009", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
@@ -121,8 +122,8 @@ public class PhotoImporterTest {
     @Test
     public void testImportFlag() throws IOException {
         final File importFile = createFile("de", "@RecumbentTravel", 8009);
-        final Map<String, String> result = importer.importPhotos();
-        assertThat(result.get(importFile.getAbsolutePath()), is("imported Felde for Anonym"));
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        assertThat(result.get(0).getMessage(), is("imported Felde for Anonym"));
         assertPostedPhoto("Anonym", "de", "8009", "1");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
@@ -143,8 +144,8 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@unknown", 8009);
         final Station.Key key = new Station.Key("de", "8009");
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
-        final Map<String, String> result = importer.importPhotos();
-        assertThat(result.get(importFile.getAbsolutePath()), is("Photographer @unknown not found"));
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        assertThat(result.get(0).getMessage(), is("Photographer @unknown not found"));
         assertThat(postedBahnhofsfoto, nullValue());
         assertThat(importFile.exists(), is(true));
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
@@ -153,10 +154,20 @@ public class PhotoImporterTest {
     @Test
     public void testImportStationNotFound() throws IOException {
         final File importFile = createFile("de", "Anonym", 99999999);
-        final Map<String, String> result = importer.importPhotos();
-        assertThat(result.get(importFile.getAbsolutePath()), is("Station 99999999 not found"));
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        assertThat(result.get(0).getMessage(), is("Station 99999999 not found"));
         assertThat(postedBahnhofsfoto, nullValue());
         assertThat(importFile.exists(), is(true));
+    }
+
+    @Test
+    public void testReportToMessage() {
+        final List<PhotoImporter.ReportEntry> report = new ArrayList<>(2);
+        report.add(new PhotoImporter.ReportEntry(true, "path1", "error message"));
+        report.add(new PhotoImporter.ReportEntry(false, "path2", "success message"));
+
+        final String message = PhotoImporter.reportToMessage(report);
+        assertThat(message, is ("Imported:\n- path2: success message\n\nErrors:\n- path1: error message\n"));
     }
 
 }
