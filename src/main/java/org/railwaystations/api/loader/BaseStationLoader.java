@@ -54,7 +54,7 @@ public class BaseStationLoader implements StationLoader {
 
     private Void fetchPhotos(final Map<Station.Key, Photo> photos, final Map<String, Photographer> photographers, final String photoBaseUrl, final JsonNode hits) {
         for (int i = 0; i < hits.size(); i++) {
-            final Photo photo = createPhoto(hits.get(i).get(BaseStationLoader.SOURCE_ELEMENT), photographers, photoBaseUrl);
+            final Photo photo = createPhoto(getMandatoryAttribute(hits.get(i), BaseStationLoader.SOURCE_ELEMENT), photographers, photoBaseUrl);
             if (photos.get(photo.getStationKey()) != null) {
                 monitor.sendMessage("Station " + photo.getStationKey() + " has duplicate photos");
             }
@@ -72,7 +72,7 @@ public class BaseStationLoader implements StationLoader {
         }
         return new Photo(new Station.Key(bahnhofsfoto.getCountryCode().toLowerCase(Locale.ENGLISH), bahnhofsfoto.getId()), photoBaseUrl + bahnhofsfoto.getUrl(),
                 bahnhofsfoto.getPhotographer(), getPhotographerUrl(bahnhofsfoto.getPhotographer(), photographers),
-                bahnhofsfoto.getCreatedAt(), StringUtils.trimToEmpty(bahnhofsfoto.getLicense()), photoJson.get("flag").asText());
+                bahnhofsfoto.getCreatedAt(), StringUtils.trimToEmpty(bahnhofsfoto.getLicense()), getMandatoryAttribute(photoJson, "flag").asText());
     }
 
     private String getPhotographerUrl(final String nickname, final Map<String, Photographer> photographers) {
@@ -88,26 +88,34 @@ public class BaseStationLoader implements StationLoader {
 
     private Void fetchStations(final Map<Station.Key,Photo> photos, final Map<Station.Key, Station> stations, final JsonNode hits) {
         for (int i = 0; i < hits.size(); i++) {
-            final Station station = createStationFromElastic(photos, hits.get(i).get(BaseStationLoader.SOURCE_ELEMENT));
+            final Station station = createStationFromElastic(photos, getMandatoryAttribute(hits.get(i), BaseStationLoader.SOURCE_ELEMENT));
             stations.put(station.getKey(), station);
         }
         return null;
     }
 
     protected Station createStationFromElastic(final Map<Station.Key, Photo> photos, final JsonNode sourceJson) {
-        final JsonNode propertiesJson = sourceJson.get("properties");
-        final String id = propertiesJson.get("UICIBNR").asText();
+        final JsonNode propertiesJson = getMandatoryAttribute(sourceJson, "properties");
+        final String id = getMandatoryAttribute(propertiesJson, "UICIBNR").asText();
         final JsonNode abkuerzung = propertiesJson.get("abkuerzung");
         final Station.Key key = new Station.Key(getCountry().getCode(), id);
         return new Station(key,
-                propertiesJson.get("name").asText(),
+                getMandatoryAttribute(propertiesJson, "name").asText(),
                 readCoordinates(sourceJson),
                 abkuerzung != null ? abkuerzung.asText() : "",
                 photos.get(key));
     }
 
-    Coordinates readCoordinates(final JsonNode json) {
-        final JsonNode coordinates = json.get("geometry").get("coordinates");
+    protected static JsonNode getMandatoryAttribute(final JsonNode sourceJson, final String name) {
+        final JsonNode jsonNode = sourceJson.get(name);
+        if (jsonNode == null) {
+            throw new IllegalArgumentException("Json attribute '" + name + "' is missing.");
+        }
+        return jsonNode;
+    }
+
+    protected static Coordinates readCoordinates(final JsonNode json) {
+        final JsonNode coordinates = getMandatoryAttribute(getMandatoryAttribute(json,"geometry"), "coordinates");
         return new Coordinates(coordinates.get(1).asDouble(), coordinates.get(0).asDouble());
     }
 }
