@@ -52,7 +52,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new StatisticTxtWriter());
         environment.jersey().register(new PhotographersTxtWriter());
         environment.jersey().property("jersey.config.server.mediaTypeMappings",
-                "gpx : application/service+xml, json : application/json, txt : text/plain");
+                "gpx : application/gpx+xml, json : application/json, txt : text/plain");
         repository.refresh(null);
     }
 

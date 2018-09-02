@@ -27,7 +27,7 @@ public class StationsGpxWriterTest {
 		
 		final String gpx = entityStream.toString("UTF-8");
 		assertThat(gpx,
-				is("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<service xmlns=\"http://www.topografix.com/GPX/1/1\" version=\"1.1\">\n<wpt lat=\"50.0\" lon=\"9.0\"><name>Test</name></wpt>\n<wpt lat=\"51.0\" lon=\"8.0\"><name>Foo</name></wpt>\n</service>"));
+				is("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" version=\"1.1\">\n<wpt lat=\"50.0\" lon=\"9.0\"><name>Test</name></wpt>\n<wpt lat=\"51.0\" lon=\"8.0\"><name>Foo</name></wpt>\n</gpx>"));
 	}
 
 }

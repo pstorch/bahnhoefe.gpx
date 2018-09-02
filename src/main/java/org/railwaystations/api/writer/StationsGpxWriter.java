@@ -19,7 +19,7 @@ import java.util.List;
 @Produces(StationsGpxWriter.GPX_MIME_TYPE)
 public class StationsGpxWriter implements MessageBodyWriter<List<Station>> {
 
-    public static final String GPX_MIME_TYPE = "application/service+xml";
+    public static final String GPX_MIME_TYPE = "application/gpx+xml";
 
     private static final String UTF_8 = "UTF-8";
 
@@ -60,7 +60,7 @@ public class StationsGpxWriter implements MessageBodyWriter<List<Station>> {
             final XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(entityStream, StationsGpxWriter.UTF_8);
             xmlw.writeStartDocument(StationsGpxWriter.UTF_8, "1.0");
             xmlw.writeCharacters("\n");
-            xmlw.writeStartElement("service");
+            xmlw.writeStartElement("gpx");
             xmlw.writeDefaultNamespace("http://www.topografix.com/GPX/1/1");
             xmlw.writeAttribute("version", "1.1");
             xmlw.writeCharacters("\n");

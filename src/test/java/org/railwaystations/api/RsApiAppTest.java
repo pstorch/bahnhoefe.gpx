@@ -149,7 +149,8 @@ public class RsApiAppTest {
         final String content = readSaveStringEntity(response);
         final Document doc = builder.parse(new InputSource(new StringReader(content)));
         final Element gpx = doc.getDocumentElement();
-        assertThat(gpx.getTagName(), is("service"));
+        assertThat(response.getHeaderString("Content-Type"), is("application/gpx+xml"));
+        assertThat(gpx.getTagName(), is("gpx"));
         assertThat(gpx.getAttribute("xmlns"), is("http://www.topografix.com/GPX/1/1"));
         assertThat(gpx.getAttribute("version"), is("1.1"));
         final NodeList wpts = gpx.getElementsByTagName("wpt");
