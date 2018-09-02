@@ -2,6 +2,9 @@ package org.railwaystations.api.model;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Locale;
 
 public class Photo {
 
@@ -9,7 +12,7 @@ public class Photo {
     private static final BiMap<String, String> FLAGS = HashBiMap.create();
 
     static {
-        FLAGS.put("1", "@RecumbentTravel");
+        FLAGS.put("1", "recumbenttravel");
     }
 
     private final Station.Key stationKey;
@@ -44,7 +47,7 @@ public class Photo {
     }
 
     public static String getFlag(final String photographerName) {
-        return FLAGS.inverse().getOrDefault(photographerName, FLAG_DEFAULT);
+        return FLAGS.inverse().getOrDefault(StringUtils.trimToEmpty(photographerName).replace("@", "").toLowerCase(Locale.GERMAN), FLAG_DEFAULT);
     }
 
     public String getUrl() {
