@@ -110,3 +110,31 @@ loaders:
       timetableUrlTemplate: https://www.nsb.no/en/frontpage
     stationsUrl: /bahnhoefeno
     photosUrl: /bahnhofsfotosno
+  - type: baseLoader
+    country:
+      code: "cz"
+      name: Tschechien
+      timetableUrlTemplate: https://www.cd.cz/stanice/{id}
+    stationsUrl: /bahnhoefecz
+    photosUrl: /bahnhofsfotoscz
+  - type: baseLoader
+    country:
+      code: "pt"
+      name: Portugal
+      timetableUrlTemplate:
+    stationsUrl: /bahnhoefept
+    photosUrl: /bahnhofsfotospt
+  - type: baseLoader
+    country:
+      code: "be"
+      name: Belgien
+      timetableUrlTemplate:
+    stationsUrl: /bahnhoefebe
+    photosUrl: /bahnhofsfotosbe
+  - type: baseLoader
+    country:
+      code: "md"
+      name: Moldawien
+      timetableUrlTemplate:
+    stationsUrl: /bahnhoefemd
+    photosUrl: /bahnhofsfotosmd

@@ -40,6 +40,15 @@ importDump bahnhoefepl
 importDump bahnhofsfotospl
 importDump bahnhoefeuk
 importDump bahnhofsfotosuk
+importDump bahnhoefebe
+importDump bahnhofsfotosbe
+importDump bahnhoefecz
+importDump bahnhofsfotoscz
+importDump bahnhoefemd
+importDump bahnhofsfotosmd
+importDump bahnhoefept
+importDump bahnhofsfotospt
+
 
 importDump fotografen
 

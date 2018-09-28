@@ -1,0 +1,1 @@
+{"bahnhoefebe":{"mappings":{"bahnhofbe":{"properties":{"geometry":{"properties":{"coordinates":{"type":"double"},"type":{"type":"string"}}},"properties":{"properties":{"DBIBNR":{"type":"string"},"UICIBNR":{"type":"long"},"abkuerzung":{"type":"long"},"countryCode":{"type":"string"},"name":{"type":"string"}}},"type":{"type":"string"}}}}}}
