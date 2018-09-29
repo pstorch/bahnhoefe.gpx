@@ -3,12 +3,17 @@ package org.railwaystations.api;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.jdbi3.JdbiFactory;
+import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.jdbi.v3.core.Jdbi;
+import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.resources.*;
+import org.railwaystations.api.writer.PhotographersTxtWriter;
 import org.railwaystations.api.writer.StationsGpxWriter;
 import org.railwaystations.api.writer.StationsTxtWriter;
-import org.railwaystations.api.writer.PhotographersTxtWriter;
 import org.railwaystations.api.writer.StatisticTxtWriter;
 
 /**
@@ -29,15 +34,22 @@ public class RsApiApp extends Application<RsApiConfiguration> {
     public void initialize(final Bootstrap<RsApiConfiguration> bootstrap) {
         bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
                 bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
+
+        bootstrap.addBundle(new RsApiConfigurationMigrationsBundle());
     }
 
     @Override
     public void run(final RsApiConfiguration config, final Environment environment) {
         config.getMonitor().sendMessage("RSAPI starting up");
+
+        final JdbiFactory factory = new JdbiFactory();
+        final Jdbi jdbi = factory.build(environment, config.getDataSourceFactory(), "mariadb");
+        jdbi.toString();
+
         final StationsRepository repository = config.getRepository();
         environment.jersey().register(new StationsResource(repository));
         environment.jersey().register(new PhotographersResource(repository));
-        environment.jersey().register(new CountriesResource(repository));
+        environment.jersey().register(new CountriesResource(jdbi.onDemand(CountryDao.class)));
         environment.jersey().register(new StatisticResource(repository));
         environment.jersey().register(new PhotoUploadResource(repository, config.getApiKey(),
                 config.getTokenGenerator(), config.getWorkDir(), config.getMonitor()));
@@ -54,6 +66,13 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().property("jersey.config.server.mediaTypeMappings",
                 "gpx : application/gpx+xml, json : application/json, txt : text/plain");
         repository.refresh(null);
+    }
+
+    private static class RsApiConfigurationMigrationsBundle extends MigrationsBundle<RsApiConfiguration> {
+        @Override
+        public DataSourceFactory getDataSourceFactory(final RsApiConfiguration configuration) {
+            return configuration.getDataSourceFactory();
+        }
     }
 
 }

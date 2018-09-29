@@ -3,6 +3,7 @@ package org.railwaystations.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
+import io.dropwizard.db.DataSourceFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.loader.StationLoaderFactory;
@@ -45,6 +46,20 @@ public class RsApiConfiguration extends Configuration {
     private List<StationLoaderFactory> loaders;
 
     private String photoDir;
+
+    @Valid
+    @NotNull
+    private DataSourceFactory database = new DataSourceFactory();
+
+    @JsonProperty("database")
+    public void setDataSourceFactory(final DataSourceFactory factory) {
+        this.database = factory;
+    }
+
+    @JsonProperty("database")
+    public DataSourceFactory getDataSourceFactory() {
+        return database;
+    }
 
     public StationsRepository getRepository() {
         return new StationsRepository(monitor, loaders.stream().map(factory -> factory.createLoader(monitor, elasticBackend)).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);

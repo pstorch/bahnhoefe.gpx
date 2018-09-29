@@ -1,7 +1,7 @@
 #!/bin/bash
-# run a local elastic with some testdata
+# creates and runs a local elastic with some testdata
 
-./elastic-stop.sh
+docker rm -f elastic
 
 docker run -d --net host -e "discovery.type=single-node" -e "xpack.security.transport.filter.allow=localhost" -e "xpack.security.transport.filter.deny=_all" -e "xpack.security.enabled=false" --name elastic docker.elastic.co/elasticsearch/elasticsearch:5.5.2
 

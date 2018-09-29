@@ -48,7 +48,7 @@ public class PhotoUploadResourceTest {
         final Station.Key key1234 = new Station.Key("de", "1234");
         stationsMap.put(key1234, new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", "Jim Knopf", "photographerUrl", null, "CC0")));
         Mockito.when(loader.loadStations(Mockito.anyMap(), Mockito.anyString())).thenReturn(stationsMap);
-        Mockito.when(loader.getCountry()).thenReturn(new Country("de", null, null, null, null));
+        Mockito.when(loader.getCountry()).thenReturn(new Country("de"));
 
         tempDir = Files.createTempDirectory("rsapi");
         resource = new PhotoUploadResource(new StationsRepository(monitor, Collections.singletonList(loader), photographerLoader, ""), "apiKey", tokenGenerator, tempDir.toString(), monitor);

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="pstorch">
+        <createTable tableName="countries">
+            <column name="id" type="char(2)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="stationsIndex" type="varchar(255)"/>
+            <column name="photosIndex" type="varchar(255)"/>
+            <column name="timetableUrlTemplate" type="varchar(1024)"/>
+            <column name="email" type="varchar(255)"/>
+            <column name="twitterTags" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="pstorch" context="test">
+        <insert tableName="countries">
+            <column name="id" value="de"/>
+            <column name="name" value="Deutschland"/>
+            <column name="stationsIndex" value="bahnhoefe"/>
+            <column name="photosIndex" value="bahnhofsfotosde"/>
+            <column name="timetableUrlTemplate" value="https://mobile.bahn.de/bin/mobil/bhftafel.exe/dox?bt=dep&amp;max=10&amp;rt=1&amp;use_realtime_filter=1&amp;start=yes&amp;input={title}"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="ch"/>
+            <column name="name" value="Schweiz"/>
+            <column name="stationsIndex" value="bahnhoefec2"/>
+            <column name="photosIndex" value="bahnhofsfotosch"/>
+            <column name="timetableUrlTemplate" value="http://fahrplan.sbb.ch/bin/stboard.exe/dn?input={title}&amp;REQTrain_name=&amp;boardType=dep&amp;time=now&amp;maxJourneys=20&amp;selectDate=today&amp;productsFilter=1111111111&amp;start=yes"/>
+            <column name="email" value="fotos@schweizer-bahnhoefe.ch"/>
+            <column name="twitterTags" value="@BahnhoefeCH, @android_oma, #BahnhofsfotoCH"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="fi"/>
+            <column name="name" value="Finnland"/>
+            <column name="stationsIndex" value="bahnhoefefi"/>
+            <column name="photosIndex" value="bahnhofsfotosfi"/>
+            <column name="timetableUrlTemplate" value="https://www.junat.net/en/"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="uk"/>
+            <column name="name" value="United Kingdom"/>
+            <column name="stationsIndex" value="bahnhoefeuk"/>
+            <column name="photosIndex" value="bahnhofsfotosuk"/>
+            <column name="timetableUrlTemplate" value="http://ojp.nationalrail.co.uk/service/ldbboard/dep/{DS100}"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="fr"/>
+            <column name="name" value="France"/>
+            <column name="stationsIndex" value="bahnhoefefr"/>
+            <column name="photosIndex" value="bahnhofsfotosfr"/>
+            <column name="timetableUrlTemplate" value="http://m.sncf.com/sncf/gare?libelleGare={title}"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="es"/>
+            <column name="name" value="España"/>
+            <column name="stationsIndex" value="bahnhoefees"/>
+            <column name="photosIndex" value="bahnhofsfotoses"/>
+            <column name="timetableUrlTemplate" value="http://www.adif.es/AdifWeb/estacionesMapa.jsp?i=en_US&amp;dest=&amp;pes=informacion&amp;e={DS100}"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="pl"/>
+            <column name="name" value="Polska"/>
+            <column name="stationsIndex" value="bahnhoefepl"/>
+            <column name="photosIndex" value="bahnhofsfotospl"/>
+            <column name="timetableUrlTemplate" value="http://mt.rozklad-pkp.pl/de/sq?input={id}&amp;maxJourneys=15&amp;start=start"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="nl"/>
+            <column name="name" value="Nederland"/>
+            <column name="stationsIndex" value="bahnhoefenl"/>
+            <column name="photosIndex" value="bahnhofsfotosnl"/>
+            <column name="timetableUrlTemplate" value="https://www.ns.nl/actuele-vertrektijden/avt?station={title}"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="at"/>
+            <column name="name" value="Österreich"/>
+            <column name="stationsIndex" value="bahnhoefeat"/>
+            <column name="photosIndex" value="bahnhofsfotosat"/>
+            <column name="timetableUrlTemplate" value="http://fahrplan.oebb.at/bin/stboard.exe/dn?L=vs_liveticker&amp;evaId={id}&amp;boardType=dep&amp;productsFilter=1111111111111111&amp;dirInput=&amp;tickerID=dep&amp;start=yes&amp;eqstops=false&amp;showJourneys=12&amp;additionalTime=0"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="in"/>
+            <column name="name" value="India"/>
+            <column name="stationsIndex" value="bahnhoefein"/>
+            <column name="photosIndex" value="bahnhofsfotosin"/>
+            <column name="timetableUrlTemplate" value="https://enquiry.indianrail.gov.in/ntes/"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="ie"/>
+            <column name="name" value="Ireland"/>
+            <column name="stationsIndex" value="bahnhoefeie"/>
+            <column name="photosIndex" value="bahnhofsfotosie"/>
+            <column name="timetableUrlTemplate" value="http://www.irishrail.ie/timetables/live-departure-times?code={DS100}"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="no"/>
+            <column name="name" value="Norge"/>
+            <column name="stationsIndex" value="bahnhoefeno"/>
+            <column name="photosIndex" value="bahnhofsfotosno"/>
+            <column name="timetableUrlTemplate" value="https://www.nsb.no/en/frontpage"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="cz"/>
+            <column name="name" value="Tschechien"/>
+            <column name="stationsIndex" value="bahnhoefecz"/>
+            <column name="photosIndex" value="bahnhofsfotoscz"/>
+            <column name="timetableUrlTemplate" value="https://www.cd.cz/stanice/{id}"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="pt"/>
+            <column name="name" value="Portugal"/>
+            <column name="stationsIndex" value="bahnhoefept"/>
+            <column name="photosIndex" value="bahnhofsfotospt"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="be"/>
+            <column name="name" value="Belgien"/>
+            <column name="stationsIndex" value="bahnhoefebe"/>
+            <column name="photosIndex" value="bahnhofsfotosbe"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="md"/>
+            <column name="name" value="Moldawien"/>
+            <column name="stationsIndex" value="bahnhoefemd"/>
+            <column name="photosIndex" value="bahnhofsfotosmd"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

@@ -6,6 +6,11 @@ server:
     - type: http
       port: 8081
       bindHost: 127.0.0.1
+database:
+  driverClass: org.mariadb.jdbc.Driver
+  user: rsapi
+  password: rsapi
+  url: jdbc:mariadb://localhost:3306/rsapi
 workDir: ${RSAPI_WORK:-/var/rsapi}
 photoDir: ${PHOTO_DIR:-/tmp/railway-station-photos}
 apiKey: ${API_KEY:-dummy}

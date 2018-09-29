@@ -3,14 +3,12 @@ package org.railwaystations.api.resources;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.railwaystations.api.StationsRepository;
-import org.railwaystations.api.loader.StationLoader;
+import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.model.Country;
-import org.railwaystations.api.monitoring.LoggingMonitor;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,16 +16,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class CountriesResourceTest {
 
     @Test
-    public void testList() throws IOException {
-        final StationLoader loaderXY = Mockito.mock(StationLoader.class);
-        Mockito.when(loaderXY.getCountry()).thenReturn(new Country("xy", "nameXY", "emailXY", "twitterXY", "timetableXY"));
+    public void testList() {
+        final CountryDao countryDao = Mockito.mock(CountryDao.class);
+        final List<Country> countryList = new ArrayList<>();
+        countryList.add(new Country("xy", "nameXY", "emailXY", "twitterXY", "timetableXY", "stationsXY", "photosXY"));
+        countryList.add(new Country("ab", "nameAB", "emailAB", "twitterAB", "timetableAB", "stationsAB", "photosAB"));
+        Mockito.when(countryDao.list()).thenReturn(countryList);
 
-        final StationLoader loaderAB = Mockito.mock(StationLoader.class);
-        Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", "nameAB", "emailAB", "twitterAB", "timetableAB"));
+        final CountriesResource resource = new CountriesResource(countryDao);
 
-        final CountriesResource resource = new CountriesResource(new StationsRepository(new LoggingMonitor(), Arrays.asList(loaderAB, loaderXY), null, ""));
-
-        final Set<Country> countries = resource.list();
+        final Collection<Country> countries = resource.list();
         assertThat(countries.size(), equalTo(2));
         countries.stream().forEach(this::assertCountry);
     }
@@ -38,6 +36,8 @@ public class CountriesResourceTest {
         assertThat(country.getEmail(), equalTo("email" + country.getCode().toUpperCase()));
         assertThat(country.getTwitterTags(), equalTo("twitter" + country.getCode().toUpperCase()));
         assertThat(country.getTimetableUrlTemplate(), equalTo("timetable" + country.getCode().toUpperCase()));
+        assertThat(country.getStationsIndex(), equalTo("stations" + country.getCode().toUpperCase()));
+        assertThat(country.getPhotosIndex(), equalTo("photos" + country.getCode().toUpperCase()));
     }
 
 }
