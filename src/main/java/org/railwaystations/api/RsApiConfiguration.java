@@ -6,7 +6,6 @@ import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.loader.StationLoaderFactory;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
@@ -14,8 +13,6 @@ import org.railwaystations.api.monitoring.SlackMonitor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.LongVariable")
 public class RsApiConfiguration extends Configuration {
@@ -40,11 +37,6 @@ public class RsApiConfiguration extends Configuration {
 
     private ElasticBackend elasticBackend;
 
-    @JsonProperty
-    @NotNull
-    @Valid
-    private List<StationLoaderFactory> loaders;
-
     private String photoDir;
 
     @Valid
@@ -59,10 +51,6 @@ public class RsApiConfiguration extends Configuration {
     @JsonProperty("database")
     public DataSourceFactory getDataSourceFactory() {
         return database;
-    }
-
-    public StationsRepository getRepository() {
-        return new StationsRepository(monitor, loaders.stream().map(factory -> factory.createLoader(monitor, elasticBackend)).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
@@ -103,7 +91,7 @@ public class RsApiConfiguration extends Configuration {
         return mailer;
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = RsApiConfiguration.IDENT)
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = RsApiConfiguration.IDENT)
     public void setMailer(final Mailer mailer) {
         this.mailer = mailer;
     }
@@ -147,4 +135,5 @@ public class RsApiConfiguration extends Configuration {
     public void setElasticBackend(final ElasticBackend elasticBackend) {
         this.elasticBackend = elasticBackend;
     }
+
 }

@@ -1,0 +1,16 @@
+database:
+  driverClass: org.h2.Driver
+  user: sa
+  password: sa
+  url: jdbc:h2:./target/test-example
+workDir: ${RSAPI_WORK:-/tmp/rsapi}
+photoDir: ${PHOTO_DIR:-/tmp/railway-station-photos}
+apiKey: ${API_KEY:-dummy}
+salt: ${SALT:-dummy}
+mailer:
+  "@class": org.railwaystations.api.mail.MockMailer
+elasticBackend:
+  baseUrl: ${ELASTIC_BASE_URL:-}
+photographersUrl: file:./src/test/resources/photographers.json
+photoBaseUrl: https://fotos.railway-stations.org
+slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

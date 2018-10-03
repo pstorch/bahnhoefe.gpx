@@ -3,6 +3,8 @@ package org.railwaystations.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
@@ -62,7 +64,7 @@ public class RsApiAppTest {
     }
 
     @Test
-    public void stationById() throws IOException {
+    public void stationById() {
         final Response response = loadRaw("/de/stations/41", 200);
         final Station station = response.readEntity(Station.class);
         assertThat(station.getKey().getId(), is("41"));
@@ -351,7 +353,27 @@ public class RsApiAppTest {
     }
 
     public static final class MySuite {
-        public static final DropwizardAppExtension<RsApiConfiguration> DROPWIZARD = new DropwizardAppExtension<>(RsApiApp.class, ResourceHelpers.resourceFilePath("config.yml"));
+        private static final String TMP_FILE = createTempFile();
+        private static final String CONFIG_PATH = ResourceHelpers.resourceFilePath("test-config.yml");
+
+        public static final DropwizardAppExtension<RsApiConfiguration> DROPWIZARD = new DropwizardAppExtension<>(RsApiApp.class, CONFIG_PATH, ConfigOverride.config("database.url", "jdbc:h2:" + TMP_FILE));
+
+        static {
+            DROPWIZARD.addListener(new DropwizardAppExtension.ServiceListener<RsApiConfiguration>() {
+                @Override
+                public void onRun(final RsApiConfiguration config, final Environment environment, final DropwizardAppExtension<RsApiConfiguration> rule) throws Exception {
+                    rule.getApplication().run("db", "migrate", "-i", "junit", CONFIG_PATH);
+                }
+            });
+        }
+
+        private static String createTempFile() {
+            try {
+                return File.createTempFile("rsapi-test", null).getAbsolutePath();
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
     }
 
 }

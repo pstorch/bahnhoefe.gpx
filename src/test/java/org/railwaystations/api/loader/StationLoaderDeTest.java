@@ -40,8 +40,10 @@ public class StationLoaderDeTest {
 			);
 			container.start();
 
-			final StationLoader loader = new StationLoaderDe(new Country("de"), container.home().toURL().toString(),
-					container.home().toURL().toString(), new LoggingMonitor(), new ElasticBackend(""));
+			final StationLoader loader = new StationLoader(
+					new Country("de", "Deutschland", null, null, null,
+						container.home().toURL().toString(), container.home().toURL().toString()),
+						new LoggingMonitor(), new ElasticBackend(""));
 
 			final Map<Station.Key, Station> stations = loader.loadStations(new HashMap<>(), "http://www.deutschlands-bahnhoefe.org");
 

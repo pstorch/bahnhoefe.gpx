@@ -44,7 +44,7 @@ public class ElasticBackend {
     }
 
     private JsonNode readJsonFromUrl(final String url) throws Exception {
-        final String fullUrl = url.startsWith("http") ? url : baseUrl + url;
+        final String fullUrl = url.startsWith("http") ? url : baseUrl + "/" + url;
 
         // use Apache HTTP Client to retrieve remote content
         LOG.debug("readingJsonFromUrl: " + fullUrl);
@@ -78,7 +78,7 @@ public class ElasticBackend {
     }
 
     public CloseableHttpResponse post(final String url, final String content, final ContentType contentType) throws Exception {
-        final String fullUrl = url.startsWith("http") ? url : baseUrl + url;
+        final String fullUrl = url.startsWith("http") ? url : baseUrl + "/" + url;
         final HttpPost httpPost = new HttpPost(fullUrl);
         httpPost.setEntity(new StringEntity(content, contentType));
         return httpclient.execute(httpPost);

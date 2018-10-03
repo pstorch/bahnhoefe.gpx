@@ -53,8 +53,7 @@ public class PhotoUploadResource {
                          @NotNull @HeaderParam("Email") final String inEmail,
                          @NotNull @HeaderParam("Station-Id") final String stationId,
                          @NotNull @HeaderParam("Country") final String country,
-                         @HeaderParam("Content-Type") final String contentType)
-            throws UnsupportedEncodingException {
+                         @HeaderParam("Content-Type") final String contentType) {
         // trim user input
         final String nickname = StringUtils.trimToEmpty(inNickname);
         final String email = StringUtils.trimToEmpty(inEmail);

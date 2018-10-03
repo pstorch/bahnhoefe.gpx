@@ -44,12 +44,13 @@ public class RsApiApp extends Application<RsApiConfiguration> {
 
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, config.getDataSourceFactory(), "mariadb");
-        jdbi.toString();
+        final CountryDao countryDao = jdbi.onDemand(CountryDao.class);
 
-        final StationsRepository repository = config.getRepository();
+        final StationsRepository repository = new StationsRepository(config.getMonitor(), countryDao, config.getElasticBackend(), config.getPhotographerLoader(), config.getPhotoBaseUrl());
+
         environment.jersey().register(new StationsResource(repository));
         environment.jersey().register(new PhotographersResource(repository));
-        environment.jersey().register(new CountriesResource(jdbi.onDemand(CountryDao.class)));
+        environment.jersey().register(new CountriesResource(countryDao));
         environment.jersey().register(new StatisticResource(repository));
         environment.jersey().register(new PhotoUploadResource(repository, config.getApiKey(),
                 config.getTokenGenerator(), config.getWorkDir(), config.getMonitor()));

@@ -6,13 +6,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.TokenGenerator;
-import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.loader.StationLoader;
 import org.railwaystations.api.model.Coordinates;
-import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.monitoring.MockMonitor;
@@ -22,7 +18,6 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,18 +35,17 @@ public class PhotoUploadResourceTest {
 
     @BeforeEach
     public void setUp() throws IOException {
-        final PhotographerLoader photographerLoader = new PhotographerLoader( "file:./src/test/resources/photographers.json", new ElasticBackend(""));
-        final StationLoader loader = Mockito.mock(StationLoader.class);
         final Map<Station.Key, Station> stationsMap = new HashMap<>(2);
         final Station.Key key4711 = new Station.Key("de", "4711");
         stationsMap.put(key4711, new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
         final Station.Key key1234 = new Station.Key("de", "1234");
         stationsMap.put(key1234, new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", "Jim Knopf", "photographerUrl", null, "CC0")));
-        Mockito.when(loader.loadStations(Mockito.anyMap(), Mockito.anyString())).thenReturn(stationsMap);
-        Mockito.when(loader.getCountry()).thenReturn(new Country("de"));
 
         tempDir = Files.createTempDirectory("rsapi");
-        resource = new PhotoUploadResource(new StationsRepository(monitor, Collections.singletonList(loader), photographerLoader, ""), "apiKey", tokenGenerator, tempDir.toString(), monitor);
+        final StationsRepository repository = Mockito.mock(StationsRepository.class);
+        Mockito.when(repository.get("de")).thenReturn(stationsMap);
+
+        resource = new PhotoUploadResource(repository, "apiKey", tokenGenerator, tempDir.toString(), monitor);
     }
 
     private Response whenPostImage(final String content, final String uploadToken, final String nickname, final String email, final String stationId, final String country) throws UnsupportedEncodingException {

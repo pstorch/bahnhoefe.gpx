@@ -3,18 +3,11 @@ package org.railwaystations.api.resources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.StationsRepository;
-import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.loader.StationLoader;
 import org.railwaystations.api.model.Coordinates;
-import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.model.Station;
-import org.railwaystations.api.monitoring.LoggingMonitor;
 
-import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,24 +21,25 @@ public class StationsResourceTest {
     private StationsResource resource;
 
     @BeforeEach
-    public void setUp() throws MalformedURLException {
-        final PhotographerLoader photographerLoader = new PhotographerLoader( "file:./src/test/resources/photographers.json", new ElasticBackend(""));
-
-        final StationLoader loaderXY = Mockito.mock(StationLoader.class);
+    public void setUp() {
         final Map<Station.Key, Station> stationsXY = new HashMap<>(2);
         final Station.Key key5 = new Station.Key("xy", "5");
         stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "URL", "Jim Knopf", "photographerUrl", null, "CC0")));
-        Mockito.when(loaderXY.loadStations(Mockito.anyMap(), Mockito.anyString())).thenReturn(stationsXY);
-        Mockito.when(loaderXY.getCountry()).thenReturn(new Country("xy"));
 
-        final StationLoader loaderAB = Mockito.mock(StationLoader.class);
-        final Map<Station.Key, Station> stations = new HashMap<>(2);
+        final Map<Station.Key, Station> stationsAB = new HashMap<>(2);
         final Station.Key key3 = new Station.Key("ab", "3");
-        stations.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "URL2", "Peter Pan", "photographerUrl2", null, "CC0 by SA")));
-        Mockito.when(loaderAB.loadStations(Mockito.anyMap(), Mockito.anyString())).thenReturn(stations);
-        Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab"));
+        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "URL2", "Peter Pan", "photographerUrl2", null, "CC0 by SA")));
 
-        resource = new StationsResource(new StationsRepository(new LoggingMonitor(), Arrays.asList(loaderAB, loaderXY), photographerLoader, ""));
+        final Map<Station.Key, Station> stationsAll = new HashMap<>(2);
+        stationsAll.putAll(stationsAB);
+        stationsAll.putAll(stationsXY);
+
+        final StationsRepository repository = Mockito.mock(StationsRepository.class);
+        Mockito.when(repository.get("xy")).thenReturn(stationsXY);
+        Mockito.when(repository.get("ab")).thenReturn(stationsAB);
+        Mockito.when(repository.get(null)).thenReturn(stationsAll);
+
+        resource = new StationsResource(repository);
     }
 
     @Test

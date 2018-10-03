@@ -35,8 +35,10 @@ public class StationLoaderFiTest {
 			);
 			container.start();
 
-			final StationLoader loader = new BaseStationLoader(new Country("fi"), container.home().toURL().toString(),
-					container.home().toURL().toString(), new LoggingMonitor(), new ElasticBackend(""));
+			final StationLoader loader = new StationLoader(
+					new Country("fi", "Finnland", null, null, null,
+						container.home().toURL().toString(), container.home().toURL().toString()),
+						new LoggingMonitor(), new ElasticBackend(""));
 
 			final Map<Station.Key, Station> stations = loader.loadStations(new HashMap<>(), "https://railway-stations.org");
 

@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.loader.StationLoader;
 import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.model.Country;
@@ -22,18 +23,30 @@ public class StationsRepository {
 
     private static final LevenshteinDistance LEVENSHTEIN_DISTANCE = new LevenshteinDistance();
 
-    private final LoadingCache<String, Map<Station.Key, Station>> cache;
-    private final Set<Country> countries;
+    private final CountryDao countryDao;
     private final Monitor monitor;
     private final PhotographerLoader photographerLoader;
+    private final String photoBaseUrl;
+    private final ElasticBackend elasticBackend;
 
-    public StationsRepository(final Monitor monitor, final List<StationLoader> loaders, final PhotographerLoader photographerLoader, final String photoBaseUrl) {
+    private LoadingCache<String, Map<Station.Key, Station>> cache;
+    private Set<Country> countries;
+
+    public StationsRepository(final Monitor monitor, final CountryDao countryDao, final ElasticBackend elasticBackend, final PhotographerLoader photographerLoader, final String photoBaseUrl) {
         super();
         this.monitor = monitor;
-        this.cache = CacheBuilder.newBuilder().refreshAfterWrite(60, TimeUnit.MINUTES).build(
-                new StationsCacheLoader(monitor, loaders, photographerLoader, photoBaseUrl));
-        this.countries = loaders.stream().map(StationLoader::getCountry).collect(Collectors.toSet());
+        this.countryDao = countryDao;
         this.photographerLoader = photographerLoader;
+        this.elasticBackend = elasticBackend;
+        this.photoBaseUrl = photoBaseUrl;
+
+        createNewStationsCache();
+    }
+
+    private void createNewStationsCache() {
+        this.countries = countryDao.list();
+        this.cache = CacheBuilder.newBuilder().refreshAfterWrite(60, TimeUnit.MINUTES).build(
+                new StationsCacheLoader(monitor, countries, elasticBackend, photographerLoader, photoBaseUrl));
     }
 
     public Map<Station.Key, Station> get(final String countryCode) {
@@ -53,8 +66,8 @@ public class StationsRepository {
 
     public void refresh(final String responseUrl) {
         photographerLoader.refresh();
-        cache.invalidateAll();
         final Thread refresher = new Thread(() -> {
+            createNewStationsCache();
             monitor.sendMessage(responseUrl, getCountryStatisticMessage());
         });
         refresher.start();
@@ -121,10 +134,6 @@ public class StationsRepository {
         return photographerLoader.loadPhotographers().get(photographerName);
     }
 
-    public void refreshCountry(final String country) {
-        cache.refresh(country);
-    }
-
     public Optional<Country> getCountry(final String countryCode) {
         return countries.stream().filter(c -> c.getCode().equals(countryCode)).findFirst();
     }
@@ -146,20 +155,24 @@ public class StationsRepository {
 
     private static class StationsCacheLoader extends CacheLoader<String, Map<Station.Key, Station>> {
         private final Monitor monitor;
-        private final List<StationLoader> loaders;
+        private final Set<Country> countries;
+        private final ElasticBackend elasticBackend;
         private final PhotographerLoader photographerLoader;
         private final String photoBaseUrl;
 
-        public StationsCacheLoader(final Monitor slack, final List<StationLoader> loaders, final PhotographerLoader photographerLoader, final String photoBaseUrl) {
+        public StationsCacheLoader(final Monitor slack, final Set<Country> countries, final ElasticBackend elasticBackend, final PhotographerLoader photographerLoader, final String photoBaseUrl) {
             this.monitor = slack;
-            this.loaders = loaders;
+            this.countries = countries;
+            this.elasticBackend = elasticBackend;
             this.photographerLoader = photographerLoader;
             this.photoBaseUrl = photoBaseUrl;
         }
 
+        @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
         public Map<Station.Key, Station> load(final String countryCode) {
             try {
-                for (final StationLoader loader : loaders) {
+                for (final Country country : countries) {
+                    final StationLoader loader = new StationLoader(country, monitor, elasticBackend);
                     if (loader.getCountry().getCode().equals(countryCode)) {
                         return loader.loadStations(photographerLoader.loadPhotographers(), photoBaseUrl);
                     }

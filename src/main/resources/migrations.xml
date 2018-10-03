@@ -136,4 +136,37 @@
         </insert>
     </changeSet>
 
+    <changeSet id="2" author="pstorch" context="junit">
+        <insert tableName="countries">
+            <column name="id" value="de"/>
+            <column name="name" value="Deutschland"/>
+            <column name="stationsIndex" value="file:./src/test/resources/stationsDe.json"/>
+            <column name="photosIndex" value="file:./src/test/resources/photosDe.json"/>
+            <column name="timetableUrlTemplate" value="https://mobile.bahn.de/bin/mobil/bhftafel.exe/dox?bt=dep&amp;max=10&amp;rt=1&amp;use_realtime_filter=1&amp;start=yes&amp;input={title}"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="ch"/>
+            <column name="name" value="Schweiz"/>
+            <column name="stationsIndex" value="file:./src/test/resources/stationsCh.json"/>
+            <column name="photosIndex" value="file:./src/test/resources/photosCh.json"/>
+            <column name="timetableUrlTemplate" value="http://fahrplan.sbb.ch/bin/stboard.exe/dn?input={title}&amp;REQTrain_name=&amp;boardType=dep&amp;time=now&amp;maxJourneys=20&amp;selectDate=today&amp;productsFilter=1111111111&amp;start=yes"/>
+            <column name="email" value="fotos@schweizer-bahnhoefe.ch"/>
+            <column name="twitterTags" value="@BahnhoefeCH, @android_oma, #BahnhofsfotoCH"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="fi"/>
+            <column name="name" value="Finnland"/>
+            <column name="stationsIndex" value="file:./src/test/resources/stationsFi.json"/>
+            <column name="photosIndex" value="file:./src/test/resources/photosFi.json"/>
+            <column name="timetableUrlTemplate" value="https://www.junat.net/en/"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="uk"/>
+            <column name="name" value="United Kingdom"/>
+            <column name="stationsIndex" value="file:./src/test/resources/stationsUk.json"/>
+            <column name="photosIndex" value="file:./src/test/resources/photosUk.json"/>
+            <column name="timetableUrlTemplate" value="http://ojp.nationalrail.co.uk/service/ldbboard/dep/{DS100}"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

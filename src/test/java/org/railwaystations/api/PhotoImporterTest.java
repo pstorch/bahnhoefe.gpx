@@ -7,9 +7,10 @@ import org.apache.http.StatusLine;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.loader.StationLoaderDe;
+import org.mockito.Mockito;
 import org.railwaystations.api.model.Country;
+import org.railwaystations.api.model.Photo;
+import org.railwaystations.api.model.Photographer;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
 import org.railwaystations.api.monitoring.LoggingMonitor;
@@ -20,7 +21,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,13 +39,20 @@ public class PhotoImporterTest {
 
     @BeforeEach
     public void setUp() throws IOException {
-        final PhotographerLoader photographerLoader = new PhotographerLoader( "file:./src/test/resources/photographers.json", new ElasticBackend(""));
-        final StationLoaderDe loaderDe = new StationLoaderDe(new Country("de"), "file:./src/test/resources/photosDe.json", "file:./src/test/resources/stationsDe.json", new LoggingMonitor(), new ElasticBackend(""));
         uploadDir = Files.createTempDirectory("rsapiUpload");
         photoDir = Files.createTempDirectory("rsapiPhoto");
-        repository = new StationsRepository(new LoggingMonitor(), Collections.singletonList(loaderDe), photographerLoader, "https://railway-stations.org");
-        importer = new PhotoImporter(repository, new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), new ElasticBackend(""), "https://railway-stations.org") {
+        repository = Mockito.mock(StationsRepository.class);
+        Mockito.when(repository.getCountry("de")).thenReturn(Optional.of(new Country("de")));
+        Mockito.when(repository.getPhotographer("Anonym")).thenReturn(new Photographer("Anonym", null, "CC0 1.0 Universell (CC0 1.0)"));
+        Mockito.when(repository.getPhotographer("@storchp")).thenReturn(new Photographer("@storchp", null, "CC0 1.0 Universell (CC0 1.0)"));
+        Mockito.when(repository.findPhotographerByLevenshtein("@GabyBecker")).thenReturn(Optional.of(new Photographer("Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)")));
+        final Station felde = new Station(new Station.Key("de", "8009"), "Felde", null, null);
+        Mockito.when(repository.findByKey(felde.getKey())).thenReturn(felde);
+        final Station.Key hannoverKey = new Station.Key("de", "6913");
+        final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", "", "", 0L, ""));
+        Mockito.when(repository.findByKey(hannover.getKey())).thenReturn(hannover);
 
+        importer = new PhotoImporter(repository, new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), new ElasticBackend(""), "https://railway-stations.org") {
             @Override
             protected Optional<StatusLine> postToElastic(final Bahnhofsfoto bahnhofsfoto) {
                 postedBahnhofsfoto = bahnhofsfoto;
