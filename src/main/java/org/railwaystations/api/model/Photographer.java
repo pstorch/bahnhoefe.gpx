@@ -1,10 +1,27 @@
 package org.railwaystations.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+@SuppressWarnings("PMD.UnusedPrivateField")
 public class Photographer {
 
     private final String name;
     private final String url;
     private final String license;
+
+    @JsonIgnore
+    private int id;
+    @JsonIgnore
+    private String email;
+    @JsonIgnore
+    private String normalizedName;
+    @JsonIgnore
+    private boolean ownPhotos;
+    @JsonIgnore
+    private boolean anonymous;
+    @JsonIgnore
+    private Long uploadTokenSalt;
+
 
     public Photographer(final String name, final String url, final String license) {
         this.name = name;

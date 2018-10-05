@@ -61,6 +61,25 @@ The testdata contains only a very small subset of the production Elastic.
 By default RSAPI expects an Elasticsearch instance running on localhost port 9200. You can start this testinstance or as an alternative you can set the environment parameter to the production instance `-e "ELASTIC_BASE_URL=http://94.136.168.53"`.
 
 
+## Maria DB
+
+For local testing purpose you can start a MariaDB in docker with `mariadb-start.sh`.
+
+Enter mysql CLI:
+`docker exec -it mariadb mysql -ursapi -prsapi rsapi --default-character-set=utf8mb4`
+
+### Migrations
+
+Before using the DB it needs to be populated with schema and data, also updates might be necessary from time to time.
+
+When the project is build, you can start the DB migrations with: `java -jar target/rsapi-20180902.2226-SNAPSHOT.jar db migrate -i test config.yml
+`.
+
+The context (`-i` parameter) can take the following values:
+- prod: for production
+- test: for local testing
+- junit: for automated unit testing during maven build
+
 ## Use
 Point your browser to http://localhost:8080/{country}/stations, where `country` can be "de", "ch", "fi" or "uk"
 

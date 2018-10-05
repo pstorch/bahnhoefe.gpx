@@ -56,7 +56,7 @@ public class ElasticBackend {
                 return MAPPER.readTree(FACTORY.createParser(EntityUtils.toString(response.getEntity(), "UTF-8")));
             } else {
                 LOG.error("Error reading json from {}", url);
-                throw new ClientProtocolException(String.format("Unexpected response status: %d", status));
+                throw new ClientProtocolException(String.format("Got status %d while reading %s", status, url));
             }
         });
     }

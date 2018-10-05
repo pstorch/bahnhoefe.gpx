@@ -22,7 +22,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2" author="pstorch" context="test">
+    <changeSet id="2" author="pstorch" context="prod or test">
         <insert tableName="countries">
             <column name="id" value="de"/>
             <column name="name" value="Deutschland"/>
@@ -111,28 +111,40 @@
         </insert>
         <insert tableName="countries">
             <column name="id" value="cz"/>
-            <column name="name" value="Tschechien"/>
+            <column name="name" value="Česká republika"/>
             <column name="stationsIndex" value="bahnhoefecz"/>
             <column name="photosIndex" value="bahnhofsfotoscz"/>
             <column name="timetableUrlTemplate" value="https://www.cd.cz/stanice/{id}"/>
         </insert>
         <insert tableName="countries">
             <column name="id" value="pt"/>
-            <column name="name" value="Portugal"/>
+            <column name="name" value="República Portuguesa"/>
             <column name="stationsIndex" value="bahnhoefept"/>
             <column name="photosIndex" value="bahnhofsfotospt"/>
         </insert>
         <insert tableName="countries">
             <column name="id" value="be"/>
-            <column name="name" value="Belgien"/>
+            <column name="name" value="Koninkrijk België"/>
             <column name="stationsIndex" value="bahnhoefebe"/>
             <column name="photosIndex" value="bahnhofsfotosbe"/>
         </insert>
         <insert tableName="countries">
             <column name="id" value="md"/>
-            <column name="name" value="Moldawien"/>
+            <column name="name" value="Republica Moldova"/>
             <column name="stationsIndex" value="bahnhoefemd"/>
             <column name="photosIndex" value="bahnhofsfotosmd"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="dk"/>
+            <column name="name" value="Kongeriget Danmark"/>
+            <column name="stationsIndex" value="bahnhoefedk"/>
+            <column name="photosIndex" value="bahnhofsfotosdk"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id" value="sk"/>
+            <column name="name" value="Slovenská republika"/>
+            <column name="stationsIndex" value="bahnhoefesk"/>
+            <column name="photosIndex" value="bahnhofsfotossk"/>
         </insert>
     </changeSet>
 
@@ -167,6 +179,41 @@
             <column name="photosIndex" value="file:./src/test/resources/photosUk.json"/>
             <column name="timetableUrlTemplate" value="http://ojp.nationalrail.co.uk/service/ldbboard/dep/{DS100}"/>
         </insert>
+    </changeSet>
+
+    <changeSet id="3" author="pstorch">
+        <createTable tableName="users">
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(30)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="normalizedName" type="varchar(30)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="email" type="varchar(100)">
+                <constraints unique="true"/>
+            </column>
+            <column name="url" type="varchar(1024)"/>
+            <column name="ownPhotos" type="boolean"/>
+            <column name="anonymous" type="boolean"/>
+            <column name="license" type="varchar(50)"/>
+            <column name="uploadTokenSalt" type="long"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="4" author="pstorch" context="junit or test">
+        <loadData file="test_users.csv"
+                  tableName="users">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="normalizedName" type="string"/>
+            <column name="url" type="string"/>
+            <column name="ownPhotos" type="boolean"/>
+            <column name="anonymous" type="boolean"/>
+            <column name="license" type="string"/>
+        </loadData>
     </changeSet>
 
 </databaseChangeLog>

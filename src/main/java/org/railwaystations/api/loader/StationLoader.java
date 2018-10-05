@@ -8,7 +8,10 @@ import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.model.*;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
 import org.railwaystations.api.monitoring.Monitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -17,6 +20,9 @@ public class StationLoader {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String SOURCE_ELEMENT = "_source";
+
+    private static final Logger LOG = LoggerFactory.getLogger(StationLoader.class);
+
 
     private final Country country;
     private final Monitor monitor;
@@ -38,7 +44,9 @@ public class StationLoader {
         try {
             return fetchStations(fetchPhotos(new HashMap<>(), photographers, photoBaseUrl));
         } catch (final Exception e) {
-            throw new RuntimeException(e);
+            monitor.sendMessage("Error loading stations for " + country.getCode() + ": " + e.getMessage());
+            LOG.error("Error loading stations for {}", country.getCode(), e);
+            return Collections.emptyMap();
         }
     }
 
