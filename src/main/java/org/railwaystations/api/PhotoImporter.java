@@ -7,7 +7,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.ContentType;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
-import org.railwaystations.api.model.Photographer;
+import org.railwaystations.api.model.User;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
 import org.railwaystations.api.monitoring.Monitor;
@@ -110,23 +110,22 @@ public class PhotoImporter {
                 }
 
                 final String stationId = matcher.group(2);
+                final String photographerName = matcher.group(1);
 
-                String photographerName = matcher.group(1);
-                final String flag = Photo.getFlag(photographerName);
-                if (!flag.equals(Photo.FLAG_DEFAULT)) {
-                    photographerName = "Anonym";
+                Optional<User> user = repository.getPhotographer(photographerName);
+                if (!user.isPresent()) {
+                    user = repository.findPhotographerByLevenshtein(photographerName);
                 }
-
-                Photographer photographer = repository.getPhotographer(photographerName);
-                if (photographer == null) {
-                    photographer = repository.findPhotographerByLevenshtein(photographerName).orElse(null);
-                }
-                if (photographer == null) {
+                if (!user.isPresent()) {
                     report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
                 }
+                final String statUser = user.get().getName();
+                if (user.get().isAnonymous()) {
+                    user = repository.getPhotographer("Anonym");
+                }
 
-                final Photo photo = new Photo(new Station.Key(countryCode, stationId), photoBaseUrl + "/fotos/" + countryCode + "/" + stationId + ".jpg", photographer.getName(), photographer.getUrl(), System.currentTimeMillis(), getLicense(photographer.getLicense(), countryCode), flag);
+                final Photo photo = new Photo(new Station.Key(countryCode, stationId), photoBaseUrl + "/fotos/" + countryCode + "/" + stationId + ".jpg", user.get(), System.currentTimeMillis(), getLicense(user.get().getLicense(), countryCode));
                 photosToImport.put(importFile, photo);
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
@@ -135,9 +134,9 @@ public class PhotoImporter {
         }
 
         int importCount = 0;
-        for (final Map.Entry<File, Photo> fotoToImport : photosToImport.entrySet()) {
-            final File importFile = fotoToImport.getKey();
-            final Photo photo = fotoToImport.getValue();
+        for (final Map.Entry<File, Photo> photoToImport : photosToImport.entrySet()) {
+            final File importFile = photoToImport.getKey();
+            final Photo photo = photoToImport.getValue();
             final Optional<StatusLine> status;
             try {
                 Station station = null;

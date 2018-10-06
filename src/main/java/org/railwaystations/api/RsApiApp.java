@@ -10,6 +10,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.jdbi.v3.core.Jdbi;
 import org.railwaystations.api.db.CountryDao;
+import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.resources.*;
 import org.railwaystations.api.writer.PhotographersTxtWriter;
 import org.railwaystations.api.writer.StationsGpxWriter;
@@ -45,8 +46,9 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, config.getDataSourceFactory(), "mariadb");
         final CountryDao countryDao = jdbi.onDemand(CountryDao.class);
+        final UserDao userDao = jdbi.onDemand(UserDao.class);
 
-        final StationsRepository repository = new StationsRepository(config.getMonitor(), countryDao, config.getElasticBackend(), config.getPhotographerLoader(), config.getPhotoBaseUrl());
+        final StationsRepository repository = new StationsRepository(config.getMonitor(), countryDao, config.getElasticBackend(), userDao, config.getPhotoBaseUrl());
 
         environment.jersey().register(new StationsResource(repository));
         environment.jersey().register(new PhotographersResource(repository));

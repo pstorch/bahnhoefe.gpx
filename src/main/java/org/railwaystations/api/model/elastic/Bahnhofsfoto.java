@@ -17,14 +17,11 @@ public class Bahnhofsfoto {
     @JsonProperty("fotolizenz")
     private String license;
 
-    @JsonProperty("fotografenname")
-    private String photographer;
+    @JsonProperty("fotografenid")
+    private Integer photographerId;
 
     @JsonProperty("erfasst")
     private long createdAt;
-
-    @JsonProperty("flag")
-    private String flag;
 
     @JsonProperty("laenderkennzeichen")
     private String countryCode;
@@ -35,16 +32,15 @@ public class Bahnhofsfoto {
 
     public Bahnhofsfoto(final Photo photo) throws MalformedURLException {
         this(photo.getStationKey().getId(), new URL(photo.getUrl()).getPath(),
-                photo.getLicense(), photo.getPhotographer(), photo.getCreatedAt(), photo.getFlag(), photo.getStationKey().getCountry());
+                photo.getLicense(), photo.getPhotographer().getId(), photo.getCreatedAt(), photo.getStationKey().getCountry());
     }
 
-    public Bahnhofsfoto(final String id, final String url, final String license, final String photographer, final long createdAt, final String flag, final String countryCode) {
+    public Bahnhofsfoto(final String id, final String url, final String license, final Integer photographerId, final long createdAt, final String countryCode) {
         this.id = id;
         this.url = url;
         this.license = license;
-        this.photographer = photographer;
+        this.photographerId = photographerId;
         this.createdAt = createdAt;
-        this.flag = flag;
         this.countryCode = countryCode;
     }
 
@@ -72,12 +68,12 @@ public class Bahnhofsfoto {
         this.license = license;
     }
 
-    public String getPhotographer() {
-        return photographer;
+    public Integer getPhotographerId() {
+        return photographerId;
     }
 
-    public void setPhotographer(final String photographer) {
-        this.photographer = photographer;
+    public void setPhotographer(final Integer photographerId) {
+        this.photographerId = photographerId;
     }
 
     public long getCreatedAt() {
@@ -86,14 +82,6 @@ public class Bahnhofsfoto {
 
     public void setCreatedAt(final long createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public String getFlag() {
-        return flag;
-    }
-
-    public void setFlag(final String flag) {
-        this.flag = flag;
     }
 
     public String getCountryCode() {

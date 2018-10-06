@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.railwaystations.api.mail.MockMailer;
-import org.railwaystations.api.model.Photographer;
 import org.railwaystations.api.model.Station;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -30,7 +29,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -341,15 +339,6 @@ public class RsApiAppTest {
                 .post(Entity.entity("", "image/png"));
 
         assertThat(response.getStatus(), is(403));
-    }
-
-    @Test
-    public void photographersLoader() {
-        final Map<String, Photographer> photographers = RULE.getConfiguration().getPhotographerLoader().loadPhotographers();
-        final Photographer photographer = photographers.get("SimoneDoerfling");
-        assertThat(photographer.getName(), is("SimoneDoerfling"));
-        assertThat(photographer.getUrl(), is("http://www.deutschlands-bahnhoefe.de/"));
-        assertThat(photographer.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
     }
 
     public static final class MySuite {

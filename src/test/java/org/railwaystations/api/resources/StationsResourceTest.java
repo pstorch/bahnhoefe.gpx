@@ -7,6 +7,7 @@ import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.model.Station;
+import org.railwaystations.api.model.User;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,11 +25,11 @@ public class StationsResourceTest {
     public void setUp() {
         final Map<Station.Key, Station> stationsXY = new HashMap<>(2);
         final Station.Key key5 = new Station.Key("xy", "5");
-        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "URL", "Jim Knopf", "photographerUrl", null, "CC0")));
+        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0")));
 
         final Map<Station.Key, Station> stationsAB = new HashMap<>(2);
         final Station.Key key3 = new Station.Key("ab", "3");
-        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "URL2", "Peter Pan", "photographerUrl2", null, "CC0 by SA")));
+        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "URL2", new User("Peter Pan", "photographerUrl2", "CC0 by SA"), null, "CC0 by SA")));
 
         final Map<Station.Key, Station> stationsAll = new HashMap<>(2);
         stationsAll.putAll(stationsAB);

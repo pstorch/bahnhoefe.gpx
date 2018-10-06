@@ -11,7 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.model.Registration;
-import org.railwaystations.api.model.elastic.Fotograf;
+import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +92,7 @@ public class RegistrationResource {
     }
 
     private void saveRegistration(@NotNull @Valid final Registration registration) {
-        final Fotograf fotograf = new Fotograf(registration.getNickname(), registration.getLink(), licenseMap.getOrDefault(registration.getLicense(), registration.getLicense()));
+        final User fotograf = new User(registration.getNickname(), registration.getLink(), licenseMap.getOrDefault(registration.getLicense(), registration.getLicense()));
         try (final PrintWriter pw = new PrintWriter(new File(regDir, registration.getNickname() + ".json"), "UTF-8")) {
             MAPPER.writeValue(pw, fotograf);
             pw.flush();

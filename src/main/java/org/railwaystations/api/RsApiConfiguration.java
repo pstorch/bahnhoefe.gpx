@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.loader.PhotographerLoader;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
@@ -30,8 +29,6 @@ public class RsApiConfiguration extends Configuration {
     private Mailer mailer;
 
     private String slackVerificationToken;
-
-    private String photographersUrl;
 
     private String photoBaseUrl;
 
@@ -102,14 +99,6 @@ public class RsApiConfiguration extends Configuration {
 
     public void setSlackVerificationToken(final String slackVerificationToken) {
         this.slackVerificationToken = slackVerificationToken;
-    }
-
-    public PhotographerLoader getPhotographerLoader() {
-        return new PhotographerLoader(photographersUrl, elasticBackend);
-    }
-
-    public void setPhotographersUrl(final String photographersUrl) {
-        this.photographersUrl = photographersUrl;
     }
 
     public String getPhotoBaseUrl() {

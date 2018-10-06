@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.mail.MockMailer;
 import org.railwaystations.api.model.Registration;
-import org.railwaystations.api.model.elastic.Fotograf;
+import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
@@ -38,11 +38,11 @@ public class RegistrationResourceTest {
 
     @Test
     public void testPost() throws IOException {
-        final Registration registration = new Registration("nickname", "nickname@example.com", "license", true, "linking", "link");
+        final Registration registration = new Registration("nickname", "nickname@example.com", "license", true, "link");
         final Response response = resource.post("apiKey", registration);
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, linking='linking', link='link'}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, link='link'}"));
         assertThat(mailer.getText(), is("Hallo nickname,\n\n" +
                 "vielen Dank für Deine Registrierung.\n" +
                 "Dein Upload Token lautet: d3d0f89efee21abcaaa58900ede61ab805ffba34\n" +
@@ -54,7 +54,7 @@ public class RegistrationResourceTest {
 
         final File regFile = new File(new File(workDir, "registrations"), "nickname.json");
         assertThat(regFile.exists(), is(true));
-        final Fotograf fotograf = MAPPER.readValue(regFile, Fotograf.class);
+        final User fotograf = MAPPER.readValue(regFile, User.class);
         assertThat(fotograf.getName(), is("nickname"));
         assertThat(fotograf.getUrl(), is("link"));
         assertThat(fotograf.getLicense(), is("license"));

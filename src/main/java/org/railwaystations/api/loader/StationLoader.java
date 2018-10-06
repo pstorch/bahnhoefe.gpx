@@ -40,7 +40,7 @@ public class StationLoader {
         return country;
     }
 
-    public final Map<Station.Key, Station> loadStations(final Map<String, Photographer> photographers, final String photoBaseUrl) {
+    public final Map<Station.Key, Station> loadStations(final Map<Integer, User> photographers, final String photoBaseUrl) {
         try {
             return fetchStations(fetchPhotos(new HashMap<>(), photographers, photoBaseUrl));
         } catch (final Exception e) {
@@ -50,12 +50,12 @@ public class StationLoader {
         }
     }
 
-    private Map<Station.Key, Photo> fetchPhotos(final Map<Station.Key, Photo> photos, final Map<String, Photographer> photographers, final String photoBaseUrl) throws Exception {
+    private Map<Station.Key, Photo> fetchPhotos(final Map<Station.Key, Photo> photos, final Map<Integer, User> photographers, final String photoBaseUrl) throws Exception {
         elasticBackend.fetchAll(country.getPhotosIndex(), 0, hits -> fetchPhotos(photos, photographers, photoBaseUrl, hits));
         return photos;
     }
 
-    private Void fetchPhotos(final Map<Station.Key, Photo> photos, final Map<String, Photographer> photographers, final String photoBaseUrl, final JsonNode hits) {
+    private Void fetchPhotos(final Map<Station.Key, Photo> photos, final Map<Integer, User> photographers, final String photoBaseUrl, final JsonNode hits) {
         for (int i = 0; i < hits.size(); i++) {
             final Photo photo = createPhoto(getMandatoryAttribute(hits.get(i), StationLoader.SOURCE_ELEMENT), photographers, photoBaseUrl);
             if (photos.get(photo.getStationKey()) != null) {
@@ -66,21 +66,17 @@ public class StationLoader {
         return null;
     }
 
-    private Photo createPhoto(final JsonNode photoJson, final Map<String, Photographer> photographers, final String photoBaseUrl) {
+    private Photo createPhoto(final JsonNode photoJson, final Map<Integer, User> photographers, final String photoBaseUrl) {
         final Bahnhofsfoto bahnhofsfoto;
         try {
             bahnhofsfoto = MAPPER.treeToValue(photoJson, Bahnhofsfoto.class);
         } catch (final JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        return new Photo(new Station.Key(bahnhofsfoto.getCountryCode().toLowerCase(Locale.ENGLISH), bahnhofsfoto.getId()), photoBaseUrl + bahnhofsfoto.getUrl(),
-                bahnhofsfoto.getPhotographer(), getPhotographerUrl(bahnhofsfoto.getPhotographer(), photographers),
-                bahnhofsfoto.getCreatedAt(), StringUtils.trimToEmpty(bahnhofsfoto.getLicense()), getMandatoryAttribute(photoJson, "flag").asText());
-    }
-
-    private String getPhotographerUrl(final String nickname, final Map<String, Photographer> photographers) {
-        final Photographer photographer = photographers.get(nickname);
-        return photographer != null ? photographer.getUrl() : null;
+        User user = photographers.get(bahnhofsfoto.getPhotographerId());
+        return new Photo(new Station.Key(bahnhofsfoto.getCountryCode().toLowerCase(Locale.ENGLISH),
+                bahnhofsfoto.getId()), photoBaseUrl + bahnhofsfoto.getUrl(), user,
+                bahnhofsfoto.getCreatedAt(), StringUtils.trimToEmpty(bahnhofsfoto.getLicense()));
     }
 
     private Map<Station.Key, Station> fetchStations(final Map<Station.Key, Photo> photos) throws Exception {

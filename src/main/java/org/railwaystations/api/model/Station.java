@@ -63,12 +63,12 @@ public class Station {
 
     public void setPhoto(final Photo photo) {
         if (photo != null) {
-            this.photographer = photo.getPhotographer();
+            this.photographer = photo.getPhotographer().getDisplayName();
             this.photoUrl = photo.getUrl();
             this.license = photo.getLicense();
             this.licenseUrl = photo.getLicenseUrl();
-            this.photographerUrl = photo.getPhotographerUrl();
-            this.statUser = photo.getStatUser();
+            this.photographerUrl = photo.getPhotographer().getDisplayUrl();
+            this.statUser = photo.getPhotographer().getName();
             this.createdAt = photo.getCreatedAt();
         } else {
             this.photographer = null;

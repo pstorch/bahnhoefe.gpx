@@ -11,6 +11,7 @@ import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.model.Station;
+import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
@@ -39,7 +40,7 @@ public class PhotoUploadResourceTest {
         final Station.Key key4711 = new Station.Key("de", "4711");
         stationsMap.put(key4711, new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
         final Station.Key key1234 = new Station.Key("de", "1234");
-        stationsMap.put(key1234, new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", "Jim Knopf", "photographerUrl", null, "CC0")));
+        stationsMap.put(key1234, new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0")));
 
         tempDir = Files.createTempDirectory("rsapi");
         final StationsRepository repository = Mockito.mock(StationsRepository.class);
@@ -48,7 +49,7 @@ public class PhotoUploadResourceTest {
         resource = new PhotoUploadResource(repository, "apiKey", tokenGenerator, tempDir.toString(), monitor);
     }
 
-    private Response whenPostImage(final String content, final String uploadToken, final String nickname, final String email, final String stationId, final String country) throws UnsupportedEncodingException {
+    private Response whenPostImage(final String content, final String uploadToken, final String nickname, final String email, final String stationId, final String country) {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
         return resource.post(is, "apiKey", uploadToken, nickname, email,stationId, country, "image/jpeg");

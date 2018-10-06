@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
-import org.railwaystations.api.model.Photographer;
+import org.railwaystations.api.model.User;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.elastic.Bahnhofsfoto;
 import org.railwaystations.api.monitoring.LoggingMonitor;
@@ -43,13 +43,13 @@ public class PhotoImporterTest {
         photoDir = Files.createTempDirectory("rsapiPhoto");
         repository = Mockito.mock(StationsRepository.class);
         Mockito.when(repository.getCountry("de")).thenReturn(Optional.of(new Country("de")));
-        Mockito.when(repository.getPhotographer("Anonym")).thenReturn(new Photographer("Anonym", null, "CC0 1.0 Universell (CC0 1.0)"));
-        Mockito.when(repository.getPhotographer("@storchp")).thenReturn(new Photographer("@storchp", null, "CC0 1.0 Universell (CC0 1.0)"));
-        Mockito.when(repository.findPhotographerByLevenshtein("@GabyBecker")).thenReturn(Optional.of(new Photographer("Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)")));
+        Mockito.when(repository.getPhotographer("Anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, null, true, true, null)));
+        Mockito.when(repository.getPhotographer("@storchp")).thenReturn(Optional.of(new User("@storchp", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, null, true, false, null)));
+        Mockito.when(repository.findPhotographerByLevenshtein("@GabyBecker")).thenReturn(Optional.of(new User("Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)", 2, null, null, true, false, null)));
         final Station felde = new Station(new Station.Key("de", "8009"), "Felde", null, null);
         Mockito.when(repository.findByKey(felde.getKey())).thenReturn(felde);
         final Station.Key hannoverKey = new Station.Key("de", "6913");
-        final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", "", "", 0L, ""));
+        final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", new User("", "", ""), 0L, ""));
         Mockito.when(repository.findByKey(hannover.getKey())).thenReturn(hannover);
 
         importer = new PhotoImporter(repository, new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), new ElasticBackend(""), "https://railway-stations.org") {
@@ -79,7 +79,7 @@ public class PhotoImporterTest {
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("imported Felde for @storchp"));
-        assertPostedPhoto("@storchp","de", "8009", "0");
+        assertPostedPhoto(1,"de", "8009", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
         assertThat(repository.findByKey(key).hasPhoto(), is(true));
@@ -111,7 +111,7 @@ public class PhotoImporterTest {
         final File importFile = createFile("cz", "@storchp", 4711);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("imported unknown station for @storchp"));
-        assertPostedPhoto("@storchp","cz", "4711", "0");
+        assertPostedPhoto(1,"cz", "4711", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "cz/4711.jpg").exists(), is(true));
     }
@@ -121,7 +121,7 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@GabyBecker", 8009, ".JPG");
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("imported Felde for Gaby Becker"));
-        assertPostedPhoto("Gaby Becker", "de", "8009", "0");
+        assertPostedPhoto(2, "de", "8009", "0");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
     }
@@ -131,18 +131,17 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@RecumbentTravel", 8009);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("imported Felde for Anonym"));
-        assertPostedPhoto("Anonym", "de", "8009", "1");
+        assertPostedPhoto(0, "de", "8009", "1");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
     }
 
-    private void assertPostedPhoto(final String photographerName, final String countryCode, final String stationId, final String flag) {
-        assertThat(postedBahnhofsfoto.getPhotographer(), is(photographerName));
+    private void assertPostedPhoto(final Integer photographerId, final String countryCode, final String stationId, final String flag) {
+        assertThat(postedBahnhofsfoto.getPhotographerId(), is(photographerId));
         assertThat(postedBahnhofsfoto.getCountryCode(), is(countryCode));
         assertThat(postedBahnhofsfoto.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
         assertThat(postedBahnhofsfoto.getUrl(), is("/fotos/" + countryCode + "/" + stationId + ".jpg"));
         assertThat(postedBahnhofsfoto.getId(), is(stationId));
-        assertThat(postedBahnhofsfoto.getFlag(), is(flag));
         assertThat(postedBahnhofsfoto.getCreatedAt() / 10000, is(System.currentTimeMillis() / 10000));
     }
 
@@ -160,7 +159,7 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportStationNotFound() throws IOException {
-        final File importFile = createFile("de", "Anonym", 99999999);
+        final File importFile = createFile("de", "@GabyBecker", 99999999);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("Station 99999999 not found"));
         assertThat(postedBahnhofsfoto, nullValue());

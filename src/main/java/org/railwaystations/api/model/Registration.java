@@ -18,22 +18,17 @@ public class Registration {
 
     private final boolean photoOwner;
 
-    @NotEmpty
-    private final String linking;
-
     private final String link;
 
     public Registration(@JsonProperty("nickname") final String nickname,
                         @JsonProperty("email") final String email,
                         @JsonProperty("license") final String license,
                         @JsonProperty("photoOwner") final boolean photoOwner,
-                        @JsonProperty("linking") final String linking,
                         @JsonProperty("link") final String link) {
         this.nickname = StringUtils.trimToEmpty(nickname);
         this.email = StringUtils.trimToEmpty(email);
         this.license = license;
         this.photoOwner = photoOwner;
-        this.linking = linking;
         this.link = StringUtils.trimToEmpty(link);
     }
 
@@ -57,11 +52,6 @@ public class Registration {
         return photoOwner;
     }
 
-    @JsonProperty("linking")
-    public String getLinking() {
-        return linking;
-    }
-
     @JsonProperty("link")
     public String getLink() {
         return link;
@@ -74,7 +64,6 @@ public class Registration {
                 ", email='" + email + '\'' +
                 ", license='" + license + '\'' +
                 ", photoOwner=" + photoOwner +
-                ", linking='" + linking + '\'' +
                 ", link='" + link + '\'' +
                 '}';
     }
