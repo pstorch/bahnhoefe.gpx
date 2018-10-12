@@ -36,6 +36,9 @@ public class Station {
     private String license;
 
     @JsonProperty
+    private String licenseUrl;
+
+    @JsonProperty
     private Long createdAt;
 
     @JsonIgnore
@@ -134,6 +137,14 @@ public class Station {
 
     public String getLicense() {
         return license;
+    }
+
+    public String getLicenseUrl() {
+        return licenseUrl;
+    }
+
+    public void setLicenseUrl(String licenseUrl) {
+        this.licenseUrl = licenseUrl;
     }
 
     public String getPhotographerUrl() {
