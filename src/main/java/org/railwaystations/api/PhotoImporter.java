@@ -185,6 +185,10 @@ public class PhotoImporter {
         return Optional.of(statusLine);
     }
 
+    /**
+     * Gets the applicable license for the given country.
+     * We need to override the license for france, because of limitations of the "Freedom of panorama" in that country.
+     */
     private String getLicense(final String photographerLicense, final String countryCode) {
         return "fr".equals(countryCode) ? "CC BY-NC 4.0 International" : photographerLicense;
     }

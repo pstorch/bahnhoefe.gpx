@@ -54,7 +54,7 @@ public class RegistrationResourceTest {
         verify(userDao, never()).updateTokenSalt(anyInt(), any(Long.class));
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, link='link'}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, link='link', anonymous=false}"));
         assertThat(mailer.getText().matches("Hallo nickname,\n\n" +
                 "vielen Dank für Deine Registrierung.\n" +
                 "Dein Upload Token lautet: .*\n" +
@@ -65,6 +65,15 @@ public class RegistrationResourceTest {
         assertThat(mailer.getQrCode(), notNullValue());
 
         verifyNoMoreInteractions(userDao);
+    }
+
+    @Test
+    public void testNewUserAnonymous() {
+        final User registration = new User("nickname", "nickname@example.com", "license", true, "link", true);
+        final Response response = resource.post("apiKey", registration);
+
+        assertThat(response.getStatus(), equalTo(202));
+        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, link='link', anonymous=true}"));
     }
 
     @Test
@@ -83,7 +92,7 @@ public class RegistrationResourceTest {
         final Response response = resource.post("apiKey", registration);
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='existing', email='existing@example.com', license='license', photoOwner=true, link='link'}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='existing', email='existing@example.com', license='license', photoOwner=true, link='link', anonymous=false}"));
     }
 
     @Test

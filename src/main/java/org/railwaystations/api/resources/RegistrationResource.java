@@ -81,9 +81,9 @@ public class RegistrationResource {
         sendTokenByMail(registration);
         saveRegistration(registration, existing);
         monitor.sendMessage(
-                String.format("New Registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s'}",
+                String.format("New Registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s', anonymous=%s}",
                         registration.getName(), registration.getEmail(), registration.getLicense(),
-                        registration.isOwnPhotos(), registration.getUrl()));
+                        registration.isOwnPhotos(), registration.getUrl(), registration.isAnonymous()));
 
         return Response.accepted().build();
     }

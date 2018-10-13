@@ -12,8 +12,10 @@ public class TokenGenerator {
 
     public String buildFor(final String nickname, final String email, final Long userSalt) {
         if (userSalt != null) {
-            return DigestUtils.sha1Hex(salt + "-" + nickname + "-" + email + "-" + userSalt);
+            return DigestUtils.sha1Hex(salt + "-" + email + "-" + userSalt);
         }
+
+        // for backward compatibility
         return DigestUtils.sha1Hex(salt + "-" + nickname + "-" + email);
     }
 

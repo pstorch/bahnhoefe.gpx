@@ -190,8 +190,7 @@
     </changeSet>
 
     <changeSet id="4" author="pstorch" context="junit or test">
-        <loadData file="test_users.csv"
-                  tableName="users">
+        <loadData file="test_users.csv" tableName="users">
             <column name="id" type="numeric"/>
             <column name="name" type="string"/>
             <column name="normalizedName" type="string"/>
@@ -199,6 +198,80 @@
             <column name="ownPhotos" type="boolean"/>
             <column name="anonymous" type="boolean"/>
             <column name="license" type="string"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet id="5" author="pstorch">
+        <createTable tableName="stations">
+            <column name="countryCode" type="char(2)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id" type="varchar(30)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uicibnr" type="integer"/>
+            <column name="dbibnr" type="integer"/>
+            <column name="DS100" type="varchar(30)"/>
+            <column name="title" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lat" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lon" type="double">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="6" author="pstorch">
+        <createTable tableName="photos">
+            <column name="countryCode" type="char(2)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id" type="varchar(30)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="url" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="license" type="varchar(100)"/>
+            <column name="photographerId" type="integer">
+                <constraints nullable="false" referencedTableName="users" referencedColumnNames="id" foreignKeyName="fk_user"/>
+            </column>
+            <column name="createdAt" type="long">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="countryCode, id"
+                                 baseTableName="photos"
+                                 constraintName="fk_station"
+                                 referencedColumnNames="countryCode, id"
+                                 referencedTableName="stations"/>
+    </changeSet>
+
+    <changeSet id="7" author="pstorch" context="junit or test">
+        <loadData file="test_stations.csv" tableName="stations">
+            <column name="countryCode" type="string"/>
+            <column name="id" type="string"/>
+            <column name="uicibnr" type="numeric"/>
+            <column name="dbibnr" type="numeric"/>
+            <column name="DS100" type="string"/>
+            <column name="title" type="string"/>
+            <column name="lat" type="numeric"/>
+            <column name="lon" type="numeric"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet id="8" author="pstorch" context="junit or test">
+        <loadData file="test_photos.csv" tableName="photos">
+            <column name="countryCode" type="string"/>
+            <column name="id" type="string"/>
+            <column name="url" type="string"/>
+            <column name="license" type="string"/>
+            <column name="photographerId" type="numeric"/>
+            <column name="createdAt" type="numeric"/>
         </loadData>
     </changeSet>
 
