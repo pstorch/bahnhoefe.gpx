@@ -338,6 +338,9 @@ definitions:
       license:
         type: string
         description: License of the photo, clients need to link to an online version of the license text
+      licenseUrl:
+        type: string
+        description: The URL of the license text. Clients should use this to link to the online version of the license text
       lat:
         type: number
         format: double
