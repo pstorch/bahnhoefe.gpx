@@ -76,7 +76,7 @@ public class PhotoUploadResourceTest {
 
     @Test
     public void testPostSomeUserWithTokenSalt() throws IOException {
-        final Response response = whenPostImage("image-content", "3986e59851d7bce444e2194e6fe806d4467f72d1", "@someuser", "someuser@example.com","4711", "de");
+        final Response response = whenPostImage("image-content", "e96fe20af2b4d65dec4b60692dfabd54107a0791", "@someuser", "someuser@example.com","4711", "de");
 
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "de/@someuser-4711.jpg");
