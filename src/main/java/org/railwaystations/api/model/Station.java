@@ -36,6 +36,9 @@ public class Station {
     private String license;
 
     @JsonProperty
+    private String licenseUrl;
+
+    @JsonProperty
     private Long createdAt;
 
     @JsonIgnore
@@ -63,6 +66,7 @@ public class Station {
             this.photographer = photo.getPhotographer();
             this.photoUrl = photo.getUrl();
             this.license = photo.getLicense();
+            this.licenseUrl = photo.getLicenseUrl();
             this.photographerUrl = photo.getPhotographerUrl();
             this.statUser = photo.getStatUser();
             this.createdAt = photo.getCreatedAt();
@@ -70,6 +74,7 @@ public class Station {
             this.photographer = null;
             this.photoUrl = null;
             this.license = null;
+            this.licenseUrl = null;
             this.photographerUrl = null;
             this.statUser = null;
             this.createdAt = null;
@@ -134,6 +139,10 @@ public class Station {
 
     public String getLicense() {
         return license;
+    }
+
+    public String getLicenseUrl() {
+        return licenseUrl;
     }
 
     public String getPhotographerUrl() {

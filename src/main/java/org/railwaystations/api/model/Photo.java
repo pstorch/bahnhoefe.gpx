@@ -4,15 +4,26 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class Photo {
 
     public static final String FLAG_DEFAULT = "0";
     private static final BiMap<String, String> FLAGS = HashBiMap.create();
+    private static final Map<String, String> LICENSES = new HashMap<>();
 
     static {
         FLAGS.put("1", "recumbenttravel");
+    }
+
+    static {
+        LICENSES.put("CC BY 3.0", "https://creativecommons.org/licenses/by/3.0/");
+        LICENSES.put("CC BY-NC 4.0 International", "https://creativecommons.org/licenses/by-nc/4.0/");
+        LICENSES.put("CC BY-NC-SA 3.0 DE", "https://creativecommons.org/licenses/by-nc-sa/3.0/de/");
+        LICENSES.put("CC BY-SA 4.0", "https://creativecommons.org/licenses/by-sa/4.0/");
+        LICENSES.put("CC0 1.0 Universell (CC0 1.0)", "https://creativecommons.org/publicdomain/zero/1.0/");
     }
 
     private final Station.Key stationKey;
@@ -21,6 +32,7 @@ public class Photo {
     private final String photographerUrl;
     private final Long createdAt;
     private final String license;
+    private final String licenseUrl;
     private final String statUser;
     private final String flag;
 
@@ -35,6 +47,7 @@ public class Photo {
         this.photographerUrl = photographerUrl;
         this.createdAt = createdAt;
         this.license = license;
+        this.licenseUrl = LICENSES.get(license);
         this.flag = flag;
         this.statUser = getStatUser(flag, photographer);
     }
@@ -64,6 +77,10 @@ public class Photo {
 
     public String getLicense() {
         return license;
+    }
+
+    public String getLicenseUrl() {
+        return licenseUrl;
     }
 
     public String getPhotographerUrl() {
