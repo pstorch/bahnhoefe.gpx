@@ -1,11 +1,11 @@
 package org.railwaystations.api.model;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class PhotoTest {
 
@@ -19,8 +19,8 @@ public class PhotoTest {
         "CC BY-NC-SA 3.0 DE, https://creativecommons.org/licenses/by-nc-sa/3.0/de/",
         "CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/",
         "CC0 1.0 Universell (CC0 1.0), https://creativecommons.org/publicdomain/zero/1.0/" })
-    public void license2LicenseUrlMapping(String license, String licenseUrl) {
-        Photo photo = new Photo(TEST_KEY, "url", "photographer", "photographerUrl", null, license);
+    public void license2LicenseUrlMapping(final String license, final String licenseUrl) {
+        final Photo photo = new Photo(TEST_KEY, "url", "photographer", "photographerUrl", null, license);
         assertEquals(licenseUrl, photo.getLicenseUrl());
     }
 
@@ -28,8 +28,8 @@ public class PhotoTest {
      * Tests if the license URL is <code>null</code> for an unknown license.
      */
     @Test
-    public void license2LicenseUrlMapping_UnknownLicense() {
-        Photo photo = new Photo(TEST_KEY, "url", "photographer", "photographerUrl", null, "unknown license name");
+    public void license2LicenseUrlMappingUnknownLicense() {
+        final Photo photo = new Photo(TEST_KEY, "url", "photographer", "photographerUrl", null, "unknown license name");
         assertNull(photo.getLicenseUrl());
     }
 
