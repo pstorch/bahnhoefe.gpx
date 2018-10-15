@@ -76,12 +76,9 @@ public class Station {
 
             this.photoUrl = photo.getUrl();
             this.license = photo.getLicense();
-<<<<<<< HEAD
             this.licenseUrl = photo.getLicenseUrl();
             this.photographerUrl = photo.getPhotographer().getDisplayUrl();
             this.statUser = photo.getPhotographer().getName();
-=======
->>>>>>> complete refactoring to User in DB
             this.createdAt = photo.getCreatedAt();
         } else {
             this.photographer = null;
