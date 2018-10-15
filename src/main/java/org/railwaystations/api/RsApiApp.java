@@ -11,6 +11,7 @@ import io.dropwizard.setup.Environment;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.h2.H2DatabasePlugin;
 import org.railwaystations.api.db.CountryDao;
+import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.resources.*;
 import org.railwaystations.api.writer.PhotographersTxtWriter;
@@ -50,9 +51,10 @@ public class RsApiApp extends Application<RsApiConfiguration> {
 
         final CountryDao countryDao = jdbi.onDemand(CountryDao.class);
         final UserDao userDao = jdbi.onDemand(UserDao.class);
+        final PhotoDao photoDao = jdbi.onDemand(PhotoDao.class);
 
         final StationsRepository repository = new StationsRepository(config.getMonitor(), countryDao,
-                config.getElasticBackend(), userDao, config.getPhotoBaseUrl());
+                userDao, config.getPhotoBaseUrl());
 
         environment.jersey().register(new StationsResource(repository));
         environment.jersey().register(new PhotographersResource(repository));
@@ -63,15 +65,15 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new RegistrationResource(
                 config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer(), userDao));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
-                new PhotoImporter(repository, config.getMonitor(), config.getWorkDir(), config.getPhotoDir(),
-                        config.getElasticBackend(), config.getPhotoBaseUrl())));
+                new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir(),
+                        config.getPhotoBaseUrl())));
         environment.jersey().register(new StationsGpxWriter());
         environment.jersey().register(new StationsTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());
         environment.jersey().register(new PhotographersTxtWriter());
         environment.jersey().property("jersey.config.server.mediaTypeMappings",
                 "gpx : application/gpx+xml, json : application/json, txt : text/plain");
-        repository.refresh(null);
+        config.getMonitor().sendMessage(repository.getCountryStatisticMessage());
     }
 
     private static class RsApiConfigurationMigrationsBundle extends MigrationsBundle<RsApiConfiguration> {

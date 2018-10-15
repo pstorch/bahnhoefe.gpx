@@ -32,8 +32,6 @@ public class RsApiConfiguration extends Configuration {
 
     private String photoBaseUrl;
 
-    private ElasticBackend elasticBackend;
-
     private String photoDir;
 
     @Valid
@@ -115,14 +113,6 @@ public class RsApiConfiguration extends Configuration {
 
     public void setPhotoDir(final String photoDir) {
         this.photoDir = photoDir;
-    }
-
-    public ElasticBackend getElasticBackend() {
-        return elasticBackend;
-    }
-
-    public void setElasticBackend(final ElasticBackend elasticBackend) {
-        this.elasticBackend = elasticBackend;
     }
 
 }

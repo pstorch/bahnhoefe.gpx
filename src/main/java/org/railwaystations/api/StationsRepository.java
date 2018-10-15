@@ -1,13 +1,8 @@
 package org.railwaystations.api;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.UserDao;
-import org.railwaystations.api.loader.StationLoader;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Statistic;
@@ -15,38 +10,22 @@ import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.Monitor;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class StationsRepository {
 
-    private static final LevenshteinDistance LEVENSHTEIN_DISTANCE = new LevenshteinDistance();
-
     private final CountryDao countryDao;
     private final UserDao userDao;
     private final Monitor monitor;
     private final String photoBaseUrl;
-    private final ElasticBackend elasticBackend;
 
-    private LoadingCache<String, Map<Station.Key, Station>> cache;
-    private Set<Country> countries;
-
-    public StationsRepository(final Monitor monitor, final CountryDao countryDao, final ElasticBackend elasticBackend, final UserDao userDao, final String photoBaseUrl) {
+    public StationsRepository(final Monitor monitor, final CountryDao countryDao, final UserDao userDao, final String photoBaseUrl) {
         super();
         this.monitor = monitor;
         this.countryDao = countryDao;
         this.userDao = userDao;
-        this.elasticBackend = elasticBackend;
         this.photoBaseUrl = photoBaseUrl;
-
-        createNewStationsCache();
-    }
-
-    private void createNewStationsCache() {
-        this.countries = countryDao.list();
-        this.cache = CacheBuilder.newBuilder().refreshAfterWrite(60, TimeUnit.MINUTES).build(
-                new StationsCacheLoader(monitor, countries, elasticBackend, userDao, photoBaseUrl));
     }
 
     public Map<Station.Key, Station> get(final String countryCode) {
@@ -61,15 +40,7 @@ public class StationsRepository {
     }
 
     public Set<Country> getCountries() {
-        return Collections.unmodifiableSet(countries);
-    }
-
-    public void refresh(final String responseUrl) {
-        final Thread refresher = new Thread(() -> {
-            createNewStationsCache();
-            monitor.sendMessage(responseUrl, getCountryStatisticMessage());
-        });
-        refresher.start();
+        return Collections.unmodifiableSet(countryDao.list());
     }
 
     public String getCountryStatisticMessage() {
@@ -129,21 +100,6 @@ public class StationsRepository {
         return new Statistic(total.intValue(), withPhoto.intValue(), withoutPhoto.intValue(), photographers.size());
     }
 
-    public Optional<User> getPhotographer(final String photographerName) {
-        return userDao.findByNormalizedName(photographerName);
-    }
-
-    public Optional<Country> getCountry(final String countryCode) {
-        return countries.stream().filter(c -> c.getCode().equals(countryCode)).findFirst();
-    }
-
-    public Optional<User> findPhotographerByLevenshtein(final String photographerName) {
-        return userDao.list()
-                .stream().filter(p -> LEVENSHTEIN_DISTANCE.apply(p.getName(), photographerName) < 3)
-                .sorted((p1, p2) -> LEVENSHTEIN_DISTANCE.apply(p1.getName(), photographerName).compareTo(LEVENSHTEIN_DISTANCE.apply(p2.getName(), photographerName)))
-                .findFirst();
-    }
-
     public Station findByKey(final Station.Key key) {
         final Map<Station.Key, Station> keyStationMap = get(key.getCountry());
         if (keyStationMap != null) {
@@ -152,36 +108,4 @@ public class StationsRepository {
         return null;
     }
 
-    private static class StationsCacheLoader extends CacheLoader<String, Map<Station.Key, Station>> {
-        private final Monitor monitor;
-        private final Set<Country> countries;
-        private final ElasticBackend elasticBackend;
-        private final UserDao userDao;
-        private final String photoBaseUrl;
-
-        public StationsCacheLoader(final Monitor slack, final Set<Country> countries, final ElasticBackend elasticBackend,
-                                   final UserDao userDao, final String photoBaseUrl) {
-            this.monitor = slack;
-            this.countries = countries;
-            this.elasticBackend = elasticBackend;
-            this.userDao = userDao;
-            this.photoBaseUrl = photoBaseUrl;
-        }
-
-        @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-        public Map<Station.Key, Station> load(final String countryCode) {
-            try {
-                for (final Country country : countries) {
-                    final StationLoader loader = new StationLoader(country, monitor, elasticBackend);
-                    if (loader.getCountry().getCode().equals(countryCode)) {
-                        return loader.loadStations(User.toIdMap(userDao.list()), photoBaseUrl);
-                    }
-                }
-            } catch (final Exception e) {
-                monitor.sendMessage(e.getMessage());
-                throw e;
-            }
-            return Collections.emptyMap();
-        }
-    }
 }

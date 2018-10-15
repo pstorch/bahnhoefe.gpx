@@ -1,15 +1,14 @@
 package org.railwaystations.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.ContentType;
+import org.railwaystations.api.db.CountryDao;
+import org.railwaystations.api.db.PhotoDao;
+import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
-import org.railwaystations.api.model.User;
 import org.railwaystations.api.model.Station;
-import org.railwaystations.api.model.elastic.Bahnhofsfoto;
+import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,24 +23,27 @@ import java.util.regex.Pattern;
 
 public class PhotoImporter {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final Logger LOG = LoggerFactory.getLogger(PhotoImporter.class);
     private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-(\\d+).jpe?g", Pattern.CASE_INSENSITIVE);
     private static final Executor EXECUTOR = Executors.newSingleThreadExecutor();
 
     private final StationsRepository repository;
+    private final UserDao userDao;
+    private final PhotoDao photoDao;
+    private final CountryDao countryDao;
     private final Monitor monitor;
     private final File uploadDir;
     private final File photoDir;
-    private final ElasticBackend elasticBackend;
     private final String photoBaseUrl;
 
-    public PhotoImporter(final StationsRepository repository, final Monitor monitor, final String uploadDir, final String photoDir, final ElasticBackend elasticBackend, final String photoBaseUrl) {
+    public PhotoImporter(final StationsRepository repository, final UserDao userDao, final PhotoDao photoDao, final CountryDao countryDao, final Monitor monitor, final String uploadDir, final String photoDir, final String photoBaseUrl) {
         this.repository = repository;
+        this.userDao = userDao;
+        this.photoDao = photoDao;
+        this.countryDao = countryDao;
         this.monitor = monitor;
         this.uploadDir = new File(uploadDir);
         this.photoDir = new File(photoDir);
-        this.elasticBackend = elasticBackend;
         this.photoBaseUrl = photoBaseUrl;
     }
 
@@ -97,7 +99,7 @@ public class PhotoImporter {
             report.add(new ReportEntry(true, countryDir.getAbsolutePath(), "does not exist and could not be created"));
             return;
         }
-        final Optional<Country> country = repository.getCountry(countryCode);
+        final Optional<Country> country = countryDao.findById(countryCode);
         final Collection<File> files = FileUtils.listFiles(importDir, null, false);
 
         final Map<File, Photo> photosToImport = new HashMap<>();
@@ -112,10 +114,7 @@ public class PhotoImporter {
                 final String stationId = matcher.group(2);
                 final String photographerName = matcher.group(1);
 
-                Optional<User> user = repository.getPhotographer(photographerName);
-                if (!user.isPresent()) {
-                    user = repository.findPhotographerByLevenshtein(photographerName);
-                }
+                Optional<User> user = userDao.findByNormalizedName(User.normalize(photographerName));
                 if (!user.isPresent()) {
                     report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
@@ -152,11 +151,7 @@ public class PhotoImporter {
                     continue;
                 }
 
-                status = postToElastic(new Bahnhofsfoto(photo));
-                if (status.isPresent() && status.get().getStatusCode() != 201) {
-                    report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Elastic error response: " + status.get().toString()));
-                    continue;
-                }
+                photoDao.insert(photo);
 
                 moveFile(importFile, countryDir, photo.getStationKey().getId());
                 LOG.info("Photo " + importFile.getAbsolutePath() + " imported");
@@ -177,24 +172,12 @@ public class PhotoImporter {
         LOG.info("Imported " + importCount + " for " + countryCode);
     }
 
-    protected Optional<StatusLine> postToElastic(final Bahnhofsfoto bahnhofsfoto) throws Exception {
-        final StatusLine statusLine;
-        try (final CloseableHttpResponse response = elasticBackend.post(getPhotoUrl(bahnhofsfoto.getCountryCode()), MAPPER.writeValueAsString(bahnhofsfoto), ContentType.APPLICATION_JSON)) {
-            statusLine = response.getStatusLine();
-        }
-        return Optional.of(statusLine);
-    }
-
     /**
      * Gets the applicable license for the given country.
      * We need to override the license for france, because of limitations of the "Freedom of panorama" in that country.
      */
     private String getLicense(final String photographerLicense, final String countryCode) {
         return "fr".equals(countryCode) ? "CC BY-NC 4.0 International" : photographerLicense;
-    }
-
-    private String getPhotoUrl(final String countryCode) {
-        return "/bahnhofsfotos" + countryCode + "/bahnhofsfoto";
     }
 
     private void moveFile(final File importFile, final File countryDir, final String stationId) throws IOException {

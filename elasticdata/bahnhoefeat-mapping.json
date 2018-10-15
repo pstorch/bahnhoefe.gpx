@@ -1,1 +1,0 @@
-{"bahnhoefeat":{"mappings":{"bahnhofat":{"properties":{"geometry":{"properties":{"coordinates":{"type":"double"},"type":{"type":"string"}}},"properties":{"properties":{"UICIBNR":{"type":"long"},"abkuerzung":{"type":"string"},"countryCode":{"type":"string"},"name":{"type":"string"}}},"type":{"type":"string"}}}}}}

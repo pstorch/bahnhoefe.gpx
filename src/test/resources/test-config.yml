@@ -9,7 +9,5 @@ apiKey: ${API_KEY:-dummy}
 salt: ${SALT:-dummy}
 mailer:
   "@class": org.railwaystations.api.mail.MockMailer
-elasticBackend:
-  baseUrl: ${ELASTIC_BASE_URL:-}
 photoBaseUrl: https://fotos.railway-stations.org
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

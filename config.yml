@@ -28,6 +28,4 @@ mailer:
 #  from: ${SMTP_FROM:-}
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
-elasticBackend:
-  baseUrl: ${ELASTIC_BASE_URL:-http://localhost:9200}
 photoBaseUrl: https://fotos.railway-stations.org

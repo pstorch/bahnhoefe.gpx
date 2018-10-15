@@ -40,10 +40,6 @@ public class SlackCommandResource {
         if (!StringUtils.equals(verificationToken, token)) {
             throw new WebApplicationException(Response.Status.UNAUTHORIZED);
         }
-        if (StringUtils.equals("refresh", text)) {
-            repository.refresh(responseUrl);
-            return new SlackResponse(ResponseType.in_channel, "Refreshing caches");
-        }
         if (StringUtils.equals("import", text)) {
             photoImporter.importPhotosAsync();
             return new SlackResponse(ResponseType.in_channel, "Importing photos");
@@ -80,7 +76,7 @@ public class SlackCommandResource {
                 return new SlackResponse(ResponseType.in_channel, toMessage(station));
             }
         }
-        return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi refresh'%n- '/rsapi search <station-name>'%n- '/rsapi show <country-code> <station-id>%n- '/rsapi import'%n"));
+        return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi search <station-name>'%n- '/rsapi show <country-code> <station-id>%n- '/rsapi import'%n"));
     }
 
     private String toMessage(final List<Station> stationList) {

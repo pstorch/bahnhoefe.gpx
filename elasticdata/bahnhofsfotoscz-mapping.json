@@ -1,1 +1,0 @@
-{"bahnhofsfotoscz":{"mappings":{"bahnhofsfoto":{"properties":{"BahnhofsID":{"type":"string"},"bahnhofsfoto":{"type":"string"},"erfasst":{"type":"long"},"flag":{"type":"string"},"fotografenname":{"type":"string"},"fotolizenz":{"type":"string"},"laenderkennzeichen":{"type":"string"}}}}}}
