@@ -56,7 +56,7 @@ public class RsApiAppTest {
     @Test
     public void stationsAllCountries() throws IOException {
         final Station[] stations = assertLoadStations("/stations", 200);
-        assertThat(stations.length, is(6098));
+        assertThat(stations.length, is(5880));
         assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
         assertThat(findByKey(stations, new Station.Key("ch", "8501042")), notNullValue());
     }
@@ -85,8 +85,8 @@ public class RsApiAppTest {
 
     @Test
     public void stationsDePhotograph() throws IOException {
-        final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=@hessenpfaelzer", "stations"), 200);
-        assertThat(findByKey(stations, new Station.Key("de", "7066")), notNullValue());
+        final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=@khgdrn", "stations"), 200);
+        assertThat(findByKey(stations, new Station.Key("de", "6932")), notNullValue());
     }
 
     @Test
@@ -109,8 +109,8 @@ public class RsApiAppTest {
 
     @Test
     public void stationsDeFromDgerkrathWithinMax5km() throws IOException {
-        final Station[] stations = assertLoadStations("/de/stations?maxDistance=5&lat=51.2670337567818&lon=7.19520717859267&photographer=@Dgerkrath", 200);
-        assertThat(stations.length, is(3));
+        final Station[] stations = assertLoadStations("/de/stations?maxDistance=5&lat=49.0065325041363&lon=13.2770955562592&photographer=@stefanopitz", 200);
+        assertThat(stations.length, is(2));
     }
 
     @Test
@@ -201,7 +201,7 @@ public class RsApiAppTest {
         final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
-        assertThat(jsonNode.size(), is(31));
+        assertThat(jsonNode.size(), is(4));
     }
 
     @Test
@@ -211,7 +211,7 @@ public class RsApiAppTest {
         final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
-        assertThat(jsonNode.size(), is(35));
+        assertThat(jsonNode.size(), is(6));
     }
 
     @Test
@@ -228,7 +228,7 @@ public class RsApiAppTest {
                 final Matcher matcher = pattern.matcher(line);
                 assertThat(matcher.matches(), is(true));
             }
-            assertThat(count, is(31));
+            assertThat(count, is(4));
         }
     }
 
@@ -280,13 +280,13 @@ public class RsApiAppTest {
         assertThat(response.getStatus(), is(202));
         assertThat(mailer.getTo(), is("nick.name@example.com"));
         assertThat(mailer.getSubject(), is("Bahnhofsfotos upload token"));
-        assertThat(mailer.getText(), is("Hallo nickname,\n\n" +
+        assertThat(mailer.getText().matches("Hallo nickname,\n\n" +
                 "vielen Dank für Deine Registrierung.\n" +
-                "Dein Upload Token lautet: edbfc44727a6fd4f5b029aff21861a667a6b4195\n" +
-                "Klicke bitte auf http://railway-stations.org/uploadToken/edbfc44727a6fd4f5b029aff21861a667a6b4195 um ihn in die App zu übernehmen.\n" +
+                "Dein Upload Token lautet: .*\n" +
+                "Klicke bitte auf http://railway-stations.org/uploadToken/.* um ihn in die App zu übernehmen.\n" +
                 "Alternativ kannst Du auch mit Deinem Smartphone den angehängten QR-Code scannen oder den Code manuell in der Bahnhofsfoto App unter 'Meine Daten' eintragen.\n\n" +
                 "Viele Grüße\n" +
-                "Dein Bahnhofsfoto-Team"));
+                "Dein Bahnhofsfoto-Team"), is(true));
     }
 
     @Test
@@ -300,7 +300,6 @@ public class RsApiAppTest {
                         "\t\"email\": \"nick.name@example.com\", \n" +
                         "\t\"license\": \"license\",\n" +
                         "\t\"photoOwner\": true, \n" +
-                        "\t\"linking\": \"linking\", \n" +
                         "\t\"link\": \"link\"\n" +
                         "}", "application/json"));
 
@@ -308,7 +307,7 @@ public class RsApiAppTest {
     }
 
     @Test
-    public void registerInvalid() {
+    public void registerDifferentEmail() {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
                 .request()
@@ -322,7 +321,7 @@ public class RsApiAppTest {
                         "\t\"link\": \"link\"\n" +
                         "}", "application/json"));
 
-        assertThat(response.getStatus(), is(422));
+        assertThat(response.getStatus(), is(409));
     }
 
     @Test

@@ -44,8 +44,9 @@ public class PhotoImporterTest {
         repository = Mockito.mock(StationsRepository.class);
         Mockito.when(repository.getCountry("de")).thenReturn(Optional.of(new Country("de")));
         Mockito.when(repository.getPhotographer("Anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, null, true, true, null)));
-        Mockito.when(repository.getPhotographer("@storchp")).thenReturn(Optional.of(new User("@storchp", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, null, true, false, null)));
-        Mockito.when(repository.findPhotographerByLevenshtein("@GabyBecker")).thenReturn(Optional.of(new User("Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)", 2, null, null, true, false, null)));
+        Mockito.when(repository.getPhotographer("Some User")).thenReturn(Optional.of(new User("Some User", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, null, true, true, null)));
+        Mockito.when(repository.getPhotographer("@storchp")).thenReturn(Optional.of(new User("@storchp", null, "CC0 1.0 Universell (CC0 1.0)", 2, null, null, true, false, null)));
+        Mockito.when(repository.findPhotographerByLevenshtein("@GabyBecker")).thenReturn(Optional.of(new User("Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)", 3, null, null, true, false, null)));
         final Station felde = new Station(new Station.Key("de", "8009"), "Felde", null, null);
         Mockito.when(repository.findByKey(felde.getKey())).thenReturn(felde);
         final Station.Key hannoverKey = new Station.Key("de", "6913");
@@ -79,7 +80,7 @@ public class PhotoImporterTest {
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("imported Felde for @storchp"));
-        assertPostedPhoto(1,"de", "8009", "0");
+        assertPostedPhoto(2,"de", "8009");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
         assertThat(repository.findByKey(key).hasPhoto(), is(true));
@@ -111,7 +112,7 @@ public class PhotoImporterTest {
         final File importFile = createFile("cz", "@storchp", 4711);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("imported unknown station for @storchp"));
-        assertPostedPhoto(1,"cz", "4711", "0");
+        assertPostedPhoto(2,"cz", "4711");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "cz/4711.jpg").exists(), is(true));
     }
@@ -121,22 +122,22 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@GabyBecker", 8009, ".JPG");
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("imported Felde for Gaby Becker"));
-        assertPostedPhoto(2, "de", "8009", "0");
+        assertPostedPhoto(3, "de", "8009");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
     }
 
     @Test
-    public void testImportFlag() throws IOException {
-        final File importFile = createFile("de", "@RecumbentTravel", 8009);
+    public void testImportAnonymous() throws IOException {
+        final File importFile = createFile("de", "Some User", 8009);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
-        assertThat(result.get(0).getMessage(), is("imported Felde for Anonym"));
-        assertPostedPhoto(0, "de", "8009", "1");
+        assertThat(result.get(0).getMessage(), is("imported Felde for Some User (anonymous)"));
+        assertPostedPhoto(1, "de", "8009");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
     }
 
-    private void assertPostedPhoto(final Integer photographerId, final String countryCode, final String stationId, final String flag) {
+    private void assertPostedPhoto(final Integer photographerId, final String countryCode, final String stationId) {
         assertThat(postedBahnhofsfoto.getPhotographerId(), is(photographerId));
         assertThat(postedBahnhofsfoto.getCountryCode(), is(countryCode));
         assertThat(postedBahnhofsfoto.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));

@@ -4,7 +4,10 @@ import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
+import org.jdbi.v3.sqlobject.customizer.BindBean;
+import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
+import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.railwaystations.api.model.User;
 
 import java.sql.ResultSet;
@@ -29,6 +32,13 @@ public interface UserDao {
     @SqlQuery("select * from users where email = :email")
     @RegisterRowMapper(UserMapper.class)
     Optional<User> findByEmail(@Bind("email") final String email);
+
+    @SqlUpdate("update users set uploadTokenSalt = :uploadTokenSalt where id = :id")
+    void updateTokenSalt(@Bind("id") int id, @Bind("uploadTokenSalt") final Long uploadTokenSalt);
+
+    @SqlUpdate("insert into users (id, name, url, license, email, normalizedName, ownPhotos, anonymous, uploadTokenSalt) values (:id, :name, :url, :license, :email, :normalizedName, :ownPhotos, :anonymous, :uploadTokenSalt)")
+    @GetGeneratedKeys("id")
+    Integer insert(@BindBean final User user);
 
     class UserMapper implements RowMapper<User> {
         public UserMapper() {

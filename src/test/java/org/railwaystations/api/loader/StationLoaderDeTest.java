@@ -7,8 +7,9 @@ import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.railwaystations.api.ElasticBackend;
-import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Country;
+import org.railwaystations.api.model.Station;
+import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 
 import java.io.IOException;
@@ -45,7 +46,13 @@ public class StationLoaderDeTest {
 						container.home().toURL().toString(), container.home().toURL().toString()),
 						new LoggingMonitor(), new ElasticBackend(""));
 
-			final Map<Station.Key, Station> stations = loader.loadStations(new HashMap<>(), "http://www.deutschlands-bahnhoefe.org");
+			final Map<Integer, User> users = new HashMap<>(4);
+			users.put(1, new User("Some User","", "CC0 1.0 Universell (CC0 1.0)", 1, null, null, true, true, null));
+			users.put(9, new User("Gaby Becker","http://www.gaby-becker.de", "CC0 1.0 Universell (CC0 1.0)", 9, null, null, true, false, null));
+			users.put(11, new User("@khgdrn","https://www.twitter.com/khgdrn", "CC0 1.0 Universell (CC0 1.0)", 11, null, null, true, false, null));
+			users.put(28, new User("@stefanopitz","https://twitter.com/stefanopitz", "CC0 1.0 Universell (CC0 1.0)", 28, null, null, true, false, null));
+
+			final Map<Station.Key, Station> stations = loader.loadStations(users, "http://www.deutschlands-bahnhoefe.org");
 
 			final Station zweibruecken = stations.get(new Station.Key("de", "7066"));
 			assertThat(zweibruecken.getKey().getId(), CoreMatchers.is("7066"));
@@ -53,11 +60,23 @@ public class StationLoaderDeTest {
 			assertThat(zweibruecken.getCoordinates().getLat(), CoreMatchers.is(49.2467252285295));
 			assertThat(zweibruecken.getCoordinates().getLon(), CoreMatchers.is(7.35692381858826));
 			assertThat(zweibruecken.hasPhoto(), CoreMatchers.is(true));
-			assertThat(zweibruecken.getPhotographer(), CoreMatchers.is("@hessenpfaelzer"));
+			assertThat(zweibruecken.getPhotographer(), CoreMatchers.is("@stefanopitz"));
 			assertThat(zweibruecken.getDS100(), CoreMatchers.is("SZW"));
 			assertThat(zweibruecken.getPhotoUrl(), CoreMatchers.is("http://www.deutschlands-bahnhoefe.org/sites/default/files/previewbig/7066_1.jpg"));
 			assertThat(zweibruecken.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0)"));
 			assertThat(zweibruecken.getCreatedAt(), CoreMatchers.is(1523044367000L));
+
+            final Station zossen = stations.get(new Station.Key("de", "7048"));
+            assertThat(zossen.getKey().getId(), CoreMatchers.is("7048"));
+            assertThat(zossen.getTitle(), CoreMatchers.is("Zossen"));
+            assertThat(zossen.getCoordinates().getLat(), CoreMatchers.is(52.2189070653182));
+            assertThat(zossen.getCoordinates().getLon(), CoreMatchers.is(13.4386331193587));
+            assertThat(zossen.hasPhoto(), CoreMatchers.is(true));
+            assertThat(zossen.getPhotographer(), CoreMatchers.is("Anonym"));
+            assertThat(zossen.getDS100(), CoreMatchers.is("BZO"));
+            assertThat(zossen.getPhotoUrl(), CoreMatchers.is("http://www.deutschlands-bahnhoefe.org/sites/default/files/previewbig/7048_1.jpg"));
+            assertThat(zossen.getLicense(), CoreMatchers.is("CC0 1.0 Universell (CC0 1.0)"));
+            assertThat(zossen.getCreatedAt(), CoreMatchers.is(1523044367000L));
 
 			final Station albersdorf = stations.get(new Station.Key("de", "41"));
 			assertThat(albersdorf.getKey().getId(), CoreMatchers.is("41"));

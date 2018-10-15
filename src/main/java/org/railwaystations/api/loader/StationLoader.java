@@ -73,7 +73,7 @@ public class StationLoader {
         } catch (final JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        User user = photographers.get(bahnhofsfoto.getPhotographerId());
+        final User user = photographers.get(bahnhofsfoto.getPhotographerId());
         return new Photo(new Station.Key(bahnhofsfoto.getCountryCode().toLowerCase(Locale.ENGLISH),
                 bahnhofsfoto.getId()), photoBaseUrl + bahnhofsfoto.getUrl(), user,
                 bahnhofsfoto.getCreatedAt(), StringUtils.trimToEmpty(bahnhofsfoto.getLicense()));

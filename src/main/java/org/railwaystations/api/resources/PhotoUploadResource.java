@@ -8,7 +8,9 @@ import org.apache.http.entity.InputStreamEntity;
 import org.eclipse.jetty.util.URIUtil;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.TokenGenerator;
+import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.Station;
+import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +19,10 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 @Path("/photoUpload")
@@ -34,13 +39,15 @@ public class PhotoUploadResource {
     private final TokenGenerator tokenGenerator;
     private final File uploadDir;
     private final Monitor monitor;
+    private final UserDao userDao;
 
-    public PhotoUploadResource(final StationsRepository repository, final String apiKey, final TokenGenerator tokenGenerator, final String uploadDir, final Monitor monitor) {
+    public PhotoUploadResource(final StationsRepository repository, final String apiKey, final TokenGenerator tokenGenerator, final String uploadDir, final Monitor monitor, final UserDao userDao) {
         this.repository = repository;
         this.apiKey = apiKey;
         this.tokenGenerator = tokenGenerator;
         this.uploadDir = new File(uploadDir);
         this.monitor = monitor;
+        this.userDao = userDao;
     }
 
     @POST
@@ -69,9 +76,15 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
+        final User user = userDao.findByNormalizedName(User.normalize(nickname)).orElse(null);
+        if (user == null) {
+            LOG.info("User '{}' not found", nickname);
+            return consumeBodyAndReturn(body, Response.Status.UNAUTHORIZED);
+        }
+
         final String uploadToken = StringUtils.trimToEmpty(inUploadToken);
-        if (!tokenGenerator.buildFor(nickname, email).equals(uploadToken)) {
-            LOG.info("Token doesn't fit to nickname {} and email {}", nickname, email);
+        if (!tokenGenerator.buildFor(nickname, email, user.getUploadTokenSalt()).equals(uploadToken)) {
+            LOG.info("Token doesn't fit to nickname '{}' and email '{}'", nickname, email);
             return consumeBodyAndReturn(body, Response.Status.UNAUTHORIZED);
         }
 

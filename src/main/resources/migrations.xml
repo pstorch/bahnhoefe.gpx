@@ -165,20 +165,6 @@
             <column name="email" value="fotos@schweizer-bahnhoefe.ch"/>
             <column name="twitterTags" value="@BahnhoefeCH, @android_oma, #BahnhofsfotoCH"/>
         </insert>
-        <insert tableName="countries">
-            <column name="id" value="fi"/>
-            <column name="name" value="Finnland"/>
-            <column name="stationsIndex" value="file:./src/test/resources/stationsFi.json"/>
-            <column name="photosIndex" value="file:./src/test/resources/photosFi.json"/>
-            <column name="timetableUrlTemplate" value="https://www.junat.net/en/"/>
-        </insert>
-        <insert tableName="countries">
-            <column name="id" value="uk"/>
-            <column name="name" value="United Kingdom"/>
-            <column name="stationsIndex" value="file:./src/test/resources/stationsUk.json"/>
-            <column name="photosIndex" value="file:./src/test/resources/photosUk.json"/>
-            <column name="timetableUrlTemplate" value="http://ojp.nationalrail.co.uk/service/ldbboard/dep/{DS100}"/>
-        </insert>
     </changeSet>
 
     <changeSet id="3" author="pstorch">

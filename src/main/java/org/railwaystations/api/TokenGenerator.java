@@ -10,7 +10,10 @@ public class TokenGenerator {
         this.salt = salt;
     }
 
-    public String buildFor(final String nickname, final String email) {
+    public String buildFor(final String nickname, final String email, final Long userSalt) {
+        if (userSalt != null) {
+            return DigestUtils.sha1Hex(salt + "-" + nickname + "-" + email + "-" + userSalt);
+        }
         return DigestUtils.sha1Hex(salt + "-" + nickname + "-" + email);
     }
 

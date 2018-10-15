@@ -18,12 +18,14 @@ photoDir: ${PHOTO_DIR:-/tmp/railway-station-photos}
 apiKey: ${API_KEY:-dummy}
 salt: ${SALT:-dummy}
 mailer:
-  "@class": org.railwaystations.api.mail.SmtpMailer
-  host: ${SMTP_HOST:-localhost}
-  port: ${SMTP_PORT:-25}
-  user: ${SMTP_USER:-}
-  passwd: ${SMTP_PASSWD:-}
-  from: ${SMTP_FROM:-}
+  "@class": org.railwaystations.api.mail.MockMailer
+#mailer:
+#  "@class": org.railwaystations.api.mail.SmtpMailer
+#  host: ${SMTP_HOST:-localhost}
+#  port: ${SMTP_PORT:-25}
+#  user: ${SMTP_USER:-}
+#  passwd: ${SMTP_PASSWD:-}
+#  from: ${SMTP_FROM:-}
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
 elasticBackend:

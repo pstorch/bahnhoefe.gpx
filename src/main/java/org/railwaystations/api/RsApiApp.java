@@ -9,6 +9,7 @@ import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.h2.H2DatabasePlugin;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.resources.*;
@@ -45,20 +46,22 @@ public class RsApiApp extends Application<RsApiConfiguration> {
 
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory.build(environment, config.getDataSourceFactory(), "mariadb");
+        jdbi.installPlugin(new H2DatabasePlugin());
+
         final CountryDao countryDao = jdbi.onDemand(CountryDao.class);
         final UserDao userDao = jdbi.onDemand(UserDao.class);
 
-        final StationsRepository repository = new StationsRepository(config.getMonitor(), countryDao, config.getElasticBackend(), userDao, config.getPhotoBaseUrl());
+        final StationsRepository repository = new StationsRepository(config.getMonitor(), countryDao,
+                config.getElasticBackend(), userDao, config.getPhotoBaseUrl());
 
         environment.jersey().register(new StationsResource(repository));
         environment.jersey().register(new PhotographersResource(repository));
         environment.jersey().register(new CountriesResource(countryDao));
         environment.jersey().register(new StatisticResource(repository));
         environment.jersey().register(new PhotoUploadResource(repository, config.getApiKey(),
-                config.getTokenGenerator(), config.getWorkDir(), config.getMonitor()));
+                config.getTokenGenerator(), config.getWorkDir(), config.getMonitor(), userDao));
         environment.jersey().register(new RegistrationResource(
-                config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer(),
-                config.getWorkDir()));
+                config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer(), userDao));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
                 new PhotoImporter(repository, config.getMonitor(), config.getWorkDir(), config.getPhotoDir(),
                         config.getElasticBackend(), config.getPhotoBaseUrl())));

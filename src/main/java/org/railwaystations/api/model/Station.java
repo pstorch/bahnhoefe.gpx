@@ -63,12 +63,25 @@ public class Station {
 
     public void setPhoto(final Photo photo) {
         if (photo != null) {
-            this.photographer = photo.getPhotographer().getDisplayName();
+            final User user = photo.getPhotographer();
+            if (user != null) {
+                this.photographer = user.getDisplayName();
+                this.photographerUrl = user.getDisplayUrl();
+                this.statUser = user.getName();
+            } else {
+                this.photographer = "-";
+                this.photographerUrl = "";
+                this.statUser = "-";
+            }
+
             this.photoUrl = photo.getUrl();
             this.license = photo.getLicense();
+<<<<<<< HEAD
             this.licenseUrl = photo.getLicenseUrl();
             this.photographerUrl = photo.getPhotographer().getDisplayUrl();
             this.statUser = photo.getPhotographer().getName();
+=======
+>>>>>>> complete refactoring to User in DB
             this.createdAt = photo.getCreatedAt();
         } else {
             this.photographer = null;

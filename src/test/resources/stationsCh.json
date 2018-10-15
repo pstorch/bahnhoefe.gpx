@@ -1,4 +1,4 @@
-{"took":44,"timed_out":false,"_shards":{"total":5,"successful":5,"failed":0},"hits":{"total":1933,"max_score":1.0,"hits":[
+{"took":44,"timed_out":false,"_shards":{"total":5,"successful":5,"failed":0},"hits":{"total":226,"max_score":1.0,"hits":[
   {"_index":"bahnhoefec2","_type":"bahnhofc2","_id":"AWQPNzs6htuDxSpydmdJ","_score":1.0,"_source":{"type":"Feature","geometry":{"type":"Point","coordinates":[8.25634387912,47.5752638935]},"properties":{"name":"Döttingen","UICIBNR":8503501,"abkuerzung":"DOE","countryCode":"CH"}}},
 {"_index":"bahnhoefec2","_type":"bahnhofc2","_id":"AWQPNzs6htuDxSpydmdM","_score":1.0,"_source":{"type":"Feature","geometry":{"type":"Point","coordinates":[9.45316475001,46.8331408741]},"properties":{"name":"Domat/Ems","UICIBNR":8509181,"abkuerzung":"DE","countryCode":"CH"}}},
 {"_index":"bahnhoefec2","_type":"bahnhofc2","_id":"AWQPNzs6htuDxSpydmdN","_score":1.0,"_source":{"type":"Feature","geometry":{"type":"Point","coordinates":[8.24916930628,47.3629190442]},"properties":{"name":"Dottikon Umspannanlage","UICIBNR":8502239,"abkuerzung":"DOTU","countryCode":"CH"}}},

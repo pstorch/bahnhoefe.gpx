@@ -1,16 +1,15 @@
 package org.railwaystations.api.resources;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.TokenGenerator;
+import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.mail.Mailer;
-import org.railwaystations.api.model.Registration;
 import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
@@ -26,57 +25,78 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
+import java.util.Optional;
 
 @Path("/registration")
 public class RegistrationResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationResource.class);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final String apiKey;
     private final TokenGenerator tokenGenerator;
     private final Monitor monitor;
     private final Mailer mailer;
-    private final File regDir;
-    private final Map<String, String> licenseMap = new HashMap<>(2);
+    private final UserDao userDao;
 
-    public RegistrationResource(final String apiKey, final TokenGenerator tokenGenerator, final Monitor monitor, final Mailer mailer, final String workDir) {
+    public RegistrationResource(final String apiKey, final TokenGenerator tokenGenerator, final Monitor monitor, final Mailer mailer, final UserDao userDao) {
         this.apiKey = apiKey;
         this.tokenGenerator = tokenGenerator;
         this.monitor = monitor;
         this.mailer = mailer;
-        this.regDir = new File(workDir, "registrations");
-        try {
-            FileUtils.forceMkdir(this.regDir);
-        } catch (final IOException e) {
-            throw new RuntimeException("Unable to create " + this.regDir);
-        }
-        licenseMap.put("CC0", "CC0 1.0 Universell (CC0 1.0)");
-        licenseMap.put("CC4", "CC BY-SA 4.0");
+        this.userDao = userDao;
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response post(@HeaderParam("API-Key") final String apiKey, @NotNull @Valid final Registration registration) {
-        LOG.info("New " + registration);
+    public Response post(@HeaderParam("API-Key") final String apiKey, @NotNull final User registration) {
+        LOG.info("New registration for '{}' with '{}'", registration.getName(), registration.getEmail());
         if (!this.apiKey.equals(apiKey)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
+        if (!isValid(registration)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        boolean conflict = false;
+        final Optional<User> user = userDao.findByNormalizedName(registration.getNormalizedName());
+        User existing = null;
+        if (user.isPresent()) {
+            existing = user.get();
+            if (!registration.getEmail().equals(existing.getEmail())) {
+                LOG.info("Registration for user '{}' with eMail '{}' failed, because existing eMail '{}' is different", registration.getName(), registration.getEmail(), existing.getEmail());
+                conflict = true;
+            }
+        } else if (userDao.findByEmail(registration.getEmail()).isPresent()) {
+            LOG.info("Registration for user '{}' failed, because eMail '{}' is already taken", registration.getName(), registration.getEmail());
+            conflict = true;
+        }
+
+        if (conflict) {
+            return Response.status(Response.Status.CONFLICT).build();
+        }
+
         sendTokenByMail(registration);
-        saveRegistration(registration);
-        monitor.sendMessage(String.format("New %s", registration));
+        saveRegistration(registration, existing);
+        monitor.sendMessage(
+                String.format("New Registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s'}",
+                        registration.getName(), registration.getEmail(), registration.getLicense(),
+                        registration.isOwnPhotos(), registration.getUrl()));
 
         return Response.accepted().build();
     }
 
-    private void sendTokenByMail(@NotNull @Valid final Registration registration) {
-        final String token = tokenGenerator.buildFor(registration.getNickname(), registration.getEmail());
+    private boolean isValid(final User registration) {
+        return !StringUtils.isBlank(registration.getName()) &&
+                !StringUtils.isBlank(registration.getLicense()) &&
+                !StringUtils.isBlank(registration.getEmail());
+    }
+
+    private void sendTokenByMail(@NotNull @Valid final User registration) {
+        registration.setUploadTokenSalt(System.currentTimeMillis());
+        final String token = tokenGenerator.buildFor(registration.getName(), registration.getEmail(), registration.getUploadTokenSalt());
         LOG.info("Token " + token);
         final String url = "http://railway-stations.org/uploadToken/" + token;
 
@@ -87,17 +107,16 @@ public class RegistrationResource {
                         "Alternativ kannst Du auch mit Deinem Smartphone den angehängten QR-Code scannen oder den Code manuell in der Bahnhofsfoto App unter 'Meine Daten' eintragen.%n%n" +
                         "Viele Grüße%n" +
                         "Dein Bahnhofsfoto-Team",
-                registration.getNickname(), token, url);
+                registration.getName(), token, url);
         mailer.send(registration.getEmail(), "Bahnhofsfotos upload token", text, generateComZXing(url));
     }
 
-    private void saveRegistration(@NotNull @Valid final Registration registration) {
-        final User fotograf = new User(registration.getNickname(), registration.getLink(), licenseMap.getOrDefault(registration.getLicense(), registration.getLicense()));
-        try (final PrintWriter pw = new PrintWriter(new File(regDir, registration.getNickname() + ".json"), "UTF-8")) {
-            MAPPER.writeValue(pw, fotograf);
-            pw.flush();
-        } catch (final IOException e) {
-            LOG.error("Couldn't write registration file ", e);
+    private void saveRegistration(final User registration, final User existing) {
+        if (existing == null) {
+            final Integer id = userDao.insert(registration);
+            LOG.info("User '{}' created with id {}", registration.getName(), id);
+        } else {
+            userDao.updateTokenSalt(existing.getId(), registration.getUploadTokenSalt());
         }
     }
 

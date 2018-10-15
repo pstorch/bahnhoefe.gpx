@@ -120,11 +120,6 @@ public class PhotoImporter {
                     report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
                 }
-                final String statUser = user.get().getName();
-                if (user.get().isAnonymous()) {
-                    user = repository.getPhotographer("Anonym");
-                }
-
                 final Photo photo = new Photo(new Station.Key(countryCode, stationId), photoBaseUrl + "/fotos/" + countryCode + "/" + stationId + ".jpg", user.get(), System.currentTimeMillis(), getLicense(user.get().getLicense(), countryCode));
                 photosToImport.put(importFile, photo);
             } catch (final Exception e) {
@@ -171,7 +166,8 @@ public class PhotoImporter {
                     station.setPhoto(photo);
                 }
 
-                report.add(new ReportEntry(false, importFile.getAbsolutePath(), "imported " + (station != null ? station.getTitle() : "unknown station") + " for " + photo.getPhotographer()));
+                report.add(new ReportEntry(false, importFile.getAbsolutePath(),
+                        "imported " + (station != null ? station.getTitle() : "unknown station") + " for " + photo.getPhotographer().getName() + (photo.getPhotographer().isAnonymous() ? " (anonymous)": "")));
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
                 report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Exception: " + e.getMessage()));
