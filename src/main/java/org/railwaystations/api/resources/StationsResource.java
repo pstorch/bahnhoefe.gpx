@@ -51,6 +51,7 @@ public class StationsResource {
                                         @QueryParam(StationsResource.MAX_DISTANCE) final Integer maxDistance,
                                         @QueryParam(StationsResource.LAT) final Double lat,
                                         @QueryParam(StationsResource.LON) final Double lon) {
+        // TODO: can we search this on the DB?
         return getStationsMap(country)
                 .values().stream().filter(station -> station.appliesTo(hasPhoto, photographer, maxDistance, lat, lon)).collect(Collectors.toList());
     }

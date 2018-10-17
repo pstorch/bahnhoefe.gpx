@@ -80,6 +80,10 @@ public class User {
         this(name, url, license, 0, null, normalize(name), true, false, null);
     }
 
+    public User(final String name, final String url, final String license, final boolean anonymous) {
+        this(name, url, license, 0, null, normalize(name), true, anonymous, null);
+    }
+
     public static Map<String, User> toNameMap(final List<User> list) {
         return list.stream().collect(Collectors.toMap (User::getNormalizedName, i -> i));
     }

@@ -14,7 +14,7 @@ public class StatisticTxtWriterTest {
 
     @Test
     public void test() throws WebApplicationException, IOException {
-        final Statistic stat = new Statistic(1500, 500, 1000, 20);
+        final Statistic stat = new Statistic(1500, 500, 20);
 
         final StatisticTxtWriter writer = new StatisticTxtWriter();
         final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();

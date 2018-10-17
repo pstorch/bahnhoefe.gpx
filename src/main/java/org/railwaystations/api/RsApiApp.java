@@ -12,6 +12,7 @@ import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.h2.H2DatabasePlugin;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.PhotoDao;
+import org.railwaystations.api.db.StationDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.resources.*;
 import org.railwaystations.api.writer.PhotographersTxtWriter;
@@ -52,9 +53,11 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         final CountryDao countryDao = jdbi.onDemand(CountryDao.class);
         final UserDao userDao = jdbi.onDemand(UserDao.class);
         final PhotoDao photoDao = jdbi.onDemand(PhotoDao.class);
+        final StationDao stationDao = jdbi.onDemand(StationDao.class);
+        StationDao.StationMapper.setPhotoBaseUrl(config.getPhotoBaseUrl());
 
-        final StationsRepository repository = new StationsRepository(config.getMonitor(), countryDao,
-                userDao, config.getPhotoBaseUrl());
+        final StationsRepository repository = new StationsRepository(countryDao,
+                stationDao);
 
         environment.jersey().register(new StationsResource(repository));
         environment.jersey().register(new PhotographersResource(repository));
@@ -65,8 +68,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new RegistrationResource(
                 config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer(), userDao));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
-                new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir(),
-                        config.getPhotoBaseUrl())));
+                new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir())));
         environment.jersey().register(new StationsGpxWriter());
         environment.jersey().register(new StationsTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());

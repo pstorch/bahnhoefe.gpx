@@ -56,44 +56,47 @@ public class RsApiAppTest {
     @Test
     public void stationsAllCountries() throws IOException {
         final Station[] stations = assertLoadStations("/stations", 200);
-        assertThat(stations.length, is(5880));
-        assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
-        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), notNullValue());
+        assertThat(stations.length, is(954));
+        assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8500126")), notNullValue());
     }
 
     @Test
     public void stationById() {
-        final Response response = loadRaw("/de/stations/41", 200);
+        final Response response = loadRaw("/de/stations/6932", 200);
         final Station station = response.readEntity(Station.class);
-        assertThat(station.getKey().getId(), is("41"));
-        assertThat(station.getTitle(), is( "Albersdorf"));
+        assertThat(station.getKey().getId(), is("6932"));
+        assertThat(station.getTitle(), is( "Wuppertal-Ronsdorf"));
+        assertThat(station.getPhotoUrl(), is("https://fotos.railway-stations.org/sites/default/files/previewbig/6932.jpg"));
+        assertThat(station.getPhotographer(), is("@khgdrn"));
+        assertThat(station.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
     }
 
     @Test
     public void stationsDe() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/de/%s", "stations"), 200);
-        assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
-        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), nullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8500126")), nullValue());
     }
 
     @Test
     public void stationsDeQueryParam() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/%s?country=de", "stations"), 200);
-        assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
-        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), nullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8500126")), nullValue());
     }
 
     @Test
     public void stationsDePhotograph() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=@khgdrn", "stations"), 200);
-        assertThat(findByKey(stations, new Station.Key("de", "6932")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "6966")), notNullValue());
     }
 
     @Test
     public void stationsCh() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/ch/%s", "stations"), 200);
-        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), notNullValue());
-        assertThat(findByKey(stations, new Station.Key("de", "41")), nullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8500126")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "6721")), nullValue());
     }
 
     @Test
@@ -120,7 +123,7 @@ public class RsApiAppTest {
         final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isArray(), is(true));
-        assertThat(jsonNode.size(), is(5653));
+        assertThat(jsonNode.size(), is(729));
     }
 
     @Test
@@ -137,7 +140,7 @@ public class RsApiAppTest {
                 final Matcher matcher = pattern.matcher(line);
                 assertThat(matcher.matches(), is(true));
             }
-            assertThat(count, is(5653));
+            assertThat(count, is(729));
         }
     }
 
@@ -154,7 +157,7 @@ public class RsApiAppTest {
         assertThat(gpx.getAttribute("xmlns"), is("http://www.topografix.com/GPX/1/1"));
         assertThat(gpx.getAttribute("version"), is("1.1"));
         final NodeList wpts = gpx.getElementsByTagName("wpt");
-        assertThat(wpts.getLength(), is(8));
+        assertThat(wpts.getLength(), is(7));
     }
 
     private String readSaveStringEntity(final Response response) throws IOException {

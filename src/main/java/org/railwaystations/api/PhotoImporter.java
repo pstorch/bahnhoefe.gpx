@@ -1,7 +1,6 @@
 package org.railwaystations.api;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.StatusLine;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.UserDao;
@@ -34,9 +33,8 @@ public class PhotoImporter {
     private final Monitor monitor;
     private final File uploadDir;
     private final File photoDir;
-    private final String photoBaseUrl;
 
-    public PhotoImporter(final StationsRepository repository, final UserDao userDao, final PhotoDao photoDao, final CountryDao countryDao, final Monitor monitor, final String uploadDir, final String photoDir, final String photoBaseUrl) {
+    public PhotoImporter(final StationsRepository repository, final UserDao userDao, final PhotoDao photoDao, final CountryDao countryDao, final Monitor monitor, final String uploadDir, final String photoDir) {
         this.repository = repository;
         this.userDao = userDao;
         this.photoDao = photoDao;
@@ -44,7 +42,6 @@ public class PhotoImporter {
         this.monitor = monitor;
         this.uploadDir = new File(uploadDir);
         this.photoDir = new File(photoDir);
-        this.photoBaseUrl = photoBaseUrl;
     }
 
     public void importPhotosAsync() {
@@ -114,12 +111,12 @@ public class PhotoImporter {
                 final String stationId = matcher.group(2);
                 final String photographerName = matcher.group(1);
 
-                Optional<User> user = userDao.findByNormalizedName(User.normalize(photographerName));
+                final Optional<User> user = userDao.findByNormalizedName(User.normalize(photographerName));
                 if (!user.isPresent()) {
                     report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
                 }
-                final Photo photo = new Photo(new Station.Key(countryCode, stationId), photoBaseUrl + "/fotos/" + countryCode + "/" + stationId + ".jpg", user.get(), System.currentTimeMillis(), getLicense(user.get().getLicense(), countryCode));
+                final Photo photo = new Photo(new Station.Key(countryCode, stationId), "/fotos/" + countryCode + "/" + stationId + ".jpg", user.get(), System.currentTimeMillis(), getLicense(user.get().getLicense(), countryCode));
                 photosToImport.put(importFile, photo);
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
@@ -131,7 +128,6 @@ public class PhotoImporter {
         for (final Map.Entry<File, Photo> photoToImport : photosToImport.entrySet()) {
             final File importFile = photoToImport.getKey();
             final Photo photo = photoToImport.getValue();
-            final Optional<StatusLine> status;
             try {
                 Station station = null;
                 if (country.isPresent()) {
@@ -156,10 +152,6 @@ public class PhotoImporter {
                 moveFile(importFile, countryDir, photo.getStationKey().getId());
                 LOG.info("Photo " + importFile.getAbsolutePath() + " imported");
                 importCount++;
-
-                if (station != null) {
-                    station.setPhoto(photo);
-                }
 
                 report.add(new ReportEntry(false, importFile.getAbsolutePath(),
                         "imported " + (station != null ? station.getTitle() : "unknown station") + " for " + photo.getPhotographer().getName() + (photo.getPhotographer().isAnonymous() ? " (anonymous)": "")));

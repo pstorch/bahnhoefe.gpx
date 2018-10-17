@@ -5,9 +5,9 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.PhotoDao;
+import org.railwaystations.api.db.StationDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
@@ -36,6 +36,7 @@ public class PhotoImporterTest {
     private Path photoDir;
     private StationsRepository repository;
     private UserDao userDao;
+    private StationDao stationDao;
     private PhotoDao photoDao;
     private CountryDao countryDao;
 
@@ -43,26 +44,29 @@ public class PhotoImporterTest {
     public void setUp() throws IOException {
         uploadDir = Files.createTempDirectory("rsapiUpload");
         photoDir = Files.createTempDirectory("rsapiPhoto");
-        repository = mock(StationsRepository.class);
 
         countryDao = mock(CountryDao.class);
-        Mockito.when(countryDao.findById("de")).thenReturn(Optional.of(new Country("de")));
+        when(countryDao.findById("de")).thenReturn(Optional.of(new Country("de")));
 
         userDao = mock(UserDao.class);
-        Mockito.when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, null, true, true, null)));
-        Mockito.when(userDao.findByNormalizedName("someuser")).thenReturn(Optional.of(new User("Some User", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, null, true, true, null)));
-        Mockito.when(userDao.findByNormalizedName("storchp")).thenReturn(Optional.of(new User("@storchp", null, "CC0 1.0 Universell (CC0 1.0)", 2, null, null, true, false, null)));
+        when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, null, true, true, null)));
+        when(userDao.findByNormalizedName("someuser")).thenReturn(Optional.of(new User("Some User", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, null, true, true, null)));
+        when(userDao.findByNormalizedName("gabybecker")).thenReturn(Optional.of(new User("@Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, null, true, true, null)));
+        when(userDao.findByNormalizedName("storchp")).thenReturn(Optional.of(new User("@storchp", null, "CC0 1.0 Universell (CC0 1.0)", 2, null, null, true, false, null)));
 
         photoDao = mock(PhotoDao.class);
 
+        stationDao = mock(StationDao.class);
         final Station felde = new Station(new Station.Key("de", "8009"), "Felde", null, null);
-        Mockito.when(repository.findByKey(felde.getKey())).thenReturn(felde);
+        when(stationDao.findByKey(felde.getKey().getCountry(), felde.getKey().getId())).thenReturn(Optional.of(felde));
 
         final Station.Key hannoverKey = new Station.Key("de", "6913");
         final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", new User("", "", ""), 0L, ""));
-        Mockito.when(repository.findByKey(hannover.getKey())).thenReturn(hannover);
+        when(stationDao.findByKey(hannoverKey.getCountry(), hannoverKey.getId())).thenReturn(Optional.of(hannover));
 
-        importer = new PhotoImporter(repository, userDao, photoDao, countryDao, new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), "https://railway-stations.org");
+        repository = new StationsRepository(countryDao, stationDao);
+
+        importer = new PhotoImporter(repository, userDao, photoDao, countryDao, new LoggingMonitor(), uploadDir.toString(), photoDir.toString());
     }
 
     private File createFile(final String countryCode, final String photographer, final int stationId) throws IOException {
@@ -80,20 +84,19 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@storchp", 8009);
         final Station.Key key = new Station.Key("de", "8009");
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
-        ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
-        verify(photoDao).insert(argument.capture());
+        final ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        verify(photoDao).insert(argument.capture());
         assertThat(result.get(0).getMessage(), is("imported Felde for @storchp"));
         assertPostedPhoto(argument.getValue(), 2,"de", "8009");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
-        assertThat(repository.findByKey(key).hasPhoto(), is(true));
     }
 
     @Test
     public void testImportStationHasPhoto() throws IOException {
         final File importFile = createFile("de", "@storchp", 6913);
-        verify(photoDao, never()).insert(Mockito.any(Photo.class));
+        verify(photoDao, never()).insert(any(Photo.class));
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("Station 6913 has already a photo"));
         assertThat(importFile.exists(), is(true));
@@ -104,7 +107,7 @@ public class PhotoImporterTest {
     public void testImportDuplicates() throws IOException {
         final File importFile1 = createFile("de", "@storchp", 8009, ".Jpg");
         final File importFile2 = createFile("de", "Anonym", 8009, ".jpeg");
-        verify(photoDao, never()).insert(Mockito.any(Photo.class));
+        verify(photoDao, never()).insert(any(Photo.class));
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("conflict with another photo in inbox"));
         assertThat(result.get(1).getMessage(), is("conflict with another photo in inbox"));
@@ -116,9 +119,9 @@ public class PhotoImporterTest {
     @Test
     public void testImportNoStationData() throws IOException {
         final File importFile = createFile("cz", "@storchp", 4711);
-        ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
-        verify(photoDao).insert(argument.capture());
+        final ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        verify(photoDao).insert(argument.capture());
         assertThat(result.get(0).getMessage(), is("imported unknown station for @storchp"));
         assertPostedPhoto(argument.getValue(), 2,"cz", "4711");
         assertThat(importFile.exists(), is(false));
@@ -126,23 +129,11 @@ public class PhotoImporterTest {
     }
 
     @Test
-    public void testImportPhotographerLevenshteinMatch() throws IOException {
-        final File importFile = createFile("de", "@GabyBecker", 8009, ".JPG");
-        ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
-        verify(photoDao).insert(argument.capture());
-        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
-        assertThat(result.get(0).getMessage(), is("imported Felde for Gaby Becker"));
-        assertPostedPhoto(argument.getValue(), 3, "de", "8009");
-        assertThat(importFile.exists(), is(false));
-        assertThat(new File(photoDir.toFile(), "de/8009.jpg").exists(), is(true));
-    }
-
-    @Test
     public void testImportAnonymous() throws IOException {
         final File importFile = createFile("de", "Some User", 8009);
-        ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
-        verify(photoDao).insert(argument.capture());
+        final ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        verify(photoDao).insert(argument.capture());
         assertThat(result.get(0).getMessage(), is("imported Felde for Some User (anonymous)"));
         assertPostedPhoto(argument.getValue(), 1, "de", "8009");
         assertThat(importFile.exists(), is(false));
@@ -163,7 +154,7 @@ public class PhotoImporterTest {
         final File importFile = createFile("de", "@unknown", 8009);
         final Station.Key key = new Station.Key("de", "8009");
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
-        verify(photoDao, never()).insert(Mockito.any(Photo.class));
+        verify(photoDao, never()).insert(any(Photo.class));
 
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("Photographer @unknown not found"));
@@ -175,7 +166,7 @@ public class PhotoImporterTest {
     @Test
     public void testImportStationNotFound() throws IOException {
         final File importFile = createFile("de", "@GabyBecker", 99999999);
-        verify(photoDao, never()).insert(Mockito.any(Photo.class));
+        verify(photoDao, never()).insert(any(Photo.class));
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("Station 99999999 not found"));
         assertThat(importFile.exists(), is(true));

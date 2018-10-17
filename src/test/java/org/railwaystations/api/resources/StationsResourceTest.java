@@ -25,11 +25,11 @@ public class StationsResourceTest {
     public void setUp() {
         final Map<Station.Key, Station> stationsXY = new HashMap<>(2);
         final Station.Key key5 = new Station.Key("xy", "5");
-        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0")));
+        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "/fotos/xy/5.jpg", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0")));
 
         final Map<Station.Key, Station> stationsAB = new HashMap<>(2);
         final Station.Key key3 = new Station.Key("ab", "3");
-        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "URL2", new User("Peter Pan", "photographerUrl2", "CC0 by SA"), null, "CC0 by SA")));
+        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "/fotos/ab/3.jpg", new User("Peter Pan", "photographerUrl2", "CC0 by SA"), null, "CC0 by SA")));
 
         final Map<Station.Key, Station> stationsAll = new HashMap<>(2);
         stationsAll.putAll(stationsAB);
@@ -54,7 +54,7 @@ public class StationsResourceTest {
         assertThat(stationXY.getCoordinates().getLon(), equalTo(9.0));
         assertThat(stationXY.getPhotographer(), equalTo("Jim Knopf"));
         assertThat(stationXY.getDS100(), equalTo("XYZ"));
-        assertThat(stationXY.getPhotoUrl(), equalTo("URL"));
+        assertThat(stationXY.getPhotoUrl(), equalTo("/fotos/xy/5.jpg"));
         assertThat(stationXY.getLicense(), equalTo("CC0"));
         assertThat(stationXY.getPhotographerUrl(), equalTo("photographerUrl"));
     }
@@ -73,7 +73,7 @@ public class StationsResourceTest {
         assertThat(station.getCoordinates().getLat(), equalTo(40.0));
         assertThat(station.getCoordinates().getLon(), equalTo(6.0));
         assertThat(station.getPhotographer(), equalTo("Peter Pan"));
-        assertThat(station.getPhotoUrl(), equalTo("URL2"));
+        assertThat(station.getPhotoUrl(), equalTo("/fotos/ab/3.jpg"));
         assertThat(station.getDS100(), equalTo("ABC"));
         assertThat(station.getLicense(), equalTo("CC0 by SA"));
         assertThat(station.getPhotographerUrl(), equalTo("photographerUrl2"));

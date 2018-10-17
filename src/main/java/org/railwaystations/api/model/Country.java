@@ -1,7 +1,5 @@
 package org.railwaystations.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @SuppressWarnings("PMD.LongVariable")
 public class Country {
 
@@ -11,24 +9,17 @@ public class Country {
     private String twitterTags = "@android_oma, #dbHackathon, #dbOpendata, #Bahnhofsfoto, @khgdrn";
     private String timetableUrlTemplate;
 
-    @JsonIgnore
-    private String stationsIndex;
-    @JsonIgnore
-    private String photosIndex;
-
     public Country() {
         super();
     }
 
     public Country(final String code) {
-        this(code, null, null, null, null, null, null);
+        this(code, null, null, null, null);
     }
 
-    public Country(final String code, final String name, final String email, final String twitterTags, final String timetableUrlTemplate, final String stationsIndex, final String photosIndex) {
+    public Country(final String code, final String name, final String email, final String twitterTags, final String timetableUrlTemplate) {
         this.code = code;
         this.name = name;
-        this.stationsIndex = stationsIndex;
-        this.photosIndex = photosIndex;
         this.email = email != null ? email : this.email;
         this.twitterTags = twitterTags != null ? twitterTags : this.twitterTags;
         this.timetableUrlTemplate = timetableUrlTemplate;
@@ -73,11 +64,4 @@ public class Country {
         return code != null ? code.hashCode() : 0;
     }
 
-    public String getStationsIndex() {
-        return stationsIndex;
-    }
-
-    public String getPhotosIndex() {
-        return photosIndex;
-    }
 }

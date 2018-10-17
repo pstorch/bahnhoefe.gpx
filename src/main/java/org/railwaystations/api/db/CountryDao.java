@@ -31,9 +31,7 @@ public interface CountryDao {
                     rs.getString("name"),
                     rs.getString("email"),
                     rs.getString("twitterTags"),
-                    rs.getString("timetableUrlTemplate"),
-                    rs.getString("stationsIndex"),
-                    rs.getString("photosIndex")
+                    rs.getString("timetableUrlTemplate")
                     );
         }
 

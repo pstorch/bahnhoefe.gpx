@@ -227,4 +227,22 @@ public class Station {
                     '}';
         }
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof  Station)) {
+            return false;
+        }
+        final Station other = (Station) o;
+        return Objects.equals(key, other.getKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return key.hashCode();
+    }
+
 }
