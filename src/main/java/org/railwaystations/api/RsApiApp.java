@@ -1,6 +1,8 @@
 package org.railwaystations.api;
 
 import io.dropwizard.Application;
+import io.dropwizard.auth.AuthDynamicFeature;
+import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.db.DataSourceFactory;
@@ -8,8 +10,12 @@ import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.h2.H2DatabasePlugin;
+import org.railwaystations.api.auth.AuthUser;
+import org.railwaystations.api.auth.UploadTokenAuthFilter;
+import org.railwaystations.api.auth.UploadTokenAuthenticator;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.StationDao;
@@ -59,14 +65,22 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         final StationsRepository repository = new StationsRepository(countryDao,
                 stationDao);
 
+        environment.jersey().register(new AuthDynamicFeature(
+                new UploadTokenAuthFilter.Builder<AuthUser>()
+                        .setAuthenticator(new UploadTokenAuthenticator(userDao, config.getTokenGenerator()))
+                        .setRealm("RSAPI")
+                        .buildAuthFilter()));
+        environment.jersey().register(RolesAllowedDynamicFeature.class);
+        environment.jersey().register(new AuthValueFactoryProvider.Binder<>(AuthUser.class));
+
         environment.jersey().register(new StationsResource(repository));
         environment.jersey().register(new PhotographersResource(repository));
         environment.jersey().register(new CountriesResource(countryDao));
         environment.jersey().register(new StatisticResource(repository));
-        environment.jersey().register(new PhotoUploadResource(repository, config.getApiKey(),
-                config.getTokenGenerator(), config.getWorkDir(), config.getMonitor(), userDao));
-        environment.jersey().register(new RegistrationResource(
-                config.getApiKey(), config.getTokenGenerator(), config.getMonitor(), config.getMailer(), userDao));
+        environment.jersey().register(new PhotoUploadResource(repository,
+                config.getWorkDir(), config.getMonitor()));
+        environment.jersey().register(new ProfileResource(
+                config.getTokenGenerator(), config.getMonitor(), config.getMailer(), userDao));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
                 new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir())));
         environment.jersey().register(new StationsGpxWriter());

@@ -289,7 +289,6 @@ public class RsApiAppTest {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
                 .request()
-                .header("API-Key", "dummy")
                 .post(Entity.entity("{\n" +
                         "\t\"nickname\": \"nickname \", \n" +
                         "\t\"email\": \"nick.name@example.com\", \n" +
@@ -312,28 +311,10 @@ public class RsApiAppTest {
     }
 
     @Test
-    public void registerForbidden() {
-        final Response response = client.target(
-                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
-                .request()
-                .header("API-Key", "yummy")
-                .post(Entity.entity("{\n" +
-                        "\t\"nickname\": \"nickname\", \n" +
-                        "\t\"email\": \"nick.name@example.com\", \n" +
-                        "\t\"license\": \"license\",\n" +
-                        "\t\"photoOwner\": true, \n" +
-                        "\t\"link\": \"link\"\n" +
-                        "}", "application/json"));
-
-        assertThat(response.getStatus(), is(403));
-    }
-
-    @Test
     public void registerDifferentEmail() {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
                 .request()
-                .header("API-Key", "dummy")
                 .post(Entity.entity("{\n" +
                         "\t\"nickname\": \"nickname\", \n" +
                         "\t\"email\": \"invalid email\", \n" +
@@ -351,7 +332,6 @@ public class RsApiAppTest {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload"))
                 .request()
-                .header("API-Key", "yummy")
                 .header("Upload-Token", "edbfc44727a6fd4f5b029aff21861a667a6b4195")
                 .header("Nickname", "nickname")
                 .header("Email", "nickname@example.com")
@@ -359,7 +339,90 @@ public class RsApiAppTest {
                 .header("Country", "de")
                 .post(Entity.entity("", "image/png"));
 
-        assertThat(response.getStatus(), is(403));
+        assertThat(response.getStatus(), is(401));
+    }
+
+    @Test
+    public void getProfileForbidden() {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Nickname", "nickname")
+                .header("Email", "nickname@example.com")
+                .get();
+
+        assertThat(response.getStatus(), is(401));
+    }
+
+    @Test
+    public void getMyProfile() throws IOException {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Nickname", "storchp")
+                .header("Email", "storchp@example.com")
+                .get();
+
+        assertThat(response.getStatus(), is(200));
+        assertProfile(response, "@storchp", "https://www.twitter.com/storchp", "CC0 1.0 Universell (CC0 1.0)", false);
+    }
+
+    private void assertProfile(final Response response, final String name, final String link, final String license, final boolean anonymous) throws IOException {
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
+        assertThat(jsonNode.get("nickname").asText(), is(name));
+        assertThat(jsonNode.get("email").asText(), is("storchp@example.com"));
+        assertThat(jsonNode.get("link").asText(), is(link));
+        assertThat(jsonNode.get("license").asText(), is(license));
+        assertThat(jsonNode.get("photoOwner").asBoolean(), is(true));
+        assertThat(jsonNode.get("anonymous").asBoolean(), is(anonymous));
+        assertThat(jsonNode.has("uploadToken"), is(false));
+    }
+
+    @Test
+    public void updateMyProfile() throws IOException {
+        final Response response1 = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Nickname", "storchp")
+                .header("Email", "storchp@example.com")
+                .get();
+
+        assertThat(response1.getStatus(), is(200));
+        assertThat(response1.getEntity(), notNullValue());
+        assertProfile(response1, "@storchp", "https://www.twitter.com/storchp", "CC0 1.0 Universell (CC0 1.0)", false);
+
+        final Response response2 = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Nickname", "storchp")
+                .header("Email", "storchp@example.com")
+                .post(Entity.entity("{\n" +
+                        "\t\"nickname\": \"storchp\", \n" +
+                        "\t\"email\": \"storchp@example.com\", \n" +
+                        "\t\"license\": \"license\",\n" +
+                        "\t\"photoOwner\": true, \n" +
+                        "\t\"link\": null,\n" +
+                        "\t\"anonymous\": true\n" +
+                        "}", "application/json"));
+
+        assertThat(response2.getStatus(), is(202));
+        assertThat(response2.getEntity(), notNullValue());
+
+        final Response response3 = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Nickname", "storchp")
+                .header("Email", "storchp@example.com")
+                .get();
+
+        assertThat(response3.getStatus(), is(200));
+        assertThat(response3.getEntity(), notNullValue());
+        assertProfile(response3, "storchp", "", "license", true);
+
     }
 
     public static final class MySuite {

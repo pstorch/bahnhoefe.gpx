@@ -111,7 +111,7 @@ public class PhotoImporter {
                 final String stationId = matcher.group(2);
                 final String photographerName = matcher.group(1);
 
-                final Optional<User> user = userDao.findByNormalizedName(User.normalize(photographerName));
+                final Optional<User> user = userDao.findByNormalizedName(User.normalizeName(photographerName));
                 if (!user.isPresent()) {
                     report.add(new ReportEntry(true, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;

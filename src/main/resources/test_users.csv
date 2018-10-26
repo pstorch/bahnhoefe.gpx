@@ -1,29 +1,29 @@
-id,name,normalizedName,url,ownPhotos,anonymous,license
-1,Some User,some user,,1,1,CC0 1.0 Universell (CC0 1.0)
-2,jarlaiti,jarlaiti,,1,0,CC0 1.0 Universell (CC0 1.0)
-3,@Mac4Me,mac4me,http://www.twitter.com/Mac4Me,1,0,CC0 1.0 Universell (CC0 1.0)
-4,@tmmd,tmmd,https://www.euroreiseblog.de,1,0,CC0 1.0 Universell (CC0 1.0)
-5,@pokipsie,pokipsie,http://www.martinrechsteiner.ch,1,0,CC0 1.0 Universell (CC0 1.0)
-6,@asolvo,asolvo,,1,0,CC0 1.0 Universell (CC0 1.0)
-7,datacyclist,datacyclist,https://dc.georgruss.ch,1,0,CC0 1.0 Universell (CC0 1.0)
-8,Marc Dänzer,marcdnzer,http://twitter.com/Weltpilot1,1,0,CC0 1.0 Universell (CC0 1.0)
-9,Gaby Becker,gabybecker,http://www.gaby-becker.de,1,0,CC0 1.0 Universell (CC0 1.0)
-10,BirgitFranik,birgitfranik,http://www.seh-n-sucht.de,1,0,CC0 1.0 Universell (CC0 1.0)
-11,@khgdrn,khgdrn,https://www.twitter.com/khgdrn,1,0,CC0 1.0 Universell (CC0 1.0)
-12,@harald_legner,haraldlegner,https://twitter.com/harald_legner,1,0,CC0 1.0 Universell (CC0 1.0)
-13,@JoachimWeiss,joachimweiss,https://twitter.com/JoachimWeiss,1,0,CC0 1.0 Universell (CC0 1.0)
-14,@tra,tra,,1,0,CC0 1.0 Universell (CC0 1.0)
-15,@storchp,storchp,https://www.twitter.com/storchp,1,0,CC0 1.0 Universell (CC0 1.0)
-16,Jasmin,jasmin,,1,0,CC0 1.0 Universell (CC0 1.0)
-17,karin1210,karin1210,http://bonngehtessen.de,1,0,CC0 1.0 Universell (CC0 1.0)
-18,@steschny,steschny,https://twitter.com/steschny,1,0,CC0 1.0 Universell (CC0 1.0)
-19,Panda rennt,pandarennt,https://twitter.com/PandaRennt,1,0,CC0 1.0 Universell (CC0 1.0)
-20,ann_deibel,anndeibel,https://twitter.com/ann_deibel,1,0,CC0 1.0 Universell (CC0 1.0)
-21,mmehnert,mmehnert,https://twitter.com/marcomehnert,1,0,CC0 1.0 Universell (CC0 1.0)
-22,@RBalimann,rbalimann,,1,0,CC0 1.0 Universell (CC0 1.0)
-23,@hgdrn,hgdrn,http://unterwegs.hgdrn.de/,1,0,CC BY-NC-SA 3.0 DE
-24,Hans Schlegel,hansschlegel,http://www.deutschlands-bahnhoefe.de/,1,0,CC0 1.0 Universell (CC0 1.0)
-25,Georg25,georg25,https://twitter.com/georggmuer,1,0,CC0 1.0 Universell (CC0 1.0)
-26,Drazen,drazen,,1,0,CC0 1.0 Universell (CC0 1.0)
-27,Fox929,fox929,https://twitter.com/Fox929,1,0,CC0 1.0 Universell (CC0 1.0)
-28,@stefanopitz,stefanopitz,https://twitter.com/stefanopitz,1,0,CC0 1.0 Universell (CC0 1.0)
+id,name,normalizedName,url,ownPhotos,anonymous,license,email
+1,Some User,some user,,1,1,CC0 1.0 Universell (CC0 1.0),NULL
+2,jarlaiti,jarlaiti,,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+3,@Mac4Me,mac4me,http://www.twitter.com/Mac4Me,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+4,@tmmd,tmmd,https://www.euroreiseblog.de,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+5,@pokipsie,pokipsie,http://www.martinrechsteiner.ch,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+6,@asolvo,asolvo,,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+7,datacyclist,datacyclist,https://dc.georgruss.ch,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+8,Marc Dänzer,marcdnzer,http://twitter.com/Weltpilot1,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+9,Gaby Becker,gabybecker,http://www.gaby-becker.de,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+10,BirgitFranik,birgitfranik,http://www.seh-n-sucht.de,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+11,@khgdrn,khgdrn,https://www.twitter.com/khgdrn,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+12,@harald_legner,haraldlegner,https://twitter.com/harald_legner,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+13,@JoachimWeiss,joachimweiss,https://twitter.com/JoachimWeiss,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+14,@tra,tra,,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+15,@storchp,storchp,https://www.twitter.com/storchp,1,0,CC0 1.0 Universell (CC0 1.0),storchp@example.com
+16,Jasmin,jasmin,,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+17,karin1210,karin1210,http://bonngehtessen.de,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+18,@steschny,steschny,https://twitter.com/steschny,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+19,Panda rennt,pandarennt,https://twitter.com/PandaRennt,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+20,ann_deibel,anndeibel,https://twitter.com/ann_deibel,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+21,mmehnert,mmehnert,https://twitter.com/marcomehnert,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+22,@RBalimann,rbalimann,,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+23,@hgdrn,hgdrn,http://unterwegs.hgdrn.de/,1,0,CC BY-NC-SA 3.0 DE,NULL
+24,Hans Schlegel,hansschlegel,http://www.deutschlands-bahnhoefe.de/,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+25,Georg25,georg25,https://twitter.com/georggmuer,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+26,Drazen,drazen,,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+27,Fox929,fox929,https://twitter.com/Fox929,1,0,CC0 1.0 Universell (CC0 1.0),NULL
+28,@stefanopitz,stefanopitz,https://twitter.com/stefanopitz,1,0,CC0 1.0 Universell (CC0 1.0),NULL

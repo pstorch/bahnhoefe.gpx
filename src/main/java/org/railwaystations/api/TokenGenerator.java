@@ -1,6 +1,7 @@
 package org.railwaystations.api;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.railwaystations.api.model.User;
 
 public class TokenGenerator {
 
@@ -12,11 +13,11 @@ public class TokenGenerator {
 
     public String buildFor(final String nickname, final String email, final Long userSalt) {
         if (userSalt != null) {
-            return DigestUtils.sha1Hex(salt + "-" + email + "-" + userSalt);
+            return DigestUtils.sha1Hex(salt + "-" + User.normalizeEmail(email) + "-" + userSalt);
         }
 
         // for backward compatibility
-        return DigestUtils.sha1Hex(salt + "-" + nickname + "-" + email);
+        return DigestUtils.sha1Hex(salt + "-" + nickname + "-" + User.normalizeEmail(email));
     }
 
 }

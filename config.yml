@@ -15,7 +15,6 @@ database:
     charSet: UTF-8
 workDir: ${RSAPI_WORK:-/var/rsapi}
 photoDir: ${PHOTO_DIR:-/tmp/railway-station-photos}
-apiKey: ${API_KEY:-dummy}
 salt: ${SALT:-dummy}
 mailer:
   "@class": org.railwaystations.api.mail.MockMailer

@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.railwaystations.api.TokenGenerator;
+import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.mail.MockMailer;
 import org.railwaystations.api.model.User;
@@ -20,11 +21,11 @@ import static org.mockito.Mockito.*;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 @SuppressWarnings("PMD.TooManyStaticImports")
-public class RegistrationResourceTest {
+public class ProfileResourceTest {
 
     private MockMonitor monitor;
     private MockMailer mailer;
-    private RegistrationResource resource;
+    private ProfileResource resource;
     private UserDao userDao;
 
     @BeforeEach
@@ -33,13 +34,13 @@ public class RegistrationResourceTest {
         mailer = new MockMailer();
         userDao = mock(UserDao.class);
 
-        resource = new RegistrationResource("apiKey", new TokenGenerator("dummy"), monitor, mailer, userDao);
+        resource = new ProfileResource(new TokenGenerator("dummy"), monitor, mailer, userDao);
     }
 
     @Test
     public void testInvalid() {
-        final User registration = new User("nickname", "email", null, true, "link", false);
-        final Response response = resource.post("apiKey", registration);
+        final User registration = new User("nickname", null, null, true, "link", false);
+        final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(400));
     }
@@ -47,7 +48,7 @@ public class RegistrationResourceTest {
     @Test
     public void testNewUser() {
         final User registration = new User("nickname", "nickname@example.com", "license", true, "link", false);
-        final Response response = resource.post("apiKey", registration);
+        final Response response = resource.register(registration);
         verify(userDao).findByNormalizedName("nickname");
         verify(userDao).findByEmail("nickname@example.com");
         verify(userDao).insert(any(User.class));
@@ -55,7 +56,13 @@ public class RegistrationResourceTest {
 
         assertThat(response.getStatus(), equalTo(202));
         assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, link='link', anonymous=false}"));
-        assertThat(mailer.getText().matches("Hallo nickname,\n\n" +
+        assertEmail("nickname");
+
+        verifyNoMoreInteractions(userDao);
+    }
+
+    private void assertEmail(final String nickname) {
+        assertThat(mailer.getText().matches("Hallo " + nickname + ",\n\n" +
                 "vielen Dank für Deine Registrierung.\n" +
                 "Dein Upload Token lautet: .*\n" +
                 "Klicke bitte auf http://railway-stations.org/uploadToken/.* um ihn in die App zu übernehmen.\n" +
@@ -63,24 +70,22 @@ public class RegistrationResourceTest {
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"), is(true));
         assertThat(mailer.getQrCode(), notNullValue());
-
-        verifyNoMoreInteractions(userDao);
     }
 
     @Test
     public void testNewUserAnonymous() {
         final User registration = new User("nickname", "nickname@example.com", "license", true, "link", true);
-        final Response response = resource.post("apiKey", registration);
+        final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(202));
         assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, link='link', anonymous=true}"));
     }
 
     @Test
-    public void testNewUserEmailTaken() {
-        when(userDao.findByEmail("existing@example.com")).thenReturn(Optional.of(new User("other", "existing@example.com", "license", true, "link", false)));
-        final User registration = new User("existing", "existing@example.com", "license", true, "link", false);
-        final Response response = resource.post("apiKey", registration);
+    public void testNewUserNameTaken() {
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "license", true, "link", false)));
+        final User registration = new User("existing", "other@example.com", "license", true, "link", false);
+        final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(409));
     }
@@ -89,7 +94,7 @@ public class RegistrationResourceTest {
     public void testExistingUserOk() {
         when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "license", true, "link", false)));
         final User registration = new User("existing", "existing@example.com", "license", true, "link", false);
-        final Response response = resource.post("apiKey", registration);
+        final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(202));
         assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='existing', email='existing@example.com', license='license', photoOwner=true, link='link', anonymous=false}"));
@@ -99,9 +104,53 @@ public class RegistrationResourceTest {
     public void testExistingUserWrongEmail() {
         when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "license", true, "link", false)));
         final User registration = new User("existing", "existing@example.com", "license", true, "link", false);
-        final Response response = resource.post("apiKey", registration);
+        final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(409));
+    }
+
+    @Test
+    public void testGetMyProfile() {
+        final User user = new User("existing", "existing@example.com", null, true, null, false);
+        final Response response = resource.getMyProfile(new AuthUser(user));
+
+        assertThat(response.getStatus(), equalTo(200));
+        assertThat(response.getEntity(), sameInstance(user));
+    }
+
+    @Test
+    public void testUpdateMyProfile() {
+        when(userDao.findByNormalizedName("newname")).thenReturn(Optional.empty());
+        final User user = new User("existing", "existing@example.com", null, true, null, false);
+        final User newProfile = new User("new_name", "existing@example.com", "CC4", true, "http://twitter.com/", true);
+        final Response response = resource.updateMyProfile(newProfile, new AuthUser(user));
+
+        assertThat(response.getStatus(), equalTo(202));
+        verify(userDao).update(newProfile);
+    }
+
+    @Test
+    public void testUpdateMyProfileConflict() {
+        when(userDao.findByNormalizedName("newname")).thenReturn(Optional.of(new User("@New name", "newname@example.com", null, true, null, false)));
+        final User user = new User("existing", "existing@example.com", null, true, null, false);
+        final User newProfile = new User("new_name", "existing@example.com", "CC4", true, "http://twitter.com/", true);
+        final Response response = resource.updateMyProfile(newProfile, new AuthUser(user));
+
+        assertThat(response.getStatus(), equalTo(409));
+        verify(userDao, never()).update(newProfile);
+    }
+
+    @Test
+    public void testUpdateMyProfileNewMail() {
+        when(userDao.findByEmail("newname@example.com")).thenReturn(Optional.empty());
+        final User user = new User("existing", "existing@example.com", null, true, null, false);
+        final User newProfile = new User("existing", "newname@example.com", "CC4", true, "http://twitter.com/", true);
+        final Response response = resource.updateMyProfile(newProfile, new AuthUser(user));
+
+        assertThat(response.getStatus(), equalTo(202));
+        assertEmail("existing");
+        verify(userDao).updateEmailAndTokenSalt(user.getId(), newProfile.getEmail(), newProfile.getUploadTokenSalt());
+        verify(userDao, never()).update(newProfile);
     }
 
 }

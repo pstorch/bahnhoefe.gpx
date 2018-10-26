@@ -20,8 +20,6 @@ public class RsApiConfiguration extends Configuration {
 
     private Monitor monitor = new LoggingMonitor();
 
-    private String apiKey;
-
     private TokenGenerator tokenGenerator;
 
     private String workDir;
@@ -64,14 +62,6 @@ public class RsApiConfiguration extends Configuration {
 
     public void setWorkDir(final String workDir) {
         this.workDir = workDir;
-    }
-
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public void setApiKey(final String apiKey) {
-        this.apiKey = apiKey;
     }
 
     public TokenGenerator getTokenGenerator() {

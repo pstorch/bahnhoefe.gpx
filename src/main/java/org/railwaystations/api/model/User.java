@@ -2,6 +2,7 @@ package org.railwaystations.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@SuppressWarnings("PMD.ShortClassName")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class User {
 
     private static final Map<String, String> LICENSE_MAP = new HashMap<>(2);
@@ -22,10 +23,13 @@ public class User {
         LICENSE_MAP.put("CC4", "CC BY-SA 4.0");
     }
 
+    @JsonProperty("nickname")
     private final String name;
 
+    @JsonProperty("link")
     private final String url;
 
+    @JsonProperty("license")
     private final String license;
 
     @JsonIgnore
@@ -37,11 +41,14 @@ public class User {
     @JsonIgnore
     private String normalizedName;
 
-    @JsonIgnore
+    @JsonProperty("photoOwner")
     private boolean ownPhotos;
 
-    @JsonIgnore
+    @JsonProperty("anonymous")
     private boolean anonymous;
+
+    @JsonProperty("uploadToken")
+    private String uploadToken;
 
     @JsonIgnore
     private Long uploadTokenSalt;
@@ -51,7 +58,7 @@ public class User {
         this.url = url;
         this.license = license;
         this.id = id;
-        this.email = StringUtils.trimToEmpty(email).toLowerCase(Locale.ENGLISH);
+        this.email = normalizeEmail(email);
         this.normalizedName = normalizedName;
         this.ownPhotos = ownPhotos;
         this.anonymous = anonymous;
@@ -68,8 +75,8 @@ public class User {
                         @JsonProperty("link") final String link,
                         @JsonProperty("anonymous") final boolean anonymous) {
         this.name = StringUtils.trimToEmpty(name);
-        this.normalizedName = normalize(name);
-        this.email = StringUtils.trimToEmpty(email);
+        this.normalizedName = normalizeName(name);
+        this.email = normalizeEmail(email);
         this.license = LICENSE_MAP.getOrDefault(license, license);
         this.ownPhotos = photoOwner;
         this.anonymous = anonymous;
@@ -77,11 +84,11 @@ public class User {
     }
 
     public User(final String name, final String url, final String license) {
-        this(name, url, license, 0, null, normalize(name), true, false, null);
+        this(name, url, license, 0, null, normalizeName(name), true, false, null);
     }
 
     public User(final String name, final String url, final String license, final boolean anonymous) {
-        this(name, url, license, 0, null, normalize(name), true, anonymous, null);
+        this(name, url, license, 0, null, normalizeName(name), true, anonymous, null);
     }
 
     public static Map<String, User> toNameMap(final List<User> list) {
@@ -92,18 +99,25 @@ public class User {
         return list.stream().collect(Collectors.toMap (User::getId, i -> i));
     }
 
-    public static String normalize(final String name) {
+    public static String normalizeName(final String name) {
         return StringUtils.trimToEmpty(name).toLowerCase(Locale.ENGLISH).replaceAll("[^a-z0-9]","");
     }
 
+    public static String normalizeEmail(final String email) {
+        return StringUtils.trimToEmpty(email).toLowerCase(Locale.ENGLISH);
+    }
+
+    @JsonProperty("nickname")
     public String getName() {
         return name;
     }
 
+    @JsonProperty("link")
     public String getUrl() {
         return url;
     }
 
+    @JsonIgnore
     public String getDisplayUrl() {
         return anonymous || StringUtils.isBlank(url) ? "https://railway-stations.org" : url;
     }
@@ -143,6 +157,7 @@ public class User {
         return normalizedName;
     }
 
+    @JsonProperty("photoOwner")
     public boolean isOwnPhotos() {
         return ownPhotos;
     }
@@ -155,11 +170,24 @@ public class User {
         return uploadTokenSalt;
     }
 
+    @JsonIgnore
     public String getDisplayName() {
         return anonymous ? "Anonym" : getName();
     }
 
     public void setUploadTokenSalt(final Long uploadTokenSalt) {
         this.uploadTokenSalt = uploadTokenSalt;
+    }
+
+    public String getUploadToken() {
+        return uploadToken;
+    }
+
+    public void setUploadToken(final String uploadToken) {
+        this.uploadToken = uploadToken;
+    }
+
+    public void setId(final int id) {
+        this.id = id;
     }
 }

@@ -198,6 +198,7 @@
             <column name="ownPhotos" type="boolean"/>
             <column name="anonymous" type="boolean"/>
             <column name="license" type="string"/>
+            <column name="email" type="string"/>
         </loadData>
     </changeSet>
 

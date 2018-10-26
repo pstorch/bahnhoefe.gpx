@@ -34,11 +34,18 @@ public interface UserDao {
     Optional<User> findByEmail(@Bind("email") final String email);
 
     @SqlUpdate("update users set uploadTokenSalt = :uploadTokenSalt where id = :id")
-    void updateTokenSalt(@Bind("id") int id, @Bind("uploadTokenSalt") final Long uploadTokenSalt);
+    void updateTokenSalt(@Bind("id") final int id, @Bind("uploadTokenSalt") final Long uploadTokenSalt);
+
+    @SqlUpdate("update users set email = :email, uploadTokenSalt = :uploadTokenSalt where id = :id")
+    void updateEmailAndTokenSalt(@Bind("id") final int id, @Bind("email") final String email, @Bind("uploadTokenSalt") final Long uploadTokenSalt);
 
     @SqlUpdate("insert into users (id, name, url, license, email, normalizedName, ownPhotos, anonymous, uploadTokenSalt) values (:id, :name, :url, :license, :email, :normalizedName, :ownPhotos, :anonymous, :uploadTokenSalt)")
     @GetGeneratedKeys("id")
     Integer insert(@BindBean final User user);
+
+    @SqlUpdate("update users set name = :name, url = :url, license = :license, email = :email, normalizedName = :normalizedName, ownPhotos = :ownPhotos, anonymous = :anonymous where id = :id")
+    void update(@BindBean final User user);
+
 
     class UserMapper implements RowMapper<User> {
         public UserMapper() {
