@@ -9,8 +9,8 @@ import org.railwaystations.api.model.Station;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,42 +46,36 @@ public class SlackCommandResource {
         }
         final Matcher matcherSearch = PATTERN_SEARCH.matcher(text);
         if (matcherSearch.matches()) {
-            final List<Station> stationList = repository.findByName(matcherSearch.group(1));
-            if (stationList.size() == 1) {
-                return new SlackResponse(ResponseType.in_channel, toMessage(stationList.get(0)));
-            } else if (stationList.size() > 1){
-                return new SlackResponse(ResponseType.in_channel, toMessage(stationList));
+            final Map<Station.Key, String> stations = repository.findByName(matcherSearch.group(1));
+            if (!stations.isEmpty()){
+                return new SlackResponse(ResponseType.in_channel, toMessage(stations));
             }
             return new SlackResponse(ResponseType.in_channel, "No stations found");
         }
         final Matcher matcherShow = PATTERN_SHOW.matcher(text);
         if (matcherShow.matches()) {
-            final String country = matcherShow.group(1).toLowerCase(Locale.ENGLISH);
-            final String id = matcherShow.group(2);
-            final Station.Key key = new Station.Key(country, id);
-            final Station station = repository.findByKey(key);
-            if (station == null) {
-                return new SlackResponse(ResponseType.in_channel, "Station with " + key + " not found");
-            } else {
-                return new SlackResponse(ResponseType.in_channel, toMessage(station));
-            }
+            return showStation(matcherShow.group(1).toLowerCase(Locale.ENGLISH), matcherShow.group(2));
         }
         final Matcher matcherShowLegacy = PATTERN_SHOW_LEGACY.matcher(text);
         if (matcherShowLegacy.matches()) {
-            final String id = matcherShowLegacy.group(1);
-            final Station station = repository.findById(id);
-            if (station == null) {
-                return new SlackResponse(ResponseType.in_channel, "Station with id " + id + " not found");
-            } else {
-                return new SlackResponse(ResponseType.in_channel, toMessage(station));
-            }
+            return showStation(null, matcherShowLegacy.group(1));
         }
         return new SlackResponse(ResponseType.ephimeral, String.format("I understand:%n- '/rsapi search <station-name>'%n- '/rsapi show <country-code> <station-id>%n- '/rsapi import'%n"));
     }
 
-    private String toMessage(final List<Station> stationList) {
+    private SlackResponse showStation(final String country, final String id) {
+        final Station.Key key = new Station.Key(country, id);
+        final Station station = repository.findByKey(key);
+        if (station == null) {
+            return new SlackResponse(ResponseType.in_channel, "Station with " + key + " not found");
+        } else {
+            return new SlackResponse(ResponseType.in_channel, toMessage(station));
+        }
+    }
+
+    private String toMessage(final Map<Station.Key, String> stations) {
         final StringBuilder sb = new StringBuilder(String.format("Found:%n"));
-        stationList.forEach(station -> sb.append(String.format("- %s: %s%n", station.getTitle(), station.getKey())));
+        stations.keySet().forEach(station -> sb.append(String.format("- %s: %s%n", stations.get(station), station)));
         return sb.toString();
     }
 
@@ -102,7 +96,7 @@ public class SlackCommandResource {
      *     “text”: “How to use /please”,
      *     “attachments”:[
      *          {
-     *          “text”:”To be fed, use `/please feed` to request food. We hear the elf needs food badly.\nTo tease, use `/please tease` &mdash; we always knew you liked noogies.\nYou’ve already learned how to get help with `/please help`.”
+     *          “text”:”To be fed, use `/please feed` to request food. We hear the elf needs food badly.\nTo tease, use `/please tease` &mdash; we always knew you liked noogies.\nYou’ve already learned how to getStationsByCountry help with `/please help`.”
      *          }
      *      ]
      *    }

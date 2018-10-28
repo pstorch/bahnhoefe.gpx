@@ -24,6 +24,8 @@ import org.xml.sax.SAXException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,6 +42,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class RsApiAppTest {
 
     public static final DropwizardAppExtension<RsApiConfiguration> RULE = MySuite.DROPWIZARD;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private Client client;
 
@@ -119,8 +122,7 @@ public class RsApiAppTest {
     @Test
     public void stationsJson() throws IOException {
         final Response response = loadRaw("/de/stations.json", 200);
-        final ObjectMapper mapper = new ObjectMapper();
-        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isArray(), is(true));
         assertThat(jsonNode.size(), is(729));
@@ -200,8 +202,7 @@ public class RsApiAppTest {
     @Test
     public void photographersJson() throws IOException {
         final Response response = loadRaw(String.format("/de/%s.json", "photographers"), 200);
-        final ObjectMapper mapper = new ObjectMapper();
-        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
         assertThat(jsonNode.size(), is(4));
@@ -210,8 +211,7 @@ public class RsApiAppTest {
     @Test
     public void photographersAllJson() throws IOException {
         final Response response = loadRaw("/photographers.json", 200);
-        final ObjectMapper mapper = new ObjectMapper();
-        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
         assertThat(jsonNode.size(), is(6));
@@ -236,10 +236,29 @@ public class RsApiAppTest {
     }
 
     @Test
+    public void slackSearch() throws IOException {
+        final Form input = new Form();
+        input.param("text", "search altstadt");
+        input.param("token", "dummy");
+        final Entity<Form> entity = Entity.entity(input, MediaType.APPLICATION_FORM_URLENCODED);
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/slack"))
+                .request(MediaType.APPLICATION_FORM_URLENCODED)
+                .accept(MediaType.APPLICATION_JSON)
+                .post(entity);
+
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
+        assertThat(jsonNode.get("response_type").asText(), is("in_channel"));
+        final String text = jsonNode.get("text").asText();
+        assertThat(text.startsWith("Found:\n"), is(true));
+        assertThat(text.contains("- Meißen Altstadt: Key{country='de', id='8277'}\n"), is(true));
+        assertThat(text.contains("- Neckargemünd Altstadt: Key{country='de', id='8053'}\n"), is(true));
+    }
+
+    @Test
     public void statisticJson() throws IOException {
         final Response response = loadRaw("/de/stats.json", 200);
-        final ObjectMapper mapper = new ObjectMapper();
-        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
         assertThat(jsonNode.size(), is(4));

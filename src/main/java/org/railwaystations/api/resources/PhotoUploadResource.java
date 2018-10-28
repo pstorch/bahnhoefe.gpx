@@ -88,7 +88,7 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.UNAUTHORIZED);
         }
 
-        final Map<Station.Key, Station> stationsMap = repository.get(country);
+        final Map<Station.Key, Station> stationsMap = repository.getStationsByCountry(country);
         if (stationsMap.isEmpty()) {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }

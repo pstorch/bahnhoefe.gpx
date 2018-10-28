@@ -36,9 +36,9 @@ public class StationsResourceTest {
         stationsAll.putAll(stationsXY);
 
         final StationsRepository repository = Mockito.mock(StationsRepository.class);
-        Mockito.when(repository.get("xy")).thenReturn(stationsXY);
-        Mockito.when(repository.get("ab")).thenReturn(stationsAB);
-        Mockito.when(repository.get(null)).thenReturn(stationsAll);
+        Mockito.when(repository.getStationsByCountry("xy")).thenReturn(stationsXY);
+        Mockito.when(repository.getStationsByCountry("ab")).thenReturn(stationsAB);
+        Mockito.when(repository.getStationsByCountry(null)).thenReturn(stationsAll);
 
         resource = new StationsResource(repository);
     }

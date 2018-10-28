@@ -54,7 +54,7 @@ public class PhotoUploadResourceTest {
 
         tempDir = Files.createTempDirectory("rsapi");
         final StationsRepository repository = mock(StationsRepository.class);
-        when(repository.get("de")).thenReturn(stationsMap);
+        when(repository.getStationsByCountry("de")).thenReturn(stationsMap);
 
         resource = new PhotoUploadResource(repository, "apiKey", tokenGenerator, tempDir.toString(), monitor, userDao);
     }

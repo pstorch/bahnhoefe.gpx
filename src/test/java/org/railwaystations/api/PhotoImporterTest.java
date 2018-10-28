@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,11 +59,11 @@ public class PhotoImporterTest {
 
         stationDao = mock(StationDao.class);
         final Station felde = new Station(new Station.Key("de", "8009"), "Felde", null, null);
-        when(stationDao.findByKey(felde.getKey().getCountry(), felde.getKey().getId())).thenReturn(Optional.of(felde));
+        when(stationDao.findByKey(felde.getKey().getCountry(), felde.getKey().getId())).thenReturn(Collections.singleton(felde));
 
         final Station.Key hannoverKey = new Station.Key("de", "6913");
         final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", new User("", "", ""), 0L, ""));
-        when(stationDao.findByKey(hannoverKey.getCountry(), hannoverKey.getId())).thenReturn(Optional.of(hannover));
+        when(stationDao.findByKey(hannoverKey.getCountry(), hannoverKey.getId())).thenReturn(Collections.singleton(hannover));
 
         repository = new StationsRepository(countryDao, stationDao);
 

@@ -65,7 +65,7 @@ public class StationsResource {
     }
 
     private Map<Station.Key, Station> getStationsMap(final String country) {
-        final Map<Station.Key, Station> stationMap = repository.get(country);
+        final Map<Station.Key, Station> stationMap = repository.getStationsByCountry(country);
         if (stationMap.isEmpty()) {
             throw new WebApplicationException(404);
         }

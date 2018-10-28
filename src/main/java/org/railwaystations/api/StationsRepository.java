@@ -1,6 +1,5 @@
 package org.railwaystations.api;
 
-import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.StationDao;
 import org.railwaystations.api.model.Country;
@@ -22,13 +21,8 @@ public class StationsRepository {
         this.stationDao = stationDao;
     }
 
-    public Map<Station.Key, Station> get(final String countryCode) {
-        final Set<Station> stations;
-        if (countryCode == null) {
-            stations = stationDao.list();
-        } else {
-            stations = stationDao.findByCountry(countryCode);
-        }
+    public Map<Station.Key, Station> getStationsByCountry(final String countryCode) {
+        final Set<Station> stations = stationDao.findByCountry(countryCode);
         return stations.stream().collect(Collectors.toMap(Station::getKey, Function.identity()));
     }
 
@@ -51,20 +45,8 @@ public class StationsRepository {
         return message.toString();
     }
 
-    public Station findById(final String id) {
-        return stationDao.findById(id).stream().findFirst().orElse(null);
-    }
-
-    public List<Station> findByName(final String name) {
-        final List<Station> found = new ArrayList<>();
-        for (final Country country : getCountries()) {
-            found.addAll(get(country.getCode())
-                    .values()
-                    .stream()
-                    .filter(station -> StringUtils.containsIgnoreCase(station.getTitle(), name))
-                    .collect(Collectors.toList()));
-        }
-        return found;
+    public Map<Station.Key, String> findByName(final String name) {
+        return stationDao.findByName(name);
     }
 
     public Statistic getStatistic(final String country) {
@@ -72,7 +54,11 @@ public class StationsRepository {
     }
 
     public Station findByKey(final Station.Key key) {
-        return stationDao.findByKey(key.getCountry(), key.getId()).orElse(null);
+        return stationDao.findByKey(key.getCountry(), key.getId()).stream().findFirst().orElse(null);
+    }
+
+    public Map<String, Long> getPhotographerMap(final String country) {
+        return stationDao.getPhotographerMap(country);
     }
 
 }

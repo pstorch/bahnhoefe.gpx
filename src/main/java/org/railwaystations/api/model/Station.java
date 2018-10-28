@@ -1,10 +1,10 @@
 package org.railwaystations.api.model;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
+import java.beans.ConstructorProperties;
 import java.util.Objects;
 
 public class Station {
@@ -41,9 +41,6 @@ public class Station {
     @JsonProperty
     private Long createdAt;
 
-    @JsonIgnore
-    private String statUser;
-
     public Station() {
         this(new Key("", "0"), null, new Coordinates(0.0, 0.0), null);
     }
@@ -67,18 +64,15 @@ public class Station {
             if (user != null) {
                 this.photographer = user.getDisplayName();
                 this.photographerUrl = user.getDisplayUrl();
-                this.statUser = user.getName();
             } else {
                 this.photographer = "-";
                 this.photographerUrl = "";
-                this.statUser = "-";
             }
 
             this.photoUrl = photo.getUrl();
             this.license = photo.getLicense();
             this.licenseUrl = photo.getLicenseUrl();
             this.photographerUrl = photo.getPhotographer().getDisplayUrl();
-            this.statUser = photo.getPhotographer().getName();
             this.createdAt = photo.getCreatedAt();
         } else {
             this.photographer = null;
@@ -86,7 +80,6 @@ public class Station {
             this.license = null;
             this.licenseUrl = null;
             this.photographerUrl = null;
-            this.statUser = null;
             this.createdAt = null;
         }
     }
@@ -159,10 +152,6 @@ public class Station {
         return photographerUrl;
     }
 
-    public String getStatUser() {
-        return statUser;
-    }
-
     public Long getCreatedAt() {
         return createdAt;
     }
@@ -179,6 +168,7 @@ public class Station {
             this("","");
         }
 
+        @ConstructorProperties({"country", "id"})
         public Key(final String country, final String id) {
             this.country = country;
             this.id = id;
