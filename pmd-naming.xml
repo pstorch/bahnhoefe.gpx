@@ -495,7 +495,7 @@ Short Classnames with fewer than e.g. five characters are not recommended.
         </description>
         <priority>4</priority>
           <properties>
-              <property name="minimum" type="Integer" value="5" min="1" max="100" description="Number of characters that are required as a minimum for a class name."/>
+              <property name="minimum" type="Integer" value="4" min="1" max="100" description="Number of characters that are required as a minimum for a class name."/>
               <property name="xpath">
                   <value>
                       <![CDATA[

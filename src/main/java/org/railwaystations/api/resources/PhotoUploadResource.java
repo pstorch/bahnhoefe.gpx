@@ -1,13 +1,13 @@
 package org.railwaystations.api.resources;
 
+import io.dropwizard.auth.Auth;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.InputStreamEntity;
 import org.eclipse.jetty.util.URIUtil;
 import org.railwaystations.api.StationsRepository;
-import org.railwaystations.api.TokenGenerator;
+import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
@@ -17,7 +17,10 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 @Path("/photoUpload")
@@ -30,15 +33,11 @@ public class PhotoUploadResource {
     private static final String IMAGE_JPEG = "image/jpeg";
 
     private final StationsRepository repository;
-    private final String apiKey;
-    private final TokenGenerator tokenGenerator;
     private final File uploadDir;
     private final Monitor monitor;
 
-    public PhotoUploadResource(final StationsRepository repository, final String apiKey, final TokenGenerator tokenGenerator, final String uploadDir, final Monitor monitor) {
+    public PhotoUploadResource(final StationsRepository repository, final String uploadDir, final Monitor monitor) {
         this.repository = repository;
-        this.apiKey = apiKey;
-        this.tokenGenerator = tokenGenerator;
         this.uploadDir = new File(uploadDir);
         this.monitor = monitor;
     }
@@ -47,36 +46,13 @@ public class PhotoUploadResource {
     @Consumes({IMAGE_PNG, IMAGE_JPEG})
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(final InputStream body,
-                         @NotNull @HeaderParam("API-Key") final String apiKey,
-                         @NotNull @HeaderParam("Upload-Token") final String inUploadToken,
-                         @NotNull @HeaderParam("Nickname") final String inNickname,
-                         @NotNull @HeaderParam("Email") final String inEmail,
                          @NotNull @HeaderParam("Station-Id") final String stationId,
                          @NotNull @HeaderParam("Country") final String country,
-                         @HeaderParam("Content-Type") final String contentType)
-            throws UnsupportedEncodingException {
-        // trim user input
-        final String nickname = StringUtils.trimToEmpty(inNickname);
-        final String email = StringUtils.trimToEmpty(inEmail);
+                         @HeaderParam("Content-Type") final String contentType,
+                         @Auth final AuthUser user) {
+        LOG.info("Nickname: {}, Email: {}, Country: {}, Station-Id: {}, Content-Type: {}", user.getName(), user.getUser().getEmail(), country, stationId, contentType);
 
-        LOG.info("Nickname: {}, Email: {}, Country: {}, Station-Id: {}, Content-Type: {}", nickname, email, country, stationId, contentType);
-
-        if (!this.apiKey.equals(apiKey)) {
-            LOG.info("invalid API key");
-            return consumeBodyAndReturn(body, Response.Status.FORBIDDEN);
-        }
-
-        if (nickname.contains("/")) {
-            return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
-        }
-
-        final String uploadToken = StringUtils.trimToEmpty(inUploadToken);
-        if (!tokenGenerator.buildFor(nickname, email).equals(uploadToken)) {
-            LOG.info("Token doesn't fit to nickname {} and email {}", nickname, email);
-            return consumeBodyAndReturn(body, Response.Status.UNAUTHORIZED);
-        }
-
-        final Map<Station.Key, Station> stationsMap = repository.get(country);
+        final Map<Station.Key, Station> stationsMap = repository.getStationsByCountry(country);
         if (stationsMap.isEmpty()) {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
@@ -87,7 +63,7 @@ public class PhotoUploadResource {
         }
 
         final File uploadCountryDir = new File(uploadDir, country);
-        final String filename = toFilename(stationId, contentType, nickname);
+        final String filename = toFilename(stationId, contentType, user.getUser().getNormalizedName());
         final boolean duplicate = isDuplicate(station, uploadCountryDir, filename);
         final File file = new File(uploadCountryDir, filename);
         LOG.info("Writing photo to {}", file);

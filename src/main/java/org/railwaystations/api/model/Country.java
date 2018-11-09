@@ -20,8 +20,8 @@ public class Country {
     public Country(final String code, final String name, final String email, final String twitterTags, final String timetableUrlTemplate) {
         this.code = code;
         this.name = name;
-        this.email = email;
-        this.twitterTags = twitterTags;
+        this.email = email != null ? email : this.email;
+        this.twitterTags = twitterTags != null ? twitterTags : this.twitterTags;
         this.timetableUrlTemplate = timetableUrlTemplate;
     }
 
@@ -63,4 +63,5 @@ public class Country {
     public int hashCode() {
         return code != null ? code.hashCode() : 0;
     }
+
 }

@@ -1,10 +1,10 @@
 package org.railwaystations.api.model;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
+import java.beans.ConstructorProperties;
 import java.util.Objects;
 
 public class Station {
@@ -41,9 +41,6 @@ public class Station {
     @JsonProperty
     private Long createdAt;
 
-    @JsonIgnore
-    private String statUser;
-
     public Station() {
         this(new Key("", "0"), null, new Coordinates(0.0, 0.0), null);
     }
@@ -63,12 +60,19 @@ public class Station {
 
     public void setPhoto(final Photo photo) {
         if (photo != null) {
-            this.photographer = photo.getPhotographer();
+            final User user = photo.getPhotographer();
+            if (user != null) {
+                this.photographer = user.getDisplayName();
+                this.photographerUrl = user.getDisplayUrl();
+            } else {
+                this.photographer = "-";
+                this.photographerUrl = "";
+            }
+
             this.photoUrl = photo.getUrl();
             this.license = photo.getLicense();
             this.licenseUrl = photo.getLicenseUrl();
-            this.photographerUrl = photo.getPhotographerUrl();
-            this.statUser = photo.getStatUser();
+            this.photographerUrl = photo.getPhotographer().getDisplayUrl();
             this.createdAt = photo.getCreatedAt();
         } else {
             this.photographer = null;
@@ -76,7 +80,6 @@ public class Station {
             this.license = null;
             this.licenseUrl = null;
             this.photographerUrl = null;
-            this.statUser = null;
             this.createdAt = null;
         }
     }
@@ -149,10 +152,6 @@ public class Station {
         return photographerUrl;
     }
 
-    public String getStatUser() {
-        return statUser;
-    }
-
     public Long getCreatedAt() {
         return createdAt;
     }
@@ -169,6 +168,7 @@ public class Station {
             this("","");
         }
 
+        @ConstructorProperties({"country", "id"})
         public Key(final String country, final String id) {
             this.country = country;
             this.id = id;
@@ -217,4 +217,22 @@ public class Station {
                     '}';
         }
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof  Station)) {
+            return false;
+        }
+        final Station other = (Station) o;
+        return Objects.equals(key, other.getKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return key.hashCode();
+    }
+
 }

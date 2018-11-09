@@ -1,9 +1,10 @@
 package org.railwaystations.api.writer;
 
 import org.junit.jupiter.api.Test;
-import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Photo;
+import org.railwaystations.api.model.Station;
+import org.railwaystations.api.model.User;
 
 import javax.ws.rs.WebApplicationException;
 import java.io.ByteArrayOutputStream;
@@ -20,7 +21,7 @@ public class StationsTxtWriterTest {
     public void test() throws WebApplicationException, IOException {
         final List<Station> stations = new ArrayList<>();
         final Station.Key key4711 = new Station.Key("", "4711");
-        stations.add(new Station(key4711, "Test", new Coordinates(50d, 9d), new Photo(key4711, null, "@pstorch", null, null, null)));
+        stations.add(new Station(key4711, "Test", new Coordinates(50d, 9d), new Photo(key4711, null, new User("@pstorch", null, null), null, null)));
         stations.add(new Station(new Station.Key("","4712"), "Foo", new Coordinates(51d, 8d), null, null));
 
         final StationsTxtWriter writer = new StationsTxtWriter();

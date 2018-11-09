@@ -16,10 +16,10 @@ public class Statistic {
     @JsonProperty
     private final int photographers;
 
-    public Statistic(final int total, final int withPhoto, final int withoutPhoto, final int photographers) {
+    public Statistic(final int total, final int withPhoto, final int photographers) {
         this.total = total;
         this.withPhoto = withPhoto;
-        this.withoutPhoto = withoutPhoto;
+        this.withoutPhoto = total - withPhoto;
         this.photographers = photographers;
     }
 

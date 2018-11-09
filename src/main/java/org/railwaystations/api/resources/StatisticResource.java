@@ -6,7 +6,6 @@ import org.railwaystations.api.writer.StatisticTxtWriter;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 
 @Path("/")
 public class StatisticResource {
@@ -22,14 +21,14 @@ public class StatisticResource {
     @GET
     @Path("stats")
     @Produces({MediaType.APPLICATION_JSON, StatisticTxtWriter.TEXT_PLAIN})
-    public Statistic get(@QueryParam(StatisticResource.COUNTRY) final String country) throws IOException {
+    public Statistic get(@QueryParam(StatisticResource.COUNTRY) final String country) {
         return getWithCountry(country);
     }
 
     @GET
     @Path("{country}/stats")
     @Produces({MediaType.APPLICATION_JSON, StatisticTxtWriter.TEXT_PLAIN})
-    public Statistic getWithCountry(@PathParam(StatisticResource.COUNTRY) final String country) throws IOException {
+    public Statistic getWithCountry(@PathParam(StatisticResource.COUNTRY) final String country) {
         return getStatisticMap(country);
     }
 

@@ -3,18 +3,12 @@ package org.railwaystations.api.resources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.railwaystations.api.ElasticBackend;
 import org.railwaystations.api.StationsRepository;
-import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.loader.StationLoader;
 import org.railwaystations.api.model.Coordinates;
-import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.model.Station;
-import org.railwaystations.api.monitoring.LoggingMonitor;
+import org.railwaystations.api.model.User;
 
-import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,24 +22,25 @@ public class StationsResourceTest {
     private StationsResource resource;
 
     @BeforeEach
-    public void setUp() throws MalformedURLException {
-        final PhotographerLoader photographerLoader = new PhotographerLoader( "file:./src/test/resources/photographers.json", new ElasticBackend(""));
-
-        final StationLoader loaderXY = Mockito.mock(StationLoader.class);
+    public void setUp() {
         final Map<Station.Key, Station> stationsXY = new HashMap<>(2);
         final Station.Key key5 = new Station.Key("xy", "5");
-        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "URL", "Jim Knopf", "photographerUrl", null, "CC0")));
-        Mockito.when(loaderXY.loadStations(Mockito.anyMap(), Mockito.anyString())).thenReturn(stationsXY);
-        Mockito.when(loaderXY.getCountry()).thenReturn(new Country("xy", null, null, null, null));
+        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "/fotos/xy/5.jpg", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0")));
 
-        final StationLoader loaderAB = Mockito.mock(StationLoader.class);
-        final Map<Station.Key, Station> stations = new HashMap<>(2);
+        final Map<Station.Key, Station> stationsAB = new HashMap<>(2);
         final Station.Key key3 = new Station.Key("ab", "3");
-        stations.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "URL2", "Peter Pan", "photographerUrl2", null, "CC0 by SA")));
-        Mockito.when(loaderAB.loadStations(Mockito.anyMap(), Mockito.anyString())).thenReturn(stations);
-        Mockito.when(loaderAB.getCountry()).thenReturn(new Country("ab", null, null, null, null));
+        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "/fotos/ab/3.jpg", new User("Peter Pan", "photographerUrl2", "CC0 by SA"), null, "CC0 by SA")));
 
-        resource = new StationsResource(new StationsRepository(new LoggingMonitor(), Arrays.asList(loaderAB, loaderXY), photographerLoader, ""));
+        final Map<Station.Key, Station> stationsAll = new HashMap<>(2);
+        stationsAll.putAll(stationsAB);
+        stationsAll.putAll(stationsXY);
+
+        final StationsRepository repository = Mockito.mock(StationsRepository.class);
+        Mockito.when(repository.getStationsByCountry("xy")).thenReturn(stationsXY);
+        Mockito.when(repository.getStationsByCountry("ab")).thenReturn(stationsAB);
+        Mockito.when(repository.getStationsByCountry(null)).thenReturn(stationsAll);
+
+        resource = new StationsResource(repository);
     }
 
     @Test
@@ -59,7 +54,7 @@ public class StationsResourceTest {
         assertThat(stationXY.getCoordinates().getLon(), equalTo(9.0));
         assertThat(stationXY.getPhotographer(), equalTo("Jim Knopf"));
         assertThat(stationXY.getDS100(), equalTo("XYZ"));
-        assertThat(stationXY.getPhotoUrl(), equalTo("URL"));
+        assertThat(stationXY.getPhotoUrl(), equalTo("/fotos/xy/5.jpg"));
         assertThat(stationXY.getLicense(), equalTo("CC0"));
         assertThat(stationXY.getPhotographerUrl(), equalTo("photographerUrl"));
     }
@@ -78,7 +73,7 @@ public class StationsResourceTest {
         assertThat(station.getCoordinates().getLat(), equalTo(40.0));
         assertThat(station.getCoordinates().getLon(), equalTo(6.0));
         assertThat(station.getPhotographer(), equalTo("Peter Pan"));
-        assertThat(station.getPhotoUrl(), equalTo("URL2"));
+        assertThat(station.getPhotoUrl(), equalTo("/fotos/ab/3.jpg"));
         assertThat(station.getDS100(), equalTo("ABC"));
         assertThat(station.getLicense(), equalTo("CC0 by SA"));
         assertThat(station.getPhotographerUrl(), equalTo("photographerUrl2"));

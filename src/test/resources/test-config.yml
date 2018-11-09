@@ -1,0 +1,14 @@
+logging:
+  level: INFO
+database:
+  driverClass: org.h2.Driver
+  user: sa
+  password: sa
+  url: jdbc:h2:./target/test-example
+workDir: ${RSAPI_WORK:-/tmp/rsapi}
+photoDir: ${PHOTO_DIR:-/tmp/railway-station-photos}
+salt: ${SALT:-dummy}
+mailer:
+  "@class": org.railwaystations.api.mail.MockMailer
+photoBaseUrl: https://fotos.railway-stations.org
+slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

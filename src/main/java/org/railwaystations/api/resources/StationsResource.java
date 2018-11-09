@@ -51,6 +51,7 @@ public class StationsResource {
                                         @QueryParam(StationsResource.MAX_DISTANCE) final Integer maxDistance,
                                         @QueryParam(StationsResource.LAT) final Double lat,
                                         @QueryParam(StationsResource.LON) final Double lon) {
+        // TODO: can we search this on the DB?
         return getStationsMap(country)
                 .values().stream().filter(station -> station.appliesTo(hasPhoto, photographer, maxDistance, lat, lon)).collect(Collectors.toList());
     }
@@ -64,7 +65,7 @@ public class StationsResource {
     }
 
     private Map<Station.Key, Station> getStationsMap(final String country) {
-        final Map<Station.Key, Station> stationMap = repository.get(country);
+        final Map<Station.Key, Station> stationMap = repository.getStationsByCountry(country);
         if (stationMap.isEmpty()) {
             throw new WebApplicationException(404);
         }

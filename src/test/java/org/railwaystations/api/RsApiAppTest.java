@@ -3,6 +3,8 @@ package org.railwaystations.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
@@ -12,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.railwaystations.api.mail.MockMailer;
-import org.railwaystations.api.model.Photographer;
 import org.railwaystations.api.model.Station;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,12 +24,13 @@ import org.xml.sax.SAXException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +42,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class RsApiAppTest {
 
     public static final DropwizardAppExtension<RsApiConfiguration> RULE = MySuite.DROPWIZARD;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private Client client;
 
@@ -56,44 +59,47 @@ public class RsApiAppTest {
     @Test
     public void stationsAllCountries() throws IOException {
         final Station[] stations = assertLoadStations("/stations", 200);
-        assertThat(stations.length, is(6098));
-        assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
-        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), notNullValue());
+        assertThat(stations.length, is(954));
+        assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8500126")), notNullValue());
     }
 
     @Test
-    public void stationById() throws IOException {
-        final Response response = loadRaw("/de/stations/41", 200);
+    public void stationById() {
+        final Response response = loadRaw("/de/stations/6932", 200);
         final Station station = response.readEntity(Station.class);
-        assertThat(station.getKey().getId(), is("41"));
-        assertThat(station.getTitle(), is( "Albersdorf"));
+        assertThat(station.getKey().getId(), is("6932"));
+        assertThat(station.getTitle(), is( "Wuppertal-Ronsdorf"));
+        assertThat(station.getPhotoUrl(), is("https://fotos.railway-stations.org/sites/default/files/previewbig/6932.jpg"));
+        assertThat(station.getPhotographer(), is("@khgdrn"));
+        assertThat(station.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
     }
 
     @Test
     public void stationsDe() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/de/%s", "stations"), 200);
-        assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
-        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), nullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8500126")), nullValue());
     }
 
     @Test
     public void stationsDeQueryParam() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/%s?country=de", "stations"), 200);
-        assertThat(findByKey(stations, new Station.Key("de", "41")), notNullValue());
-        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), nullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8500126")), nullValue());
     }
 
     @Test
     public void stationsDePhotograph() throws IOException {
-        final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=@hessenpfaelzer", "stations"), 200);
-        assertThat(findByKey(stations, new Station.Key("de", "7066")), notNullValue());
+        final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=@khgdrn", "stations"), 200);
+        assertThat(findByKey(stations, new Station.Key("de", "6966")), notNullValue());
     }
 
     @Test
     public void stationsCh() throws IOException {
         final Station[] stations = assertLoadStations(String.format("/ch/%s", "stations"), 200);
-        assertThat(findByKey(stations, new Station.Key("ch", "8501042")), notNullValue());
-        assertThat(findByKey(stations, new Station.Key("de", "41")), nullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8500126")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("de", "6721")), nullValue());
     }
 
     @Test
@@ -109,18 +115,17 @@ public class RsApiAppTest {
 
     @Test
     public void stationsDeFromDgerkrathWithinMax5km() throws IOException {
-        final Station[] stations = assertLoadStations("/de/stations?maxDistance=5&lat=51.2670337567818&lon=7.19520717859267&photographer=@Dgerkrath", 200);
-        assertThat(stations.length, is(3));
+        final Station[] stations = assertLoadStations("/de/stations?maxDistance=5&lat=49.0065325041363&lon=13.2770955562592&photographer=@stefanopitz", 200);
+        assertThat(stations.length, is(2));
     }
 
     @Test
     public void stationsJson() throws IOException {
         final Response response = loadRaw("/de/stations.json", 200);
-        final ObjectMapper mapper = new ObjectMapper();
-        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isArray(), is(true));
-        assertThat(jsonNode.size(), is(5653));
+        assertThat(jsonNode.size(), is(729));
     }
 
     @Test
@@ -137,7 +142,7 @@ public class RsApiAppTest {
                 final Matcher matcher = pattern.matcher(line);
                 assertThat(matcher.matches(), is(true));
             }
-            assertThat(count, is(5653));
+            assertThat(count, is(729));
         }
     }
 
@@ -154,7 +159,7 @@ public class RsApiAppTest {
         assertThat(gpx.getAttribute("xmlns"), is("http://www.topografix.com/GPX/1/1"));
         assertThat(gpx.getAttribute("version"), is("1.1"));
         final NodeList wpts = gpx.getElementsByTagName("wpt");
-        assertThat(wpts.getLength(), is(8));
+        assertThat(wpts.getLength(), is(7));
     }
 
     private String readSaveStringEntity(final Response response) throws IOException {
@@ -197,21 +202,19 @@ public class RsApiAppTest {
     @Test
     public void photographersJson() throws IOException {
         final Response response = loadRaw(String.format("/de/%s.json", "photographers"), 200);
-        final ObjectMapper mapper = new ObjectMapper();
-        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
-        assertThat(jsonNode.size(), is(31));
+        assertThat(jsonNode.size(), is(4));
     }
 
     @Test
     public void photographersAllJson() throws IOException {
         final Response response = loadRaw("/photographers.json", 200);
-        final ObjectMapper mapper = new ObjectMapper();
-        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
-        assertThat(jsonNode.size(), is(35));
+        assertThat(jsonNode.size(), is(6));
     }
 
     @Test
@@ -228,15 +231,34 @@ public class RsApiAppTest {
                 final Matcher matcher = pattern.matcher(line);
                 assertThat(matcher.matches(), is(true));
             }
-            assertThat(count, is(31));
+            assertThat(count, is(4));
         }
+    }
+
+    @Test
+    public void slackSearch() throws IOException {
+        final Form input = new Form();
+        input.param("text", "search altstadt");
+        input.param("token", "dummy");
+        final Entity<Form> entity = Entity.entity(input, MediaType.APPLICATION_FORM_URLENCODED);
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/slack"))
+                .request(MediaType.APPLICATION_FORM_URLENCODED)
+                .accept(MediaType.APPLICATION_JSON)
+                .post(entity);
+
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
+        assertThat(jsonNode.get("response_type").asText(), is("in_channel"));
+        final String text = jsonNode.get("text").asText();
+        assertThat(text.startsWith("Found:\n"), is(true));
+        assertThat(text.contains("- Meißen Altstadt: Key{country='de', id='8277'}\n"), is(true));
+        assertThat(text.contains("- Neckargemünd Altstadt: Key{country='de', id='8053'}\n"), is(true));
     }
 
     @Test
     public void statisticJson() throws IOException {
         final Response response = loadRaw("/de/stats.json", 200);
-        final ObjectMapper mapper = new ObjectMapper();
-        final JsonNode jsonNode = mapper.readTree((InputStream) response.getEntity());
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode, notNullValue());
         assertThat(jsonNode.isObject(), is(true));
         assertThat(jsonNode.size(), is(4));
@@ -267,7 +289,6 @@ public class RsApiAppTest {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
                 .request()
-                .header("API-Key", "dummy")
                 .post(Entity.entity("{\n" +
                         "\t\"nickname\": \"nickname \", \n" +
                         "\t\"email\": \"nick.name@example.com\", \n" +
@@ -280,39 +301,20 @@ public class RsApiAppTest {
         assertThat(response.getStatus(), is(202));
         assertThat(mailer.getTo(), is("nick.name@example.com"));
         assertThat(mailer.getSubject(), is("Bahnhofsfotos upload token"));
-        assertThat(mailer.getText(), is("Hallo nickname,\n\n" +
+        assertThat(mailer.getText().matches("Hallo nickname,\n\n" +
                 "vielen Dank für Deine Registrierung.\n" +
-                "Dein Upload Token lautet: edbfc44727a6fd4f5b029aff21861a667a6b4195\n" +
-                "Klicke bitte auf http://railway-stations.org/uploadToken/edbfc44727a6fd4f5b029aff21861a667a6b4195 um ihn in die App zu übernehmen.\n" +
+                "Dein Upload Token lautet: .*\n" +
+                "Klicke bitte auf http://railway-stations.org/uploadToken/.* um ihn in die App zu übernehmen.\n" +
                 "Alternativ kannst Du auch mit Deinem Smartphone den angehängten QR-Code scannen oder den Code manuell in der Bahnhofsfoto App unter 'Meine Daten' eintragen.\n\n" +
                 "Viele Grüße\n" +
-                "Dein Bahnhofsfoto-Team"));
+                "Dein Bahnhofsfoto-Team"), is(true));
     }
 
     @Test
-    public void registerForbidden() {
+    public void registerDifferentEmail() {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
                 .request()
-                .header("API-Key", "yummy")
-                .post(Entity.entity("{\n" +
-                        "\t\"nickname\": \"nickname\", \n" +
-                        "\t\"email\": \"nick.name@example.com\", \n" +
-                        "\t\"license\": \"license\",\n" +
-                        "\t\"photoOwner\": true, \n" +
-                        "\t\"linking\": \"linking\", \n" +
-                        "\t\"link\": \"link\"\n" +
-                        "}", "application/json"));
-
-        assertThat(response.getStatus(), is(403));
-    }
-
-    @Test
-    public void registerInvalid() {
-        final Response response = client.target(
-                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
-                .request()
-                .header("API-Key", "dummy")
                 .post(Entity.entity("{\n" +
                         "\t\"nickname\": \"nickname\", \n" +
                         "\t\"email\": \"invalid email\", \n" +
@@ -322,7 +324,7 @@ public class RsApiAppTest {
                         "\t\"link\": \"link\"\n" +
                         "}", "application/json"));
 
-        assertThat(response.getStatus(), is(422));
+        assertThat(response.getStatus(), is(409));
     }
 
     @Test
@@ -330,7 +332,6 @@ public class RsApiAppTest {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload"))
                 .request()
-                .header("API-Key", "yummy")
                 .header("Upload-Token", "edbfc44727a6fd4f5b029aff21861a667a6b4195")
                 .header("Nickname", "nickname")
                 .header("Email", "nickname@example.com")
@@ -338,20 +339,114 @@ public class RsApiAppTest {
                 .header("Country", "de")
                 .post(Entity.entity("", "image/png"));
 
-        assertThat(response.getStatus(), is(403));
+        assertThat(response.getStatus(), is(401));
     }
 
     @Test
-    public void photographersLoader() {
-        final Map<String, Photographer> photographers = RULE.getConfiguration().getPhotographerLoader().loadPhotographers();
-        final Photographer photographer = photographers.get("SimoneDoerfling");
-        assertThat(photographer.getName(), is("SimoneDoerfling"));
-        assertThat(photographer.getUrl(), is("http://www.deutschlands-bahnhoefe.de/"));
-        assertThat(photographer.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
+    public void getProfileForbidden() {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Nickname", "nickname")
+                .header("Email", "nickname@example.com")
+                .get();
+
+        assertThat(response.getStatus(), is(401));
+    }
+
+    @Test
+    public void getMyProfile() throws IOException {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Nickname", "storchp")
+                .header("Email", "storchp@example.com")
+                .get();
+
+        assertThat(response.getStatus(), is(200));
+        assertProfile(response, "@storchp", "https://www.twitter.com/storchp", "CC0 1.0 Universell (CC0 1.0)", false);
+    }
+
+    private void assertProfile(final Response response, final String name, final String link, final String license, final boolean anonymous) throws IOException {
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
+        assertThat(jsonNode.get("nickname").asText(), is(name));
+        assertThat(jsonNode.get("email").asText(), is("storchp@example.com"));
+        assertThat(jsonNode.get("link").asText(), is(link));
+        assertThat(jsonNode.get("license").asText(), is(license));
+        assertThat(jsonNode.get("photoOwner").asBoolean(), is(true));
+        assertThat(jsonNode.get("anonymous").asBoolean(), is(anonymous));
+        assertThat(jsonNode.has("uploadToken"), is(false));
+    }
+
+    @Test
+    public void updateMyProfile() throws IOException {
+        final Response response1 = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Nickname", "storchp")
+                .header("Email", "storchp@example.com")
+                .get();
+
+        assertThat(response1.getStatus(), is(200));
+        assertThat(response1.getEntity(), notNullValue());
+        assertProfile(response1, "@storchp", "https://www.twitter.com/storchp", "CC0 1.0 Universell (CC0 1.0)", false);
+
+        final Response response2 = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Nickname", "storchp")
+                .header("Email", "storchp@example.com")
+                .post(Entity.entity("{\n" +
+                        "\t\"nickname\": \"storchp\", \n" +
+                        "\t\"email\": \"storchp@example.com\", \n" +
+                        "\t\"license\": \"license\",\n" +
+                        "\t\"photoOwner\": true, \n" +
+                        "\t\"link\": null,\n" +
+                        "\t\"anonymous\": true\n" +
+                        "}", "application/json"));
+
+        assertThat(response2.getStatus(), is(202));
+        assertThat(response2.getEntity(), notNullValue());
+
+        final Response response3 = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Nickname", "storchp")
+                .header("Email", "storchp@example.com")
+                .get();
+
+        assertThat(response3.getStatus(), is(200));
+        assertThat(response3.getEntity(), notNullValue());
+        assertProfile(response3, "storchp", "", "license", true);
+
     }
 
     public static final class MySuite {
-        public static final DropwizardAppExtension<RsApiConfiguration> DROPWIZARD = new DropwizardAppExtension<>(RsApiApp.class, ResourceHelpers.resourceFilePath("config.yml"));
+        private static final String TMP_FILE = createTempFile();
+        private static final String CONFIG_PATH = ResourceHelpers.resourceFilePath("test-config.yml");
+
+        public static final DropwizardAppExtension<RsApiConfiguration> DROPWIZARD = new DropwizardAppExtension<>(RsApiApp.class, CONFIG_PATH, ConfigOverride.config("database.url", "jdbc:h2:" + TMP_FILE));
+
+        static {
+            DROPWIZARD.addListener(new DropwizardAppExtension.ServiceListener<RsApiConfiguration>() {
+                @Override
+                public void onRun(final RsApiConfiguration config, final Environment environment, final DropwizardAppExtension<RsApiConfiguration> rule) throws Exception {
+                    rule.getApplication().run("db", "migrate", "-i", "junit", CONFIG_PATH);
+                }
+            });
+        }
+
+        private static String createTempFile() {
+            try {
+                return File.createTempFile("rsapi-test", null).getAbsolutePath();
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
     }
 
 }

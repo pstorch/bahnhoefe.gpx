@@ -3,9 +3,8 @@ package org.railwaystations.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
+import io.dropwizard.db.DataSourceFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.loader.PhotographerLoader;
-import org.railwaystations.api.loader.StationLoaderFactory;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
@@ -13,8 +12,6 @@ import org.railwaystations.api.monitoring.SlackMonitor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.LongVariable")
 public class RsApiConfiguration extends Configuration {
@@ -22,8 +19,6 @@ public class RsApiConfiguration extends Configuration {
     private static final String IDENT = "@class";
 
     private Monitor monitor = new LoggingMonitor();
-
-    private String apiKey;
 
     private TokenGenerator tokenGenerator;
 
@@ -33,21 +28,22 @@ public class RsApiConfiguration extends Configuration {
 
     private String slackVerificationToken;
 
-    private String photographersUrl;
-
     private String photoBaseUrl;
-
-    private ElasticBackend elasticBackend;
-
-    @JsonProperty
-    @NotNull
-    @Valid
-    private List<StationLoaderFactory> loaders;
 
     private String photoDir;
 
-    public StationsRepository getRepository() {
-        return new StationsRepository(monitor, loaders.stream().map(factory -> factory.createLoader(monitor, elasticBackend)).collect(Collectors.toList()), getPhotographerLoader(), photoBaseUrl);
+    @Valid
+    @NotNull
+    private DataSourceFactory database = new DataSourceFactory();
+
+    @JsonProperty("database")
+    public void setDataSourceFactory(final DataSourceFactory factory) {
+        this.database = factory;
+    }
+
+    @JsonProperty("database")
+    public DataSourceFactory getDataSourceFactory() {
+        return database;
     }
 
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
@@ -68,14 +64,6 @@ public class RsApiConfiguration extends Configuration {
         this.workDir = workDir;
     }
 
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public void setApiKey(final String apiKey) {
-        this.apiKey = apiKey;
-    }
-
     public TokenGenerator getTokenGenerator() {
         return tokenGenerator;
     }
@@ -88,7 +76,7 @@ public class RsApiConfiguration extends Configuration {
         return mailer;
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = RsApiConfiguration.IDENT)
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = RsApiConfiguration.IDENT)
     public void setMailer(final Mailer mailer) {
         this.mailer = mailer;
     }
@@ -99,14 +87,6 @@ public class RsApiConfiguration extends Configuration {
 
     public void setSlackVerificationToken(final String slackVerificationToken) {
         this.slackVerificationToken = slackVerificationToken;
-    }
-
-    public PhotographerLoader getPhotographerLoader() {
-        return new PhotographerLoader(photographersUrl, elasticBackend);
-    }
-
-    public void setPhotographersUrl(final String photographersUrl) {
-        this.photographersUrl = photographersUrl;
     }
 
     public String getPhotoBaseUrl() {
@@ -125,11 +105,4 @@ public class RsApiConfiguration extends Configuration {
         this.photoDir = photoDir;
     }
 
-    public ElasticBackend getElasticBackend() {
-        return elasticBackend;
-    }
-
-    public void setElasticBackend(final ElasticBackend elasticBackend) {
-        this.elasticBackend = elasticBackend;
-    }
 }
