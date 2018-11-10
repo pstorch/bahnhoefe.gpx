@@ -51,9 +51,6 @@ public interface StationDao {
             photoBaseUrl = url;
         }
 
-        public StationMapper() {
-        }
-
         public Station map(final ResultSet rs, final StatementContext ctx) throws SQLException {
             final Station.Key key = new Station.Key(rs.getString("countryCode"), rs.getString("id"));
             final String photoUrl = rs.getString("url");

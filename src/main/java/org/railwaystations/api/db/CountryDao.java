@@ -23,9 +23,6 @@ public interface CountryDao {
     Set<Country> list();
 
     class CountryMapper implements RowMapper<Country> {
-        public CountryMapper() {
-        }
-
         public Country map(final ResultSet rs, final StatementContext ctx) throws SQLException {
             return new Country(rs.getString("id"),
                     rs.getString("name"),
@@ -34,7 +31,6 @@ public interface CountryDao {
                     rs.getString("timetableUrlTemplate")
                     );
         }
-
     }
 
 }

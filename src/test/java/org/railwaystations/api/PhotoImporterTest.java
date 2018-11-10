@@ -36,20 +36,17 @@ public class PhotoImporterTest {
     private Path uploadDir;
     private Path photoDir;
     private StationsRepository repository;
-    private UserDao userDao;
-    private StationDao stationDao;
     private PhotoDao photoDao;
-    private CountryDao countryDao;
 
     @BeforeEach
     public void setUp() throws IOException {
         uploadDir = Files.createTempDirectory("rsapiUpload");
         photoDir = Files.createTempDirectory("rsapiPhoto");
 
-        countryDao = mock(CountryDao.class);
+        final CountryDao countryDao = mock(CountryDao.class);
         when(countryDao.findById("de")).thenReturn(Optional.of(new Country("de")));
 
-        userDao = mock(UserDao.class);
+        final UserDao userDao = mock(UserDao.class);
         when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, null, true, true, null)));
         when(userDao.findByNormalizedName("someuser")).thenReturn(Optional.of(new User("Some User", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, null, true, true, null)));
         when(userDao.findByNormalizedName("gabybecker")).thenReturn(Optional.of(new User("@Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, null, true, true, null)));
@@ -57,7 +54,7 @@ public class PhotoImporterTest {
 
         photoDao = mock(PhotoDao.class);
 
-        stationDao = mock(StationDao.class);
+        final StationDao stationDao = mock(StationDao.class);
         final Station felde = new Station(new Station.Key("de", "8009"), "Felde", null, null);
         when(stationDao.findByKey(felde.getKey().getCountry(), felde.getKey().getId())).thenReturn(Collections.singleton(felde));
 

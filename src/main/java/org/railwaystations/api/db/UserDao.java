@@ -48,9 +48,6 @@ public interface UserDao {
 
 
     class UserMapper implements RowMapper<User> {
-        public UserMapper() {
-        }
-
         public User map(final ResultSet rs, final StatementContext ctx) throws SQLException {
             return new User(rs.getString("name"),
                     rs.getString("url"),
@@ -63,7 +60,6 @@ public interface UserDao {
                     rs.getLong("uploadTokenSalt")
                     );
         }
-
     }
 
 }
