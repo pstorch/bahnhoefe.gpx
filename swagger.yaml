@@ -346,7 +346,7 @@ paths:
         '401':
           description: wrong token
     post:
-      summary: Update the users profile
+      summary: Update the users profile. In case the email has been changed, only the email is saved and a new upload token is send.
       consumes:
       - application/json
       produces:
@@ -376,6 +376,8 @@ paths:
       responses:
         '200':
           description: ok
+        '202':
+          description: new email accepted
         '401':
           description: wrong token
         '409':

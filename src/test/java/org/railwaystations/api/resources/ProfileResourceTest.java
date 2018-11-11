@@ -125,7 +125,7 @@ public class ProfileResourceTest {
         final User newProfile = new User("new_name", "existing@example.com", "CC4", true, "http://twitter.com/", true);
         final Response response = resource.updateMyProfile(newProfile, new AuthUser(user));
 
-        assertThat(response.getStatus(), equalTo(202));
+        assertThat(response.getStatus(), equalTo(200));
         verify(userDao).update(newProfile);
     }
 

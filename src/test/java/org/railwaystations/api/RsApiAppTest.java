@@ -408,7 +408,7 @@ public class RsApiAppTest {
                         "\t\"anonymous\": true\n" +
                         "}", "application/json"));
 
-        assertThat(response2.getStatus(), is(202));
+        assertThat(response2.getStatus(), is(200));
         assertThat(response2.getEntity(), notNullValue());
 
         final Response response3 = client.target(

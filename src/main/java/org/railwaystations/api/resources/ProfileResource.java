@@ -137,17 +137,18 @@ public class ProfileResource {
                     String.format("Update email for user '%s' from email '%s' to '%s'",
                             user.getName(), user.getEmail(), newProfile.getEmail()));
             sendTokenByMail(newProfile);
-        } else {
-            if (!newProfile.getNormalizedName().equals(user.getNormalizedName())
-                    && userDao.findByNormalizedName(newProfile.getNormalizedName()).isPresent()) {
-                LOG.info("Name conflict '{}'", newProfile.getName());
-                return Response.status(Response.Status.CONFLICT).build();
-            }
-            newProfile.setId(user.getId());
-            userDao.update(newProfile);
+            return Response.accepted().build();
         }
 
-        return Response.accepted().build();
+        if (!newProfile.getNormalizedName().equals(user.getNormalizedName())
+                && userDao.findByNormalizedName(newProfile.getNormalizedName()).isPresent()) {
+            LOG.info("Name conflict '{}'", newProfile.getName());
+            return Response.status(Response.Status.CONFLICT).build();
+        }
+
+        newProfile.setId(user.getId());
+        userDao.update(newProfile);
+        return Response.ok().build();
     }
 
     private void sendTokenByMail(@NotNull final User registration) {
