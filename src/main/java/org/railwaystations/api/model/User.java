@@ -226,11 +226,7 @@ public class User {
             return false;
         }
 
-        if (!CC0.equals(license)) {
-            return false;
-        }
-
-        return true;
+        return CC0.equals(license);
     }
 
     @Override
