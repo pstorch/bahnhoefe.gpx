@@ -5,7 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -18,8 +21,11 @@ public class User {
 
     private static final Map<String, String> LICENSE_MAP = new HashMap<>(2);
 
+    /** the one and only valid license */
+    public static final String CC0 = "CC0 1.0 Universell (CC0 1.0)";
+
     static {
-        LICENSE_MAP.put("CC0", "CC0 1.0 Universell (CC0 1.0)");
+        LICENSE_MAP.put("CC0", CC0);
         LICENSE_MAP.put("CC4", "CC BY-SA 4.0");
     }
 
@@ -53,13 +59,13 @@ public class User {
     @JsonIgnore
     private Long uploadTokenSalt;
 
-    public User(final String name, final String url, final String license, final int id, final String email, final String normalizedName, final boolean ownPhotos, final boolean anonymous, final Long uploadTokenSalt) {
+    public User(final String name, final String url, final String license, final int id, final String email, final boolean ownPhotos, final boolean anonymous, final Long uploadTokenSalt) {
         this.name = name;
         this.url = url;
         this.license = license;
         this.id = id;
         this.email = normalizeEmail(email);
-        this.normalizedName = normalizedName;
+        this.normalizedName = normalizeName(name);
         this.ownPhotos = ownPhotos;
         this.anonymous = anonymous;
         this.uploadTokenSalt = uploadTokenSalt;
@@ -84,11 +90,11 @@ public class User {
     }
 
     public User(final String name, final String url, final String license) {
-        this(name, url, license, 0, null, normalizeName(name), true, false, null);
+        this(name, url, license, 0, null, true, false, null);
     }
 
     public User(final String name, final String url, final String license, final boolean anonymous) {
-        this(name, url, license, 0, null, normalizeName(name), true, anonymous, null);
+        this(name, url, license, 0, null, true, anonymous, null);
     }
 
     public static Map<String, User> toNameMap(final List<User> list) {
@@ -189,5 +195,53 @@ public class User {
 
     public void setId(final int id) {
         this.id = id;
+    }
+
+    /**
+     * Checks if we have got a name and valid email for registration.
+     */
+    public boolean isValidForRegistration() {
+        return StringUtils.isNotBlank(name) &&
+                StringUtils.isNotBlank(email) &&
+                new EmailValidator().isValid(email, null);
+    }
+
+    public boolean isValid() {
+        if (!isValidForRegistration()) {
+            return false;
+        }
+        if (StringUtils.isNotBlank(url)) {
+            final URL validatedUrl;
+            try {
+                validatedUrl = new URL( url );
+            } catch (MalformedURLException e) {
+                return false;
+            }
+            if (!validatedUrl.getProtocol().matches("https?")) {
+                return false;
+            }
+        }
+
+        if (!ownPhotos) {
+            return false;
+        }
+
+        if (!CC0.equals(license)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", license='" + license + '\'' +
+                ", email='" + email + '\'' +
+                ", ownPhotos=" + ownPhotos +
+                ", anonymous=" + anonymous +
+                '}';
     }
 }

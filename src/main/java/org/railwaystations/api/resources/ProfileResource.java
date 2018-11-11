@@ -11,7 +11,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import io.dropwizard.auth.Auth;
-import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.http.HttpStatus;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.db.UserDao;
@@ -60,7 +60,7 @@ public class ProfileResource {
     public Response register(@NotNull final User registration) {
         LOG.info("New registration for '{}' with '{}'", registration.getName(), registration.getEmail());
 
-        if (!isValid(registration)) {
+        if (!registration.isValidForRegistration()) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
@@ -150,11 +150,6 @@ public class ProfileResource {
         return Response.accepted().build();
     }
 
-    private boolean isValid(final User registration) {
-        return !StringUtils.isBlank(registration.getName()) &&
-                !StringUtils.isBlank(registration.getEmail());
-    }
-
     private void sendTokenByMail(@NotNull final User registration) {
         final String url = "http://railway-stations.org/uploadToken/" + registration.getUploadToken();
 
@@ -176,6 +171,10 @@ public class ProfileResource {
             user.setUploadTokenSalt(registration.getUploadTokenSalt());
             userDao.updateTokenSalt(user.getId(), user.getUploadTokenSalt());
         } else {
+            if (!registration.isValid()) {
+                LOG.info("User invalid {}", registration);
+                throw new WebApplicationException(HttpStatus.BAD_REQUEST_400);
+            }
             final Integer id = userDao.insert(registration);
             LOG.info("User '{}' created with id {}", registration.getName(), id);
         }

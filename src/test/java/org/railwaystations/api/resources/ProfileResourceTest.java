@@ -39,7 +39,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testInvalid() {
-        final User registration = new User("nickname", null, null, true, "link", false);
+        final User registration = new User("nickname", null, null, true, "https://link@example.com", false);
         final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(400));
@@ -47,7 +47,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testNewUser() {
-        final User registration = new User("nickname", "nickname@example.com", "license", true, "link", false);
+        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", false);
         final Response response = resource.register(registration);
         verify(userDao).findByNormalizedName("nickname");
         verify(userDao).findByEmail("nickname@example.com");
@@ -55,7 +55,7 @@ public class ProfileResourceTest {
         verify(userDao, never()).updateTokenSalt(anyInt(), any(Long.class));
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, link='link', anonymous=false}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}"));
         assertEmail("nickname");
 
         verifyNoMoreInteractions(userDao);
@@ -74,17 +74,17 @@ public class ProfileResourceTest {
 
     @Test
     public void testNewUserAnonymous() {
-        final User registration = new User("nickname", "nickname@example.com", "license", true, "link", true);
+        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", true);
         final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='license', photoOwner=true, link='link', anonymous=true}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=true}"));
     }
 
     @Test
     public void testNewUserNameTaken() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "license", true, "link", false)));
-        final User registration = new User("existing", "other@example.com", "license", true, "link", false);
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false)));
+        final User registration = new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false);
         final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(409));
@@ -92,18 +92,18 @@ public class ProfileResourceTest {
 
     @Test
     public void testExistingUserOk() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "license", true, "link", false)));
-        final User registration = new User("existing", "existing@example.com", "license", true, "link", false);
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false)));
+        final User registration = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
         final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='existing', email='existing@example.com', license='license', photoOwner=true, link='link', anonymous=false}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='existing', email='existing@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}"));
     }
 
     @Test
     public void testExistingUserWrongEmail() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "license", true, "link", false)));
-        final User registration = new User("existing", "existing@example.com", "license", true, "link", false);
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false)));
+        final User registration = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
         final Response response = resource.register(registration);
 
         assertThat(response.getStatus(), equalTo(409));

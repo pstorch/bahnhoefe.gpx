@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 @Path("/photoUpload")
 public class PhotoUploadResource {
@@ -52,13 +51,15 @@ public class PhotoUploadResource {
                          @Auth final AuthUser user) {
         LOG.info("Nickname: {}, Email: {}, Country: {}, Station-Id: {}, Content-Type: {}", user.getName(), user.getUser().getEmail(), country, stationId, contentType);
 
-        final Map<Station.Key, Station> stationsMap = repository.getStationsByCountry(country);
-        if (stationsMap.isEmpty()) {
+        if (!user.getUser().isValid()) {
+            LOG.warn("User invalid: {}", user.getUser());
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
-        final Station station = stationsMap.get(new Station.Key(country, stationId));
+        final Station.Key key = new Station.Key(country, stationId);
+        final Station station = repository.findByKey(key);
         if (station == null) {
+            LOG.warn("Station '{}' not found", key);
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 

@@ -292,7 +292,7 @@ public class RsApiAppTest {
                 .post(Entity.entity("{\n" +
                         "\t\"nickname\": \"nickname \", \n" +
                         "\t\"email\": \"nick.name@example.com\", \n" +
-                        "\t\"license\": \"license\",\n" +
+                        "\t\"license\": \"CC0\",\n" +
                         "\t\"photoOwner\": true, \n" +
                         "\t\"linking\": \"linking\", \n" +
                         "\t\"link\": \"\"\n" +
@@ -316,9 +316,9 @@ public class RsApiAppTest {
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/registration"))
                 .request()
                 .post(Entity.entity("{\n" +
-                        "\t\"nickname\": \"nickname\", \n" +
-                        "\t\"email\": \"invalid email\", \n" +
-                        "\t\"license\": \"license\",\n" +
+                        "\t\"nickname\": \"storchp\", \n" +
+                        "\t\"email\": \"other@example.com\", \n" +
+                        "\t\"license\": \"CC0\",\n" +
                         "\t\"photoOwner\": true, \n" +
                         "\t\"linking\": \"linking\", \n" +
                         "\t\"link\": \"link\"\n" +

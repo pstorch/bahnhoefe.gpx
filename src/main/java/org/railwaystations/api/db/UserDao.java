@@ -54,7 +54,6 @@ public interface UserDao {
                     rs.getString("license"),
                     rs.getInt("id"),
                     rs.getString("email"),
-                    rs.getString("normalizedName"),
                     rs.getBoolean("ownPhotos"),
                     rs.getBoolean("anonymous"),
                     rs.getLong("uploadTokenSalt")

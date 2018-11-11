@@ -19,8 +19,6 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -38,21 +36,21 @@ public class PhotoUploadResourceTest {
 
     @BeforeEach
     public void setUp() throws IOException {
-        final Map<Station.Key, Station> stationsMap = new HashMap<>(2);
         final Station.Key key4711 = new Station.Key("de", "4711");
-        stationsMap.put(key4711, new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null));
+        final Station station4711 = new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null);
         final Station.Key key1234 = new Station.Key("de", "1234");
-        stationsMap.put(key1234, new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0")));
+        final Station station1234 = new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0"));
         final UserDao userDao = mock(UserDao.class);
-        final User userNickname = new User("nickname", "", "");
+        final User userNickname = new User("nickname", "nickname@example.com", "CC0", true, null, true);
         when(userDao.findByEmail("nickname@example.com")).thenReturn(Optional.of(userNickname));
-        final User userSomeuser = new User("someuser", "", "");
+        final User userSomeuser = new User("someuser", "nickname@example.com", "CC0", true, null, true);
         userSomeuser.setUploadTokenSalt(123456L);
         when(userDao.findByEmail("someuser@example.com")).thenReturn(Optional.of(userSomeuser));
 
         tempDir = Files.createTempDirectory("rsapi");
         final StationsRepository repository = mock(StationsRepository.class);
-        when(repository.getStationsByCountry("de")).thenReturn(stationsMap);
+        when(repository.findByKey(key4711)).thenReturn(station4711);
+        when(repository.findByKey(key1234)).thenReturn(station1234);
 
         resource = new PhotoUploadResource(repository, tempDir.toString(), monitor);
     }
