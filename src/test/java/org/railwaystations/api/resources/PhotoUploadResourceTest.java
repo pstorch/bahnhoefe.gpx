@@ -52,7 +52,7 @@ public class PhotoUploadResourceTest {
         when(repository.findByKey(key4711)).thenReturn(station4711);
         when(repository.findByKey(key1234)).thenReturn(station1234);
 
-        resource = new PhotoUploadResource(repository, tempDir.toString(), monitor);
+        resource = new PhotoUploadResource(repository, tempDir.toString(), monitor, null);
     }
 
     private Response whenPostImage(final String content, final String nickname, final String email, final String stationId, final String country) {

@@ -6,6 +6,7 @@ import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -45,6 +46,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
                 bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
 
+        bootstrap.addBundle(new MultiPartBundle());
         bootstrap.addBundle(new RsApiConfigurationMigrationsBundle());
     }
 
@@ -65,11 +67,10 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         final StationsRepository repository = new StationsRepository(countryDao,
                 stationDao);
 
+        final UploadTokenAuthenticator authenticator = new UploadTokenAuthenticator(userDao, config.getTokenGenerator());
         environment.jersey().register(new AuthDynamicFeature(
-                new UploadTokenAuthFilter.Builder<AuthUser>()
-                        .setAuthenticator(new UploadTokenAuthenticator(userDao, config.getTokenGenerator()))
-                        .setRealm("RSAPI")
-                        .buildAuthFilter()));
+                                        new UploadTokenAuthFilter.Builder<AuthUser>()
+                                                .setAuthenticator(authenticator).setRealm("RSAPI").buildAuthFilter()));
         environment.jersey().register(RolesAllowedDynamicFeature.class);
         environment.jersey().register(new AuthValueFactoryProvider.Binder<>(AuthUser.class));
 
@@ -77,8 +78,8 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new PhotographersResource(repository));
         environment.jersey().register(new CountriesResource(countryDao));
         environment.jersey().register(new StatisticResource(repository));
-        environment.jersey().register(new PhotoUploadResource(repository,
-                config.getWorkDir(), config.getMonitor()));
+        environment.jersey().register(new PhotoUploadResource(repository, config.getWorkDir(),
+                                                            config.getMonitor(), authenticator));
         environment.jersey().register(new ProfileResource(
                 config.getTokenGenerator(), config.getMonitor(), config.getMailer(), userDao));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),

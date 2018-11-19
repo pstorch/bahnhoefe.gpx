@@ -1,5 +1,6 @@
 package org.railwaystations.api.auth;
 
+import io.dropwizard.auth.Authenticator;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.User;
@@ -8,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
-public class UploadTokenAuthenticator implements io.dropwizard.auth.Authenticator<UploadTokenCredentials, AuthUser> {
+public class UploadTokenAuthenticator implements Authenticator<UploadTokenCredentials, AuthUser> {
 
     private static final Logger LOG = LoggerFactory.getLogger(UploadTokenAuthenticator.class);
 

@@ -6,13 +6,18 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.http.entity.InputStreamEntity;
 import org.eclipse.jetty.util.URIUtil;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.auth.AuthUser;
+import org.railwaystations.api.auth.UploadTokenAuthenticator;
+import org.railwaystations.api.auth.UploadTokenCredentials;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -21,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 @Path("/photoUpload")
 public class PhotoUploadResource {
@@ -34,11 +40,13 @@ public class PhotoUploadResource {
     private final StationsRepository repository;
     private final File uploadDir;
     private final Monitor monitor;
+    private final UploadTokenAuthenticator authenticator;
 
-    public PhotoUploadResource(final StationsRepository repository, final String uploadDir, final Monitor monitor) {
+    public PhotoUploadResource(final StationsRepository repository, final String uploadDir, final Monitor monitor, final UploadTokenAuthenticator authenticator) {
         this.repository = repository;
         this.uploadDir = new File(uploadDir);
         this.monitor = monitor;
+        this.authenticator = authenticator;
     }
 
     @POST
@@ -86,6 +94,40 @@ public class PhotoUploadResource {
         }
 
         return duplicate ? Response.status(Response.Status.CONFLICT).build() : Response.accepted().build();
+    }
+
+    /**
+     * Not part of the "official" API.
+     * Supports upload of photos via the website.
+     */
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public String post(@FormDataParam("nickname") final String nickname,
+                       @FormDataParam("email") final String email,
+                       @FormDataParam("uploadToken") final String uploadToken,
+                       @FormDataParam("stationId") final String stationId,
+                       @FormDataParam("countryCode") final String countryCode,
+                       @FormDataParam("file") final InputStream file,
+                       @FormDataParam("file") final FormDataContentDisposition fd,
+                       @HeaderParam("Referer") final String referer) {
+        LOG.info("MultipartFormData: nickname={}, email={}, station={}, country={}, file={}", nickname, email, stationId, countryCode, fd.getFileName());
+
+        final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(nickname, email, uploadToken));
+        if (!authUser.isPresent()) {
+            final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
+            return createIFrameAnswer(response.getStatusInfo(), referer);
+        }
+
+        final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
+        final Response response = post(file, stationId, countryCode, contentType, authUser.get());
+
+        return createIFrameAnswer(response.getStatusInfo(), referer);
+    }
+
+    private String createIFrameAnswer(final Response.StatusType status, final String referer) {
+        return "<script language=\"javascript\" type=\"text/javascript\">" +
+               " window.top.window.postMessage('" + status.getStatusCode() + ": " + status.getReasonPhrase() + "', '" + referer + "');" +
+               "</script>";
     }
 
     private String toFilename(final String stationId, final String contentType, final String nickname) {
