@@ -71,8 +71,14 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
+        final String extension = mimeToExtension(contentType);
+        if (extension == null) {
+            LOG.warn("Unknown contentType '{}'", contentType);
+            return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
+        }
+
+        final String filename = toFilename(stationId, user.getUser().getNormalizedName(), extension);
         final File uploadCountryDir = new File(uploadDir, country);
-        final String filename = toFilename(stationId, contentType, user.getUser().getNormalizedName());
         final boolean duplicate = isDuplicate(station, uploadCountryDir, filename);
         final File file = new File(uploadCountryDir, filename);
         LOG.info("Writing photo to {}", file);
@@ -102,26 +108,30 @@ public class PhotoUploadResource {
      */
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String post(@FormDataParam("nickname") final String nickname,
-                       @FormDataParam("email") final String email,
+    public String post(@FormDataParam("email") final String email,
                        @FormDataParam("uploadToken") final String uploadToken,
                        @FormDataParam("stationId") final String stationId,
                        @FormDataParam("countryCode") final String countryCode,
                        @FormDataParam("file") final InputStream file,
                        @FormDataParam("file") final FormDataContentDisposition fd,
                        @HeaderParam("Referer") final String referer) {
-        LOG.info("MultipartFormData: nickname={}, email={}, station={}, country={}, file={}", nickname, email, stationId, countryCode, fd.getFileName());
+        LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
 
-        final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(nickname, email, uploadToken));
-        if (!authUser.isPresent()) {
-            final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
+        try {
+            final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(null, email, uploadToken));
+            if (!authUser.isPresent()) {
+                final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
+                return createIFrameAnswer(response.getStatusInfo(), referer);
+            }
+
+            final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
+            final Response response = post(file, stationId, countryCode, contentType, authUser.get());
+
             return createIFrameAnswer(response.getStatusInfo(), referer);
+        } catch (final Exception e) {
+            LOG.error("FormUpload error", e);
+            return createIFrameAnswer(Response.Status.INTERNAL_SERVER_ERROR, referer);
         }
-
-        final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
-        final Response response = post(file, stationId, countryCode, contentType, authUser.get());
-
-        return createIFrameAnswer(response.getStatusInfo(), referer);
     }
 
     private String createIFrameAnswer(final Response.StatusType status, final String referer) {
@@ -130,8 +140,8 @@ public class PhotoUploadResource {
                "</script>";
     }
 
-    private String toFilename(final String stationId, final String contentType, final String nickname) {
-        return String.format("%s-%s.%s", nickname, stationId, mimeToExtension(contentType));
+    private String toFilename(final String stationId, final String nickname, final String extension) {
+        return String.format("%s-%s.%s", nickname, stationId, extension);
     }
 
     private boolean isDuplicate(final Station station, final File uploadCountryDir, final String filename) {
@@ -163,7 +173,7 @@ public class PhotoUploadResource {
             case IMAGE_PNG: return "png";
             case IMAGE_JPEG: return "jpg";
             default:
-                throw new IllegalArgumentException("Unknown contentType " + contentType);
+                return null;
         }
     }
 
