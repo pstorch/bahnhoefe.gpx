@@ -8,6 +8,7 @@ import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +32,14 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -57,7 +63,7 @@ public class RsApiAppTest {
     }
 
     @Test
-    public void stationsAllCountries() throws IOException {
+    public void stationsAllCountries() {
         final Station[] stations = assertLoadStations("/stations", 200);
         assertThat(stations.length, is(954));
         assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
@@ -66,8 +72,7 @@ public class RsApiAppTest {
 
     @Test
     public void stationById() {
-        final Response response = loadRaw("/de/stations/6932", 200);
-        final Station station = response.readEntity(Station.class);
+        final Station station = getStation("/de/stations/6932");
         assertThat(station.getKey().getId(), is("6932"));
         assertThat(station.getTitle(), is( "Wuppertal-Ronsdorf"));
         assertThat(station.getPhotoUrl(), is("https://fotos.railway-stations.org/sites/default/files/previewbig/6932.jpg"));
@@ -76,45 +81,45 @@ public class RsApiAppTest {
     }
 
     @Test
-    public void stationsDe() throws IOException {
+    public void stationsDe() {
         final Station[] stations = assertLoadStations(String.format("/de/%s", "stations"), 200);
         assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
         assertThat(findByKey(stations, new Station.Key("ch", "8500126")), nullValue());
     }
 
     @Test
-    public void stationsDeQueryParam() throws IOException {
+    public void stationsDeQueryParam() {
         final Station[] stations = assertLoadStations(String.format("/%s?country=de", "stations"), 200);
         assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
         assertThat(findByKey(stations, new Station.Key("ch", "8500126")), nullValue());
     }
 
     @Test
-    public void stationsDePhotograph() throws IOException {
+    public void stationsDePhotograph() {
         final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=@khgdrn", "stations"), 200);
         assertThat(findByKey(stations, new Station.Key("de", "6966")), notNullValue());
     }
 
     @Test
-    public void stationsCh() throws IOException {
+    public void stationsCh() {
         final Station[] stations = assertLoadStations(String.format("/ch/%s", "stations"), 200);
         assertThat(findByKey(stations, new Station.Key("ch", "8500126")), notNullValue());
         assertThat(findByKey(stations, new Station.Key("de", "6721")), nullValue());
     }
 
     @Test
-    public void stationsUnknownCountry() throws IOException {
+    public void stationsUnknownCountry() {
         assertLoadStations("/jp/stations", 404);
     }
 
     @Test
-    public void stationsDeFromAnonym() throws IOException {
+    public void stationsDeFromAnonym() {
         final Station[] stations = assertLoadStations("/de/stations?photographer=Anonym", 200);
         assertThat(stations.length, is(9));
     }
 
     @Test
-    public void stationsDeFromDgerkrathWithinMax5km() throws IOException {
+    public void stationsDeFromDgerkrathWithinMax5km() {
         final Station[] stations = assertLoadStations("/de/stations?maxDistance=5&lat=49.0065325041363&lon=13.2770955562592&photographer=@stefanopitz", 200);
         assertThat(stations.length, is(2));
     }
@@ -168,7 +173,7 @@ public class RsApiAppTest {
         return new String(buffer, "UTF-8").trim();
     }
 
-    private Station[] assertLoadStations(final String path, final int expectedStatus) throws IOException {
+    private Station[] assertLoadStations(final String path, final int expectedStatus) {
         final Response response = loadRaw(path, expectedStatus);
 
         if (response == null) {
@@ -237,8 +242,15 @@ public class RsApiAppTest {
 
     @Test
     public void slackSearch() throws IOException {
+        final String text = executeSlackCommand("search altstadt");
+        assertThat(text.startsWith("Found:\n"), is(true));
+        assertThat(text.contains("- Meißen Altstadt: Key{country='de', id='8277'}\n"), is(true));
+        assertThat(text.contains("- Neckargemünd Altstadt: Key{country='de', id='8053'}\n"), is(true));
+    }
+
+    private String executeSlackCommand(final String command) throws IOException {
         final Form input = new Form();
-        input.param("text", "search altstadt");
+        input.param("text", command);
         input.param("token", "dummy");
         final Entity<Form> entity = Entity.entity(input, MediaType.APPLICATION_FORM_URLENCODED);
         final Response response = client.target(
@@ -249,10 +261,34 @@ public class RsApiAppTest {
 
         final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode.get("response_type").asText(), is("in_channel"));
-        final String text = jsonNode.get("text").asText();
-        assertThat(text.startsWith("Found:\n"), is(true));
-        assertThat(text.contains("- Meißen Altstadt: Key{country='de', id='8277'}\n"), is(true));
-        assertThat(text.contains("- Neckargemünd Altstadt: Key{country='de', id='8053'}\n"), is(true));
+        return jsonNode.get("text").asText();
+    }
+
+    @Test
+    public void slackImport() throws IOException {
+        assertThat(getStation("/de/stations/5068").hasPhoto(), is(false));
+
+        final File importFile = new File(MySuite.TMP_WORK_DIR, "de/import/Gaby Becker-5068.jpg");
+        FileUtils.write(importFile, "test", Charset.forName("UTF-8"));
+
+        final String text = executeSlackCommand("import");
+        assertThat(text, is("Importing photos"));
+
+        await().atMost(5, SECONDS).until(fileGone(importFile));
+        assertThat(importFile.exists(), is(false));
+
+        final Station stationAfter = getStation("/de/stations/5068");
+        assertThat(stationAfter.hasPhoto(), is(true));
+        assertThat(stationAfter.getPhotographer(), is("Gaby Becker"));
+    }
+
+    private Callable<Boolean> fileGone(final File file) {
+        return () -> !file.exists();
+    }
+
+    private Station getStation(final String url) {
+        final Response response1 = loadRaw(url, 200);
+        return response1.readEntity(Station.class);
     }
 
     @Test
@@ -427,9 +463,15 @@ public class RsApiAppTest {
 
     public static final class MySuite {
         private static final String TMP_FILE = createTempFile();
+        private static final String TMP_WORK_DIR = createTempDir("workDir");
+        private static final String TMP_PHOTO_DIR = createTempDir("photoDir");
         private static final String CONFIG_PATH = ResourceHelpers.resourceFilePath("test-config.yml");
 
-        public static final DropwizardAppExtension<RsApiConfiguration> DROPWIZARD = new DropwizardAppExtension<>(RsApiApp.class, CONFIG_PATH, ConfigOverride.config("database.url", "jdbc:h2:" + TMP_FILE));
+        public static final DropwizardAppExtension<RsApiConfiguration> DROPWIZARD
+                = new DropwizardAppExtension<>(RsApiApp.class, CONFIG_PATH,
+                                                ConfigOverride.config("database.url", "jdbc:h2:" + TMP_FILE),
+                                                ConfigOverride.config("workDir", TMP_WORK_DIR),
+                                                ConfigOverride.config("photoDir", TMP_PHOTO_DIR));
 
         static {
             DROPWIZARD.addListener(new DropwizardAppExtension.ServiceListener<RsApiConfiguration>() {
@@ -443,10 +485,19 @@ public class RsApiAppTest {
         private static String createTempFile() {
             try {
                 return File.createTempFile("rsapi-test", null).getAbsolutePath();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new IllegalStateException(e);
             }
         }
+
+        private static String createTempDir(final String name) {
+            try {
+                return Files.createTempDirectory(name + "-" + System.currentTimeMillis()).toFile().getAbsolutePath();
+            } catch (final IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
     }
 
 }
