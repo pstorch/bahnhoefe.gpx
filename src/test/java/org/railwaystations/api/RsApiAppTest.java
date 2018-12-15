@@ -136,7 +136,7 @@ public class RsApiAppTest {
     @Test
     public void stationsTxt() throws IOException {
         final Response response = loadRaw(String.format("/de/%s.txt", "stations"), 200);
-        try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
             final String header = br.readLine();
             assertThat(header, is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
             int count = 0;
@@ -225,7 +225,7 @@ public class RsApiAppTest {
     @Test
     public void photographersTxt() throws IOException {
         final Response response = loadRaw("/de/photographers.txt", 200);
-        try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
             final String header = br.readLine();
             assertThat(header, is("count\tphotographer"));
             int count = 0;
@@ -303,7 +303,7 @@ public class RsApiAppTest {
     @Test
     public void statisticTxt() throws IOException {
         final Response response = loadRaw("/de/stats.txt", 200);
-        try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
             final String header = br.readLine();
             assertThat(header, is("name\tvalue"));
             int count = 0;
