@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 public class PhotoImporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhotoImporter.class);
-    private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-(\\d+).jpe?g", Pattern.CASE_INSENSITIVE);
+    private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-([A-Z\\d]+).jpe?g", Pattern.CASE_INSENSITIVE);
     private static final Executor EXECUTOR = Executors.newSingleThreadExecutor();
 
     private final StationsRepository repository;

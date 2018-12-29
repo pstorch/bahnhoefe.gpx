@@ -62,16 +62,19 @@ public class PhotoImporterTest {
         final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", new User("", "", ""), 0L, ""));
         when(stationDao.findByKey(hannoverKey.getCountry(), hannoverKey.getId())).thenReturn(Collections.singleton(hannover));
 
+        final Station wangerooge = new Station(new Station.Key("de", "DE20763"), "Wangerooge Westanleger", null, null);
+        when(stationDao.findByKey(wangerooge.getKey().getCountry(), wangerooge.getKey().getId())).thenReturn(Collections.singleton(wangerooge));
+
         repository = new StationsRepository(countryDao, stationDao);
 
         importer = new PhotoImporter(repository, userDao, photoDao, countryDao, new LoggingMonitor(), uploadDir.toString(), photoDir.toString());
     }
 
-    private File createFile(final String countryCode, final String photographer, final int stationId) throws IOException {
+    private File createFile(final String countryCode, final String photographer, final String stationId) throws IOException {
         return createFile(countryCode, photographer, stationId, ".jpg");
     }
 
-    private File createFile(final String countryCode, final String photographer, final int stationId, final String extension) throws IOException {
+    private File createFile(final String countryCode, final String photographer, final String stationId, final String extension) throws IOException {
         final File importFile = new File(uploadDir.toFile(), countryCode + "/import/" + photographer + "-" + stationId + extension);
         FileUtils.write(importFile, "test", Charset.forName("UTF-8"));
         return importFile;
@@ -79,7 +82,7 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportHappyPath() throws IOException {
-        final File importFile = createFile("de", "@storchp", 8009);
+        final File importFile = createFile("de", "@storchp", "8009");
         final Station.Key key = new Station.Key("de", "8009");
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
         final ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
@@ -92,8 +95,22 @@ public class PhotoImporterTest {
     }
 
     @Test
+    public void testImportAlphanumericId() throws IOException {
+        final File importFile = createFile("de", "@storchp", "DE20763");
+        final Station.Key key = new Station.Key("de", "DE20763");
+        assertThat(repository.findByKey(key).hasPhoto(), is(false));
+        final ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        verify(photoDao).insert(argument.capture());
+        assertThat(result.get(0).getMessage(), is("imported Wangerooge Westanleger for @storchp"));
+        assertPostedPhoto(argument.getValue(), 2,"de", "DE20763");
+        assertThat(importFile.exists(), is(false));
+        assertThat(new File(photoDir.toFile(), "de/DE20763.jpg").exists(), is(true));
+    }
+
+    @Test
     public void testImportStationHasPhoto() throws IOException {
-        final File importFile = createFile("de", "@storchp", 6913);
+        final File importFile = createFile("de", "@storchp", "6913");
         verify(photoDao, never()).insert(any(Photo.class));
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("Station 6913 has already a photo"));
@@ -103,8 +120,8 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportDuplicates() throws IOException {
-        final File importFile1 = createFile("de", "@storchp", 8009, ".Jpg");
-        final File importFile2 = createFile("de", "Anonym", 8009, ".jpeg");
+        final File importFile1 = createFile("de", "@storchp", "8009", ".Jpg");
+        final File importFile2 = createFile("de", "Anonym", "8009", ".jpeg");
         verify(photoDao, never()).insert(any(Photo.class));
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("conflict with another photo in inbox"));
@@ -116,7 +133,7 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportNoStationData() throws IOException {
-        final File importFile = createFile("cz", "@storchp", 4711);
+        final File importFile = createFile("cz", "@storchp", "4711");
         final ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         verify(photoDao).insert(argument.capture());
@@ -128,7 +145,7 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportAnonymous() throws IOException {
-        final File importFile = createFile("de", "Some User", 8009);
+        final File importFile = createFile("de", "Some User", "8009");
         final ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         verify(photoDao).insert(argument.capture());
@@ -149,7 +166,7 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportPhotograferNotFound() throws IOException {
-        final File importFile = createFile("de", "@unknown", 8009);
+        final File importFile = createFile("de", "@unknown", "8009");
         final Station.Key key = new Station.Key("de", "8009");
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
         verify(photoDao, never()).insert(any(Photo.class));
@@ -163,7 +180,7 @@ public class PhotoImporterTest {
 
     @Test
     public void testImportStationNotFound() throws IOException {
-        final File importFile = createFile("de", "@GabyBecker", 99999999);
+        final File importFile = createFile("de", "@GabyBecker", "99999999");
         verify(photoDao, never()).insert(any(Photo.class));
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("Station 99999999 not found"));
