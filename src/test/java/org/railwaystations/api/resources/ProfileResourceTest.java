@@ -92,12 +92,13 @@ public class ProfileResourceTest {
 
     @Test
     public void testExistingUserOk() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false)));
-        final User registration = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
-        final Response response = resource.register(registration);
+        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
+        when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
+        when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        final Response response = resource.register(user);
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='existing', email='existing@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New UploadToken{nickname='existing', email='existing@example.com'}"));
     }
 
     @Test

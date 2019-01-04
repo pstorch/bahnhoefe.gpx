@@ -61,6 +61,7 @@ public class ProfileResource {
         LOG.info("New registration for '{}' with '{}'", registration.getName(), registration.getEmail());
 
         if (!registration.isValidForRegistration()) {
+            LOG.warn("Registration for '{}' with '{}' invalid", registration.getName(), registration.getEmail());
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
@@ -97,12 +98,10 @@ public class ProfileResource {
 
         createNewUploadToken(registration);
         final Optional<User> existing = userDao.findByEmail(registration.getEmail());
-        saveRegistration(registration, existing);
-        monitor.sendMessage(
-                String.format("New Registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s', anonymous=%s}",
-                        registration.getName(), registration.getEmail(), registration.getLicense(), registration.isOwnPhotos(), registration.getUrl(), registration.isAnonymous()));
+        saveRegistration(registration, existing.orElse(null));
 
         if (eMailVerified) {
+            LOG.info("Email verified, returning profile");
             return Response.accepted().entity(existing.orElse(registration)).build();
         }
 
@@ -163,22 +162,30 @@ public class ProfileResource {
                         "Dein Bahnhofsfoto-Team",
                 registration.getName(), registration.getUploadToken(), url);
         mailer.send(registration.getEmail(), "Bahnhofsfotos upload token", text, generateComZXing(url));
+        LOG.info("UploadToken sent to {}", registration.getEmail());
     }
 
-    private void saveRegistration(final User registration, final Optional<User> existing) {
-        if (existing.isPresent()) {
-            final User user = existing.get();
-            user.setUploadToken(registration.getUploadToken());
-            user.setUploadTokenSalt(registration.getUploadTokenSalt());
-            userDao.updateTokenSalt(user.getId(), user.getUploadTokenSalt());
-        } else {
-            if (!registration.isValid()) {
-                LOG.info("User invalid {}", registration);
-                throw new WebApplicationException(HttpStatus.BAD_REQUEST_400);
-            }
-            final Integer id = userDao.insert(registration);
-            LOG.info("User '{}' created with id {}", registration.getName(), id);
+    private void saveRegistration(final User registration, final User existing) {
+        if (existing != null) {
+            existing.setUploadToken(registration.getUploadToken());
+            existing.setUploadTokenSalt(registration.getUploadTokenSalt());
+            userDao.updateTokenSalt(existing.getId(), existing.getUploadTokenSalt());
+            monitor.sendMessage(
+                    String.format("New UploadToken{nickname='%s', email='%s'}",
+                            registration.getName(), registration.getEmail()));
+            return;
         }
+
+        if (!registration.isValid()) {
+            LOG.info("User invalid {}", registration);
+            throw new WebApplicationException(HttpStatus.BAD_REQUEST_400);
+        }
+        final Integer id = userDao.insert(registration);
+        monitor.sendMessage(
+                String.format("New Registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s', anonymous=%s}",
+                        registration.getName(), registration.getEmail(), registration.getLicense(), registration.isOwnPhotos(), registration.getUrl(), registration.isAnonymous()));
+
+        LOG.info("User '{}' created with id {}", registration.getName(), id);
     }
 
     private File generateComZXing(final String url) {
