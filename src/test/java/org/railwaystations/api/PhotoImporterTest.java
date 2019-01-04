@@ -191,11 +191,13 @@ public class PhotoImporterTest {
     @Test
     public void testReportToMessage() {
         final List<PhotoImporter.ReportEntry> report = new ArrayList<>(2);
-        report.add(new PhotoImporter.ReportEntry(true, "path1", "error message"));
-        report.add(new PhotoImporter.ReportEntry(false, "path2", "success message"));
+        report.add(new PhotoImporter.ReportEntry(false, "de","path1", "success message"));
+        report.add(new PhotoImporter.ReportEntry(false, "de","path2", "success message"));
+        report.add(new PhotoImporter.ReportEntry(false, "ch","path3", "success message"));
+        report.add(new PhotoImporter.ReportEntry(true, "de","path4", "error message"));
 
         final String message = PhotoImporter.reportToMessage(report);
-        assertThat(message, is ("Imported:\n- path2: success message\n\nErrors:\n- path1: error message\n"));
+        assertThat(message, is ("Imported:\n- de: 2\n- ch: 1\n\n- path1: success message\n- path2: success message\n- path3: success message\n\nErrors:\n- path4: error message\n"));
     }
 
 }
