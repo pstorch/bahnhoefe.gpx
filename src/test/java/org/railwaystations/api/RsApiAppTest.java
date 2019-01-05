@@ -438,7 +438,7 @@ public class RsApiAppTest {
                 .post(Entity.entity("{\n" +
                         "\t\"nickname\": \"storchp\", \n" +
                         "\t\"email\": \"storchp@example.com\", \n" +
-                        "\t\"license\": \"license\",\n" +
+                        "\t\"license\": \"CC0\",\n" +
                         "\t\"photoOwner\": true, \n" +
                         "\t\"link\": null,\n" +
                         "\t\"anonymous\": true\n" +
@@ -457,7 +457,7 @@ public class RsApiAppTest {
 
         assertThat(response3.getStatus(), is(200));
         assertThat(response3.getEntity(), notNullValue());
-        assertProfile(response3, "storchp", "", "license", true);
+        assertProfile(response3, "storchp", "", "CC0 1.0 Universell (CC0 1.0)", true);
 
     }
 

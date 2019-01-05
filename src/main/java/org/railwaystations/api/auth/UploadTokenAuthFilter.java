@@ -17,8 +17,7 @@ public class UploadTokenAuthFilter<P extends Principal> extends AuthFilter<Uploa
     @Override
     public void filter(final ContainerRequestContext requestContext) {
         final UploadTokenCredentials credentials =
-                new UploadTokenCredentials(requestContext.getHeaders().getFirst("Nickname"),
-                        requestContext.getHeaders().getFirst("Email"),
+                new UploadTokenCredentials(requestContext.getHeaders().getFirst("Email"),
                         requestContext.getHeaders().getFirst("Upload-Token"));
         if (!authenticate(requestContext, credentials, SecurityContext.BASIC_AUTH)) {
             consumeBody(requestContext.getEntityStream());

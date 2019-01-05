@@ -70,7 +70,7 @@ public class ProfileResource {
 
     private void createNewUploadToken(@NotNull final User user) {
         user.setUploadTokenSalt(System.currentTimeMillis());
-        user.setUploadToken(tokenGenerator.buildFor(user.getName(), user.getEmail(), user.getUploadTokenSalt()));
+        user.setUploadToken(tokenGenerator.buildFor(user.getEmail(), user.getUploadTokenSalt()));
     }
 
     @POST
@@ -125,6 +125,12 @@ public class ProfileResource {
     public Response updateMyProfile(@NotNull final User newProfile, @Auth final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Update profile for '{}'", user.getEmail());
+
+        if (!newProfile.isValid()) {
+            LOG.info("User invalid {}", newProfile);
+            throw new WebApplicationException(HttpStatus.BAD_REQUEST_400);
+        }
+
         if (!newProfile.getEmail().equals(user.getEmail())) {
             if (userDao.findByEmail(newProfile.getEmail()).isPresent()) {
                 LOG.info("Email conflict '{}'", newProfile.getEmail());

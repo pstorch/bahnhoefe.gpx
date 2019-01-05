@@ -29,8 +29,8 @@ public class UploadTokenAuthenticator implements Authenticator<UploadTokenCreden
             return Optional.empty();
         }
 
-        if (!tokenGenerator.buildFor(credentials.getNickname(), credentials.getEmail(), user.getUploadTokenSalt()).equals(credentials.getUploadToken())) {
-            LOG.info("Token doesn't fit to nickname '{}' and email '{}'", credentials.getNickname(), credentials.getEmail());
+        if (!tokenGenerator.buildFor(credentials.getEmail(), user.getUploadTokenSalt()).equals(credentials.getUploadToken())) {
+            LOG.info("Token doesn't fit to email '{}'", credentials.getEmail());
             return Optional.empty();
         }
 

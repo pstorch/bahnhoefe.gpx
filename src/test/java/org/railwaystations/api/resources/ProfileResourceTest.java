@@ -111,6 +111,15 @@ public class ProfileResourceTest {
     }
 
     @Test
+    public void testExistingUserEmptyName() {
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false)));
+        final User registration = new User("", "existing@example.com", "CC0", true, "https://link@example.com", false);
+        final Response response = resource.register(registration);
+
+        assertThat(response.getStatus(), equalTo(400));
+    }
+
+    @Test
     public void testGetMyProfile() {
         final User user = new User("existing", "existing@example.com", null, true, null, false);
         final Response response = resource.getMyProfile(new AuthUser(user));
@@ -123,7 +132,7 @@ public class ProfileResourceTest {
     public void testUpdateMyProfile() {
         when(userDao.findByNormalizedName("newname")).thenReturn(Optional.empty());
         final User user = new User("existing", "existing@example.com", null, true, null, false);
-        final User newProfile = new User("new_name", "existing@example.com", "CC4", true, "http://twitter.com/", true);
+        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true);
         final Response response = resource.updateMyProfile(newProfile, new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(200));
@@ -134,7 +143,7 @@ public class ProfileResourceTest {
     public void testUpdateMyProfileConflict() {
         when(userDao.findByNormalizedName("newname")).thenReturn(Optional.of(new User("@New name", "newname@example.com", null, true, null, false)));
         final User user = new User("existing", "existing@example.com", null, true, null, false);
-        final User newProfile = new User("new_name", "existing@example.com", "CC4", true, "http://twitter.com/", true);
+        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true);
         final Response response = resource.updateMyProfile(newProfile, new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(409));
@@ -145,7 +154,7 @@ public class ProfileResourceTest {
     public void testUpdateMyProfileNewMail() {
         when(userDao.findByEmail("newname@example.com")).thenReturn(Optional.empty());
         final User user = new User("existing", "existing@example.com", null, true, null, false);
-        final User newProfile = new User("existing", "newname@example.com", "CC4", true, "http://twitter.com/", true);
+        final User newProfile = new User("existing", "newname@example.com", "CC0", true, "http://twitter.com/", true);
         final Response response = resource.updateMyProfile(newProfile, new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(202));

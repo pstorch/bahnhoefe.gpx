@@ -118,7 +118,7 @@ public class PhotoUploadResource {
         LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
 
         try {
-            final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(null, email, uploadToken));
+            final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
             if (!authUser.isPresent()) {
                 final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
                 return createIFrameAnswer(response.getStatusInfo(), referer);
