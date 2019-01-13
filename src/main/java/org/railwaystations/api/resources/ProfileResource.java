@@ -77,7 +77,7 @@ public class ProfileResource {
     @POST
     @Path("registration/withGoogleIdToken")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response registerWithGoogleIdToken(@HeaderParam("Google-Id-Token") final String idToken) {
+    public Response registerWithGoogleIdToken(@HeaderParam("Google-Id-Token") final String idToken, @NotNull final User registration) {
         LOG.info("New GoogleIdToken registration");
 
         final GoogleIdToken.Payload googleLogin = verifyGoogleIdToken(idToken);
@@ -85,7 +85,8 @@ public class ProfileResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        return register(new User(googleLogin.get("name").toString(), googleLogin.getEmail(), null, false, null, false), googleLogin.getEmailVerified());
+        return register(new User(googleLogin.get("name").toString(), googleLogin.getEmail(), registration.getLicense(),
+                registration.isOwnPhotos(), registration.getUrl(), registration.isAnonymous()), googleLogin.getEmailVerified());
     }
 
     private Response register(final User registration, final boolean eMailVerified) {
