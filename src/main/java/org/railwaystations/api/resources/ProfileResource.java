@@ -38,19 +38,20 @@ import java.util.Optional;
 public class ProfileResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProfileResource.class);
-    private static final String GOOGLE_CLIENT_ID = "276816371439-d2tbuvq9o71l4tlpe6294ep33ncn89m4.apps.googleusercontent.com";
     private static final JacksonFactory JACKSON_FACTORY = new JacksonFactory();
 
     private final TokenGenerator tokenGenerator;
     private final Monitor monitor;
     private final Mailer mailer;
     private final UserDao userDao;
+    private final String googleClientId;
 
-    public ProfileResource(final TokenGenerator tokenGenerator, final Monitor monitor, final Mailer mailer, final UserDao userDao) {
+    public ProfileResource(final TokenGenerator tokenGenerator, final Monitor monitor, final Mailer mailer, final UserDao userDao, final String googleClientId) {
         this.tokenGenerator = tokenGenerator;
         this.monitor = monitor;
         this.mailer = mailer;
         this.userDao = userDao;
+        this.googleClientId = googleClientId;
     }
 
     @POST
@@ -227,7 +228,7 @@ public class ProfileResource {
 
     private GoogleIdToken.Payload verifyGoogleIdToken(final String idTokenString) {
         final GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new ApacheHttpTransport(), JACKSON_FACTORY)
-                .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID))
+                .setAudience(Collections.singletonList(googleClientId))
                 .build();
         final GoogleIdToken idToken;
         try {

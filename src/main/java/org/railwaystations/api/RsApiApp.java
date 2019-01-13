@@ -98,7 +98,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new PhotoUploadResource(repository, config.getWorkDir(),
                                                             config.getMonitor(), authenticator));
         environment.jersey().register(new ProfileResource(
-                config.getTokenGenerator(), config.getMonitor(), config.getMailer(), userDao));
+                config.getTokenGenerator(), config.getMonitor(), config.getMailer(), userDao, config.getGoogleClientId()));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
                 new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir())));
         environment.jersey().register(new StationsGpxWriter());

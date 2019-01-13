@@ -32,6 +32,8 @@ public class RsApiConfiguration extends Configuration {
 
     private String photoDir;
 
+    private String googleClientId;
+
     @Valid
     @NotNull
     private DataSourceFactory database = new DataSourceFactory();
@@ -105,4 +107,11 @@ public class RsApiConfiguration extends Configuration {
         this.photoDir = photoDir;
     }
 
+    public String getGoogleClientId() {
+        return googleClientId;
+    }
+
+    public void setGoogleClientId(String googleClientId) {
+        this.googleClientId = googleClientId;
+    }
 }

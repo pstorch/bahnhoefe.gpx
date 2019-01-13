@@ -34,7 +34,7 @@ public class ProfileResourceTest {
         mailer = new MockMailer();
         userDao = mock(UserDao.class);
 
-        resource = new ProfileResource(new TokenGenerator("dummy"), monitor, mailer, userDao);
+        resource = new ProfileResource(new TokenGenerator("dummy"), monitor, mailer, userDao, null);
     }
 
     @Test
