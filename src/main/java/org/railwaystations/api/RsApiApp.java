@@ -105,6 +105,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new StationsTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());
         environment.jersey().register(new PhotographersTxtWriter());
+        environment.jersey().register(new RootResource());
         environment.jersey().property("jersey.config.server.mediaTypeMappings",
                 "gpx : application/gpx+xml, json : application/json, txt : text/plain");
         config.getMonitor().sendMessage(repository.getCountryStatisticMessage());
