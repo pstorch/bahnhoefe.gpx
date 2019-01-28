@@ -24,7 +24,7 @@ paths:
     get:
       summary: Finds railway stations by various query criteria
       produces:
-      - application/service+xml
+      - application/gpx+xml
       - application/json
       - text/plain
       parameters:
@@ -74,7 +74,7 @@ paths:
     get:
       summary: Finds railway stations by various query criteria
       produces:
-      - application/xml
+      - application/gpx+xml
       - application/json
       - text/plain
       parameters:
