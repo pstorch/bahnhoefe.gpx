@@ -28,7 +28,7 @@ public interface StationDao {
     @RegisterRowMapper(StationMapper.class)
     Set<Station> findByKey(@Bind("countryCode") final String countryCode, @Bind("id") final String id);
 
-    @SqlQuery("select count(*) stations, count(p.url) photos, count(distinct p.photographerId) photographers from stations s left join photos p on p.countryCode = s.countryCode and p.id = s.id where s.countryCode = :countryCode")
+    @SqlQuery("select count(*) stations, count(p.url) photos, count(distinct p.photographerId) photographers from stations s left join photos p on p.countryCode = s.countryCode and p.id = s.id where s.countryCode = :countryCode or :countryCode is null")
     @RegisterRowMapper(StatisticMapper.class)
     @SingleValue
     Statistic getStatistic(@Bind("countryCode") final String countryCode);
