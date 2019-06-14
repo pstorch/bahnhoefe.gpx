@@ -51,16 +51,6 @@ This project can be run as a Docker container. The docker image is automatically
   
 Ready to use images are published at https://hub.docker.com/r/pstorch/rsapi/
 
-## Elasticsearch
-
-Elasticsearch is used as backend for all the data (Stations, Photos and Photographers).
-
-For testing purpose is is possible to start a local Elasticsearch instance with `elastic-start.sh` with some testdata. Use `elastic-stop.sh` to shut it down.
-The testdata contains only a very small subset of the production Elastic. 
-
-By default RSAPI expects an Elasticsearch instance running on localhost port 9200. You can start this testinstance or as an alternative you can set the environment parameter to the production instance `-e "ELASTIC_BASE_URL=http://94.136.168.53"`.
-
-
 ## Maria DB
 
 For local testing purpose you can start a MariaDB in docker with `mariadb-start.sh`.
