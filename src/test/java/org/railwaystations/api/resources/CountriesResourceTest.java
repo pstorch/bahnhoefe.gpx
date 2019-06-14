@@ -19,8 +19,8 @@ public class CountriesResourceTest {
     public void testList() {
         final CountryDao countryDao = Mockito.mock(CountryDao.class);
         final Set<Country> countryList = new HashSet<>();
-        countryList.add(new Country("xy", "nameXY", "emailXY", "twitterXY", "timetableXY"));
-        countryList.add(new Country("ab", "nameAB", "emailAB", "twitterAB", "timetableAB"));
+        countryList.add(new Country("xy", "nameXY", "emailXY", "twitterXY", "timetableXY", null));
+        countryList.add(new Country("ab", "nameAB", "emailAB", "twitterAB", "timetableAB", null));
         Mockito.when(countryDao.list()).thenReturn(countryList);
 
         final CountriesResource resource = new CountriesResource(countryDao);

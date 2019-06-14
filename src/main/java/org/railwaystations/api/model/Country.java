@@ -8,21 +8,23 @@ public class Country {
     private String email = "bahnhofsfotos@deutschlands-bahnhoefe.de";
     private String twitterTags = "@android_oma, #dbHackathon, #dbOpendata, #Bahnhofsfoto, @khgdrn";
     private String timetableUrlTemplate;
+    private String overrideLicense;
 
     public Country() {
         super();
     }
 
     public Country(final String code) {
-        this(code, null, null, null, null);
+        this(code, null, null, null, null, null);
     }
 
-    public Country(final String code, final String name, final String email, final String twitterTags, final String timetableUrlTemplate) {
+    public Country(final String code, final String name, final String email, final String twitterTags, final String timetableUrlTemplate, final String overrideLicense) {
         this.code = code;
         this.name = name;
         this.email = email != null ? email : this.email;
         this.twitterTags = twitterTags != null ? twitterTags : this.twitterTags;
         this.timetableUrlTemplate = timetableUrlTemplate;
+        this.overrideLicense = overrideLicense;
     }
 
     public String getCode() {
@@ -64,4 +66,7 @@ public class Country {
         return code != null ? code.hashCode() : 0;
     }
 
+    public String getOverrideLicense() {
+        return overrideLicense;
+    }
 }

@@ -281,4 +281,14 @@
         <dropColumn tableName="countries" columnName="photosIndex"/>
     </changeSet>
 
+    <changeSet id="10" author="pstorch">
+        <addColumn tableName="countries">
+            <column name="overrideLicense" type="varchar(100)"/>
+        </addColumn>
+        <update tableName="countries">
+            <column name="overrideLicense" value="CC BY-NC 4.0 International"/>
+            <where>id = 'fr'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

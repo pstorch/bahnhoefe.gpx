@@ -45,6 +45,7 @@ public class PhotoImporterTest {
 
         final CountryDao countryDao = mock(CountryDao.class);
         when(countryDao.findById("de")).thenReturn(Optional.of(new Country("de")));
+        when(countryDao.findById("fr")).thenReturn(Optional.of(new Country("fr", "France", null, null, null, "CC BY-NC 4.0 International")));
 
         final UserDao userDao = mock(UserDao.class);
         when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, true, true, null)));
@@ -64,6 +65,9 @@ public class PhotoImporterTest {
 
         final Station wangerooge = new Station(new Station.Key("de", "DE20763"), "Wangerooge Westanleger", null, null);
         when(stationDao.findByKey(wangerooge.getKey().getCountry(), wangerooge.getKey().getId())).thenReturn(Collections.singleton(wangerooge));
+
+        final Station paris = new Station(new Station.Key("fr", "8768600"), "Paris-Gare-de-Lyon", null, null);
+        when(stationDao.findByKey(paris.getKey().getCountry(), paris.getKey().getId())).thenReturn(Collections.singleton(paris));
 
         repository = new StationsRepository(countryDao, stationDao);
 
@@ -156,9 +160,13 @@ public class PhotoImporterTest {
     }
 
     private void assertPostedPhoto(final Photo photo, final Integer photographerId, final String countryCode, final String stationId) {
+        assertPostedPhoto(photo, photographerId, countryCode, stationId, "CC0 1.0 Universell (CC0 1.0)");
+    }
+
+    private void assertPostedPhoto(final Photo photo, final Integer photographerId, final String countryCode, final String stationId, final String license) {
         assertThat(photo.getPhotographer().getId(), is(photographerId));
         assertThat(photo.getStationKey().getCountry(), is(countryCode));
-        assertThat(photo.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
+        assertThat(photo.getLicense(), is(license));
         assertThat(photo.getUrl(), is("/fotos/" + countryCode + "/" + stationId + ".jpg"));
         assertThat(photo.getStationKey().getId(), is(stationId));
         assertThat(photo.getCreatedAt() / 10000, is(System.currentTimeMillis() / 10000));
@@ -198,6 +206,20 @@ public class PhotoImporterTest {
 
         final String message = PhotoImporter.reportToMessage(report);
         assertThat(message, is ("Imported:\n- de: 2\n- ch: 1\n\n- path1: success message\n- path2: success message\n- path3: success message\n\nErrors:\n- path4: error message\n"));
+    }
+
+    @Test
+    public void testImportOverrideLicense() throws IOException {
+        final File importFile = createFile("fr", "@storchp", "8768600");
+        final Station.Key key = new Station.Key("fr", "8768600");
+        assertThat(repository.findByKey(key).hasPhoto(), is(false));
+        final ArgumentCaptor<Photo> argument = ArgumentCaptor.forClass(Photo.class);
+        final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
+        verify(photoDao).insert(argument.capture());
+        assertThat(result.get(0).getMessage(), is("imported Paris-Gare-de-Lyon for @storchp"));
+        assertPostedPhoto(argument.getValue(), 2,"fr", "8768600", "CC BY-NC 4.0 International");
+        assertThat(importFile.exists(), is(false));
+        assertThat(new File(photoDir.toFile(), "fr/8768600.jpg").exists(), is(true));
     }
 
 }

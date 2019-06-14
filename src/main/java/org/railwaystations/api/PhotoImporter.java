@@ -1,6 +1,7 @@
 package org.railwaystations.api;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.UserDao;
@@ -120,7 +121,7 @@ public class PhotoImporter {
                     report.add(new ReportEntry(true, countryCode, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
                 }
-                final Photo photo = new Photo(new Station.Key(countryCode, stationId), "/fotos/" + countryCode + "/" + stationId + ".jpg", user.get(), System.currentTimeMillis(), getLicense(user.get().getLicense(), countryCode));
+                final Photo photo = new Photo(new Station.Key(countryCode, stationId), "/fotos/" + countryCode + "/" + stationId + ".jpg", user.get(), System.currentTimeMillis(), getLicense(user.get().getLicense(), country));
                 photosToImport.put(importFile, photo);
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
@@ -170,10 +171,13 @@ public class PhotoImporter {
 
     /**
      * Gets the applicable license for the given country.
-     * We need to override the license for france, because of limitations of the "Freedom of panorama" in that country.
+     * We need to override the license for some countries, because of limitations of the "Freedom of panorama".
      */
-    private String getLicense(final String photographerLicense, final String countryCode) {
-        return "fr".equals(countryCode) ? "CC BY-NC 4.0 International" : photographerLicense;
+    private String getLicense(final String photographerLicense, final Optional<Country> country) {
+        if (country.isPresent() && StringUtils.isNotBlank(country.get().getOverrideLicense())) {
+            return country.get().getOverrideLicense();
+        }
+        return photographerLicense;
     }
 
     private void moveFile(final File importFile, final File countryDir, final String stationId) throws IOException {
