@@ -95,6 +95,13 @@ public class RsApiAppTest {
     }
 
     @Test
+    public void stationsDeChQueryParam() {
+        final Station[] stations = assertLoadStations(String.format("/%s?country=de&country=ch", "stations"), 200);
+        assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
+        assertThat(findByKey(stations, new Station.Key("ch", "8500126")), notNullValue());
+    }
+
+    @Test
     public void stationsDePhotograph() {
         final Station[] stations = assertLoadStations(String.format("/de/%s?photographer=@khgdrn", "stations"), 200);
         assertThat(findByKey(stations, new Station.Key("de", "6966")), notNullValue());

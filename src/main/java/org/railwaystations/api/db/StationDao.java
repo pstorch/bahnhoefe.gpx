@@ -8,6 +8,7 @@ import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
 import org.jdbi.v3.sqlobject.config.ValueColumn;
 import org.jdbi.v3.sqlobject.customizer.Bind;
+import org.jdbi.v3.sqlobject.customizer.BindList;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.railwaystations.api.model.*;
 
@@ -20,9 +21,13 @@ public interface StationDao {
 
     String JOIN_QUERY = "select s.countryCode, s.id, s.DS100, s.title, s.lat, s.lon, p.url, p.license, p.createdAt, u.name, u.url as photographerUrl, u.license as photographerLicense, u.anonymous from stations s left join photos p on p.countryCode = s.countryCode and p.id = s.id left join users u on u.id = p.photographerId";
 
-    @SqlQuery(JOIN_QUERY + " where s.countryCode = :countryCode or :countryCode is null")
+    @SqlQuery(JOIN_QUERY + " where s.countryCode in (<countryCodes>)")
     @RegisterRowMapper(StationMapper.class)
-    Set<Station> findByCountry(@Bind("countryCode") final String countryCode);
+    Set<Station> findByCountryCodes(@BindList("countryCodes") final Set<String> countryCodes);
+
+    @SqlQuery(JOIN_QUERY)
+    @RegisterRowMapper(StationMapper.class)
+    Set<Station> all();
 
     @SqlQuery(JOIN_QUERY + " where (s.countryCode = :countryCode or :countryCode is null) and s.id = :id")
     @RegisterRowMapper(StationMapper.class)

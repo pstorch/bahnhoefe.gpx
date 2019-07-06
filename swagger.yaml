@@ -89,7 +89,9 @@ paths:
         in: query
         description: filter by country code
         required: false
-        type: string
+        type: array
+        items:
+          type: string
       - name: hasPhoto
         in: query
         description: filter by photo availalbe/missing

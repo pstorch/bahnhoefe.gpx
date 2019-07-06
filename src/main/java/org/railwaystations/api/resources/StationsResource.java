@@ -7,8 +7,10 @@ import org.railwaystations.api.writer.StationsTxtWriter;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Path("/")
@@ -32,13 +34,15 @@ public class StationsResource {
     @Path("stations")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", StationsGpxWriter.GPX_MIME_TYPE,
             StationsTxtWriter.TEXT_PLAIN + ";charset=UTF-8"})
-    public List<Station> get(@QueryParam(StationsResource.COUNTRY) final String country,
+    public List<Station> get(@QueryParam(StationsResource.COUNTRY) final Set<String> countries,
                              @QueryParam(StationsResource.HAS_PHOTO) final Boolean hasPhoto,
                              @QueryParam(StationsResource.PHOTOGRAPHER) final String photographer,
                              @QueryParam(StationsResource.MAX_DISTANCE) final Integer maxDistance,
                              @QueryParam(StationsResource.LAT) final Double lat,
                              @QueryParam(StationsResource.LON) final Double lon) {
-        return getWithCountry(country, hasPhoto, photographer, maxDistance, lat, lon);
+        // TODO: can we search this on the DB?
+        return getStationsMap(countries)
+                .values().stream().filter(station -> station.appliesTo(hasPhoto, photographer, maxDistance, lat, lon)).collect(Collectors.toList());
     }
 
     @GET
@@ -51,9 +55,7 @@ public class StationsResource {
                                         @QueryParam(StationsResource.MAX_DISTANCE) final Integer maxDistance,
                                         @QueryParam(StationsResource.LAT) final Double lat,
                                         @QueryParam(StationsResource.LON) final Double lon) {
-        // TODO: can we search this on the DB?
-        return getStationsMap(country)
-                .values().stream().filter(station -> station.appliesTo(hasPhoto, photographer, maxDistance, lat, lon)).collect(Collectors.toList());
+        return get(Collections.singleton(country), hasPhoto, photographer, maxDistance, lat, lon);
     }
 
     @GET
@@ -61,11 +63,11 @@ public class StationsResource {
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
     public Station getById(@PathParam(StationsResource.COUNTRY) final String country,
                            @PathParam(StationsResource.ID) final String id) {
-        return getStationsMap(country).get(new Station.Key(country, id));
+        return getStationsMap(Collections.singleton(country)).get(new Station.Key(country, id));
     }
 
-    private Map<Station.Key, Station> getStationsMap(final String country) {
-        final Map<Station.Key, Station> stationMap = repository.getStationsByCountry(country);
+    private Map<Station.Key, Station> getStationsMap(final Set<String> countries) {
+        final Map<Station.Key, Station> stationMap = repository.getStationsByCountry(countries);
         if (stationMap.isEmpty()) {
             throw new WebApplicationException(404);
         }

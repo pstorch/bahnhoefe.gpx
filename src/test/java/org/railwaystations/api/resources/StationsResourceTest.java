@@ -9,9 +9,7 @@ import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.User;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -36,16 +34,24 @@ public class StationsResourceTest {
         stationsAll.putAll(stationsXY);
 
         final StationsRepository repository = Mockito.mock(StationsRepository.class);
-        Mockito.when(repository.getStationsByCountry("xy")).thenReturn(stationsXY);
-        Mockito.when(repository.getStationsByCountry("ab")).thenReturn(stationsAB);
+        Mockito.when(repository.getStationsByCountry(Collections.singleton("xy"))).thenReturn(stationsXY);
+        Mockito.when(repository.getStationsByCountry(Collections.singleton("ab"))).thenReturn(stationsAB);
         Mockito.when(repository.getStationsByCountry(null)).thenReturn(stationsAll);
+        Mockito.when(repository.getStationsByCountry(allCountries())).thenReturn(stationsAll);
 
         resource = new StationsResource(repository);
     }
 
+    private Set<String> allCountries() {
+        final Set<String> countries = new HashSet<>();
+        countries.add("ab");
+        countries.add("xy");
+        return countries;
+    }
+
     @Test
     public void testGetXY() {
-        final List<Station> resultXY = resource.get("xy", null, null, null, null, null);
+        final List<Station> resultXY = resource.get(Collections.singleton("xy"), null, null, null, null, null);
         final Station stationXY = resultXY.get(0);
         assertThat(stationXY, notNullValue());
         assertThat(stationXY.getKey(), equalTo(new Station.Key("xy", "5")));
@@ -61,9 +67,15 @@ public class StationsResourceTest {
 
     @Test
     public void testGetAB() {
-        final List<Station> resultAB = resource.get("ab", null, null, null, null, null);
+        final List<Station> resultAB = resource.get(Collections.singleton("ab"), null, null, null, null, null);
         final Station station = resultAB.get(0);
         assertNimmerland(station);
+    }
+
+    @Test
+    public void testGetABXY() {
+        final List<Station> resultAB = resource.get(allCountries(), null, null, null, null, null);
+        assertThat(resultAB.size(), equalTo(2));
     }
 
     private void assertNimmerland(final Station station) {

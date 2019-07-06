@@ -21,8 +21,13 @@ public class StationsRepository {
         this.stationDao = stationDao;
     }
 
-    public Map<Station.Key, Station> getStationsByCountry(final String countryCode) {
-        final Set<Station> stations = stationDao.findByCountry(countryCode);
+    public Map<Station.Key, Station> getStationsByCountry(final Set<String> countryCodes) {
+        final Set<Station> stations;
+        if (countryCodes == null || countryCodes.isEmpty()) {
+            stations = stationDao.all();
+        } else {
+            stations = stationDao.findByCountryCodes(countryCodes);
+        }
         return stations.stream().collect(Collectors.toMap(Station::getKey, Function.identity()));
     }
 
