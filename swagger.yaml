@@ -249,7 +249,7 @@ paths:
         type: string
       - name: Email
         in: header
-        description: email of the user
+        description: email or name of the user
         required: true
         type: string
       - name: Country
@@ -321,6 +321,22 @@ paths:
           description: wrong request
         '409':
           description: conflict with existing name or email
+  /newUploadToken:
+    post:
+      summary: Requests a new Upload-Token only
+      parameters:
+      - name: Email
+        in: header
+        description: email or name of the user
+        required: true
+        type: string
+      responses:
+        '202':
+          description: request accepted, email with new uploadToken will be sent
+        '400':
+          description: bad request, probably due to email not set
+        '404':
+          description: User not found
   /myProfile:
     get:
       summary: Get the users profile
@@ -334,7 +350,7 @@ paths:
         type: string
       - name: Email
         in: header
-        description: email of the user
+        description: email or name of the user
         required: true
         type: string
       responses:
@@ -358,7 +374,7 @@ paths:
         type: string
       - name: Email
         in: header
-        description: email of the user
+        description: email or name of the user
         required: true
         type: string
       - name: profile

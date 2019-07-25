@@ -170,4 +170,43 @@ public class ProfileResourceTest {
         verify(userDao, never()).update(newProfile);
     }
 
+    @Test
+    public void testNewUploadTokenViaEmail() {
+        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
+        when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
+        when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        final Response response = resource.newUploadToken("existing@example.com");
+
+        assertThat(response.getStatus(), equalTo(202));
+        assertThat(monitor.getMessages().get(0), equalTo("New UploadToken{nickname='existing', email='existing@example.com'}"));
+    }
+
+    @Test
+    public void testNewUploadTokenViaName() {
+        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
+        when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
+        when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        final Response response = resource.newUploadToken("existing");
+
+        assertThat(response.getStatus(), equalTo(202));
+        assertThat(monitor.getMessages().get(0), equalTo("New UploadToken{nickname='existing', email='existing@example.com'}"));
+    }
+
+    @Test
+    public void testNewUploadTokenNotFound() {
+        final Response response = resource.newUploadToken("doesnt-exist");
+
+        assertThat(response.getStatus(), equalTo(404));
+    }
+
+    @Test
+    public void testNewUploadTokenEmailMissing() {
+        final User user = new User("existing", "", "CC0", true, "https://link@example.com", false);
+        when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
+        when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        final Response response = resource.newUploadToken("existing");
+
+        assertThat(response.getStatus(), equalTo(400));
+    }
+
 }

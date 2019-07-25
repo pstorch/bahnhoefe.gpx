@@ -23,14 +23,15 @@ public class UploadTokenAuthenticator implements Authenticator<UploadTokenCreden
 
     @Override
     public Optional<AuthUser> authenticate(final UploadTokenCredentials credentials) {
-        final User user = userDao.findByEmail(User.normalizeEmail(credentials.getEmail())).orElse(null);
+        final User user = userDao.findByEmail(User.normalizeEmail(credentials.getEmail()))
+                        .orElse(userDao.findByNormalizedName(User.normalizeName(credentials.getEmail())).orElse(null));
         if (user == null) {
-            LOG.info("User with email '{}' not found", credentials.getEmail());
+            LOG.info("User with email or name '{}' not found", credentials.getEmail());
             return Optional.empty();
         }
 
-        if (!tokenGenerator.buildFor(credentials.getEmail(), user.getUploadTokenSalt()).equals(credentials.getUploadToken())) {
-            LOG.info("Token doesn't fit to email '{}'", credentials.getEmail());
+        if (!tokenGenerator.buildFor(user.getEmail(), user.getUploadTokenSalt()).equals(credentials.getUploadToken())) {
+            LOG.info("Token doesn't fit to email '{}'", user.getEmail());
             return Optional.empty();
         }
 

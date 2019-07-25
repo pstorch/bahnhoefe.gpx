@@ -401,23 +401,35 @@ public class RsApiAppTest {
     }
 
     @Test
-    public void getMyProfile() throws IOException {
+    public void getMyProfileWithEmail() throws IOException {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
-                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
-                .header("Nickname", "storchp")
-                .header("Email", "storchp@example.com")
+                .header("Upload-Token", "3a7eaf7e0b2711bb21b054ab5ca11a3cdd110482")
+                .header("Email", "khgdrn@example.com")
                 .get();
 
         assertThat(response.getStatus(), is(200));
-        assertProfile(response, "@storchp", "https://www.twitter.com/storchp", "CC0 1.0 Universell (CC0 1.0)", false);
+        assertProfile(response, "@khgdrn", "https://www.twitter.com/khgdrn", "CC0 1.0 Universell (CC0 1.0)", false, "khgdrn@example.com");
     }
 
-    private void assertProfile(final Response response, final String name, final String link, final String license, final boolean anonymous) throws IOException {
+    @Test
+    public void getMyProfileWithName() throws IOException {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "3a7eaf7e0b2711bb21b054ab5ca11a3cdd110482")
+                .header("Email", "@khgdrn")
+                .get();
+
+        assertThat(response.getStatus(), is(200));
+        assertProfile(response, "@khgdrn", "https://www.twitter.com/khgdrn", "CC0 1.0 Universell (CC0 1.0)", false, "khgdrn@example.com");
+    }
+
+    private void assertProfile(final Response response, final String name, final String link, final String license, final boolean anonymous, String email) throws IOException {
         final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode.get("nickname").asText(), is(name));
-        assertThat(jsonNode.get("email").asText(), is("storchp@example.com"));
+        assertThat(jsonNode.get("email").asText(), is(email));
         assertThat(jsonNode.get("link").asText(), is(link));
         assertThat(jsonNode.get("license").asText(), is(license));
         assertThat(jsonNode.get("photoOwner").asBoolean(), is(true));
@@ -427,23 +439,21 @@ public class RsApiAppTest {
 
     @Test
     public void updateMyProfile() throws IOException {
-        final Response response1 = client.target(
+        final Response responseGetBefore = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
                 .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
-                .header("Nickname", "storchp")
                 .header("Email", "storchp@example.com")
                 .get();
 
-        assertThat(response1.getStatus(), is(200));
-        assertThat(response1.getEntity(), notNullValue());
-        assertProfile(response1, "@storchp", "https://www.twitter.com/storchp", "CC0 1.0 Universell (CC0 1.0)", false);
+        assertThat(responseGetBefore.getStatus(), is(200));
+        assertThat(responseGetBefore.getEntity(), notNullValue());
+        assertProfile(responseGetBefore, "@storchp", "https://www.twitter.com/storchp", "CC0 1.0 Universell (CC0 1.0)", false, "storchp@example.com");
 
-        final Response response2 = client.target(
+        final Response responsePostUpdate = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
                 .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
-                .header("Nickname", "storchp")
                 .header("Email", "storchp@example.com")
                 .post(Entity.entity("{\n" +
                         "\t\"nickname\": \"storchp\", \n" +
@@ -454,21 +464,19 @@ public class RsApiAppTest {
                         "\t\"anonymous\": true\n" +
                         "}", "application/json"));
 
-        assertThat(response2.getStatus(), is(200));
-        assertThat(response2.getEntity(), notNullValue());
+        assertThat(responsePostUpdate.getStatus(), is(200));
+        assertThat(responsePostUpdate.getEntity(), notNullValue());
 
-        final Response response3 = client.target(
+        final Response responseGetAfter = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
                 .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
-                .header("Nickname", "storchp")
                 .header("Email", "storchp@example.com")
                 .get();
 
-        assertThat(response3.getStatus(), is(200));
-        assertThat(response3.getEntity(), notNullValue());
-        assertProfile(response3, "storchp", "", "CC0 1.0 Universell (CC0 1.0)", true);
-
+        assertThat(responseGetAfter.getStatus(), is(200));
+        assertThat(responseGetAfter.getEntity(), notNullValue());
+        assertProfile(responseGetAfter, "storchp", "", "CC0 1.0 Universell (CC0 1.0)", true, "storchp@example.com");
     }
 
     public static final class MySuite {

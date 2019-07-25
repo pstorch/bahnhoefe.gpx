@@ -11,6 +11,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import io.dropwizard.auth.Auth;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.http.HttpStatus;
 import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.auth.AuthUser;
@@ -52,6 +53,31 @@ public class ProfileResource {
         this.mailer = mailer;
         this.userDao = userDao;
         this.googleClientId = googleClientId;
+    }
+
+    @POST
+    @Path("newUploadToken")
+    public Response newUploadToken(@NotNull @HeaderParam("Email") final String email) {
+        LOG.info("New Upload-Token requested for '{}'", email);
+
+        final User user = userDao.findByEmail(User.normalizeEmail(email))
+                .orElse(userDao.findByNormalizedName(User.normalizeName(email)).orElse(null));
+
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (StringUtils.isBlank(user.getEmail())) {
+            monitor.sendMessage(
+                    String.format("Request new Upload-Token for '%s' failed, because Email is empty: '%s'",
+                            email, user));
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        createNewUploadToken(user);
+        saveRegistration(user, user);
+        sendTokenByMail(user);
+        return Response.accepted().build();
     }
 
     @POST
