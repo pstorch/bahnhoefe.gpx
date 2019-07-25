@@ -2,7 +2,7 @@ package org.railwaystations.api.resources;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.apache.ApacheHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -228,7 +228,7 @@ public class ProfileResource {
     }
 
     private GoogleIdToken.Payload verifyGoogleIdToken(final String idTokenString) {
-        final GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new ApacheHttpTransport(), JACKSON_FACTORY)
+        final GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), JACKSON_FACTORY)
                 .setAudience(Collections.singletonList(googleClientId))
                 .build();
         final GoogleIdToken idToken;

@@ -40,10 +40,13 @@ import java.util.regex.Pattern;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressFBWarnings("BC_UNCONFIRMED_CAST_OF_RETURN_VALUE")
+@SuppressWarnings("PMD.TooManyStaticImports")
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class RsApiAppTest {
 
