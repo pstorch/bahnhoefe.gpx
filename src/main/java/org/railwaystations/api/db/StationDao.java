@@ -19,7 +19,7 @@ import java.util.Set;
 
 public interface StationDao {
 
-    String JOIN_QUERY = "select s.countryCode, s.id, s.DS100, s.title, s.lat, s.lon, p.url, p.license, p.createdAt, u.name, u.url as photographerUrl, u.license as photographerLicense, u.anonymous from stations s left join photos p on p.countryCode = s.countryCode and p.id = s.id left join users u on u.id = p.photographerId";
+    String JOIN_QUERY = "select s.countryCode, s.id, s.DS100, s.title, s.lat, s.lon, s.active, p.url, p.license, p.createdAt, u.name, u.url as photographerUrl, u.license as photographerLicense, u.anonymous from stations s left join photos p on p.countryCode = s.countryCode and p.id = s.id left join users u on u.id = p.photographerId";
 
     @SqlQuery(JOIN_QUERY + " where s.countryCode in (<countryCodes>)")
     @RegisterRowMapper(StationMapper.class)
@@ -66,7 +66,7 @@ public interface StationDao {
             }
             return new Station(key, rs.getString("title"),
                     new Coordinates(rs.getDouble("lat"), rs.getDouble("lon")),
-                    rs.getString("DS100"), photo);
+                    rs.getString("DS100"), photo, rs.getBoolean("active"));
         }
 
     }

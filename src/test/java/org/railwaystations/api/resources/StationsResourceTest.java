@@ -23,11 +23,11 @@ public class StationsResourceTest {
     public void setUp() {
         final Map<Station.Key, Station> stationsXY = new HashMap<>(2);
         final Station.Key key5 = new Station.Key("xy", "5");
-        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "/fotos/xy/5.jpg", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0")));
+        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "/fotos/xy/5.jpg", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0"), false));
 
         final Map<Station.Key, Station> stationsAB = new HashMap<>(2);
         final Station.Key key3 = new Station.Key("ab", "3");
-        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "/fotos/ab/3.jpg", new User("Peter Pan", "photographerUrl2", "CC0 by SA"), null, "CC0 by SA")));
+        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "/fotos/ab/3.jpg", new User("Peter Pan", "photographerUrl2", "CC0 by SA"), null, "CC0 by SA"), true));
 
         final Map<Station.Key, Station> stationsAll = new HashMap<>(2);
         stationsAll.putAll(stationsAB);
@@ -51,7 +51,7 @@ public class StationsResourceTest {
 
     @Test
     public void testGetXY() {
-        final List<Station> resultXY = resource.get(Collections.singleton("xy"), null, null, null, null, null);
+        final List<Station> resultXY = resource.get(Collections.singleton("xy"), null, null, null, null, null, null);
         final Station stationXY = resultXY.get(0);
         assertThat(stationXY, notNullValue());
         assertThat(stationXY.getKey(), equalTo(new Station.Key("xy", "5")));
@@ -63,18 +63,25 @@ public class StationsResourceTest {
         assertThat(stationXY.getPhotoUrl(), equalTo("/fotos/xy/5.jpg"));
         assertThat(stationXY.getLicense(), equalTo("CC0"));
         assertThat(stationXY.getPhotographerUrl(), equalTo("photographerUrl"));
+        assertThat(stationXY.isActive(), equalTo(false));
+    }
+
+    @Test
+    public void testGetXYWithFilterActive() {
+        final List<Station> resultXY = resource.get(Collections.singleton("xy"), null, null, null, null, null, true);
+        assertThat(resultXY.isEmpty(), equalTo(true));
     }
 
     @Test
     public void testGetAB() {
-        final List<Station> resultAB = resource.get(Collections.singleton("ab"), null, null, null, null, null);
+        final List<Station> resultAB = resource.get(Collections.singleton("ab"), null, null, null, null, null, null);
         final Station station = resultAB.get(0);
         assertNimmerland(station);
     }
 
     @Test
     public void testGetABXY() {
-        final List<Station> resultAB = resource.get(allCountries(), null, null, null, null, null);
+        final List<Station> resultAB = resource.get(allCountries(), null, null, null, null, null, null);
         assertThat(resultAB.size(), equalTo(2));
     }
 
@@ -89,6 +96,7 @@ public class StationsResourceTest {
         assertThat(station.getDS100(), equalTo("ABC"));
         assertThat(station.getLicense(), equalTo("CC0 by SA"));
         assertThat(station.getPhotographerUrl(), equalTo("photographerUrl2"));
+        assertThat(station.isActive(), equalTo(true));
     }
 
     @Test
@@ -99,7 +107,7 @@ public class StationsResourceTest {
 
     @Test
     public void testGetAll() {
-        final List<Station> resultAll = resource.get(null, null, null, null, null, null);
+        final List<Station> resultAll = resource.get(null, null, null, null, null, null, null);
         assertThat(resultAll.size(), equalTo(2));
     }
 

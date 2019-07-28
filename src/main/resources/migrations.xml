@@ -291,4 +291,10 @@
         </update>
     </changeSet>
 
+    <changeSet id="11" author="pstorch">
+        <addColumn tableName="stations">
+            <column name="active" type="boolean" valueBoolean="true" defaultValueBoolean="true"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

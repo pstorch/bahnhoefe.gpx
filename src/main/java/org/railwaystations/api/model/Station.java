@@ -41,20 +41,24 @@ public class Station {
     @JsonProperty
     private Long createdAt;
 
+    @JsonProperty
+    private boolean active;
+
     public Station() {
-        this(new Key("", "0"), null, new Coordinates(0.0, 0.0), null);
+        this(new Key("", "0"), null, new Coordinates(0.0, 0.0), null, true);
     }
 
-    public Station(final Key key, final String title, final Coordinates coordinates, final Photo photo) {
-        this(key, title, coordinates, null, photo);
+    public Station(final Key key, final String title, final Coordinates coordinates, final Photo photo, final boolean active) {
+        this(key, title, coordinates, null, photo, active);
     }
 
-    public Station(final Key key, final String title, final Coordinates coordinates, final String ds100, final Photo photo) {
+    public Station(final Key key, final String title, final Coordinates coordinates, final String ds100, final Photo photo, final boolean active) {
         super();
         this.key = key;
         this.title = title;
         this.coordinates = coordinates;
         this.ds100 = ds100;
+        this.active = active;
         setPhoto(photo);
     }
 
@@ -118,7 +122,7 @@ public class Station {
         return Station.EARTH_RADIUS * c;
     }
 
-    public boolean appliesTo(final Boolean hasPhoto, final String photographer, final Integer maxDistance, final Double lat, final Double lon) {
+    public boolean appliesTo(final Boolean hasPhoto, final String photographer, final Integer maxDistance, final Double lat, final Double lon, final Boolean active) {
         boolean result = true;
         if (hasPhoto != null) {
             result = this.hasPhoto() == hasPhoto;
@@ -128,6 +132,9 @@ public class Station {
         }
         if (maxDistance != null && lat != null && lon != null) {
             result &= this.distanceTo(lat, lon) < maxDistance;
+        }
+        if (active != null) {
+            result &= active.booleanValue() == this.active;
         }
         return result;
     }
@@ -154,6 +161,10 @@ public class Station {
 
     public Long getCreatedAt() {
         return createdAt;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     @SuppressWarnings("PMD.ShortClassName")

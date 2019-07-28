@@ -18,8 +18,8 @@ public class StationsGpxWriterTest {
 	@Test
 	public void testWriteTo() throws WebApplicationException, IOException {
 		final List<Station> stations = new ArrayList<>();
-		stations.add(new Station(new Station.Key("de", "4711"), "Test", new Coordinates(50d, 9d), null, null));
-		stations.add(new Station(new Station.Key("de", "4712"), "Foo", new Coordinates(51d, 8d), null, null));
+		stations.add(new Station(new Station.Key("de", "4711"), "Test", new Coordinates(50d, 9d), null, null, true));
+		stations.add(new Station(new Station.Key("de", "4712"), "Foo", new Coordinates(51d, 8d), null, null, true));
 		
 		final StationsGpxWriter writer = new StationsGpxWriter();
 		final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();

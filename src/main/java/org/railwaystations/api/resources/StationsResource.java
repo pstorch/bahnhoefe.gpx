@@ -23,6 +23,7 @@ public class StationsResource {
     private static final String LAT = "lat";
     private static final String LON = "lon";
     private static final String ID = "id";
+    private static final String ACTIVE = "active";
 
     private final StationsRepository repository;
 
@@ -39,10 +40,11 @@ public class StationsResource {
                              @QueryParam(StationsResource.PHOTOGRAPHER) final String photographer,
                              @QueryParam(StationsResource.MAX_DISTANCE) final Integer maxDistance,
                              @QueryParam(StationsResource.LAT) final Double lat,
-                             @QueryParam(StationsResource.LON) final Double lon) {
+                             @QueryParam(StationsResource.LON) final Double lon,
+                             @QueryParam(StationsResource.ACTIVE) final Boolean active) {
         // TODO: can we search this on the DB?
         return getStationsMap(countries)
-                .values().stream().filter(station -> station.appliesTo(hasPhoto, photographer, maxDistance, lat, lon)).collect(Collectors.toList());
+                .values().stream().filter(station -> station.appliesTo(hasPhoto, photographer, maxDistance, lat, lon, active)).collect(Collectors.toList());
     }
 
     @GET
@@ -54,8 +56,9 @@ public class StationsResource {
                                         @QueryParam(StationsResource.PHOTOGRAPHER) final String photographer,
                                         @QueryParam(StationsResource.MAX_DISTANCE) final Integer maxDistance,
                                         @QueryParam(StationsResource.LAT) final Double lat,
-                                        @QueryParam(StationsResource.LON) final Double lon) {
-        return get(Collections.singleton(country), hasPhoto, photographer, maxDistance, lat, lon);
+                                        @QueryParam(StationsResource.LON) final Double lon,
+                                        @QueryParam(StationsResource.ACTIVE) final Boolean active) {
+        return get(Collections.singleton(country), hasPhoto, photographer, maxDistance, lat, lon, active);
     }
 
     @GET

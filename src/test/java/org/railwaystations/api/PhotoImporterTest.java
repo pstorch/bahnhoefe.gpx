@@ -56,17 +56,17 @@ public class PhotoImporterTest {
         photoDao = mock(PhotoDao.class);
 
         final StationDao stationDao = mock(StationDao.class);
-        final Station felde = new Station(new Station.Key("de", "8009"), "Felde", null, null);
+        final Station felde = new Station(new Station.Key("de", "8009"), "Felde", null, null, true);
         when(stationDao.findByKey(felde.getKey().getCountry(), felde.getKey().getId())).thenReturn(Collections.singleton(felde));
 
         final Station.Key hannoverKey = new Station.Key("de", "6913");
-        final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", new User("", "", ""), 0L, ""));
+        final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", new User("", "", ""), 0L, ""), true);
         when(stationDao.findByKey(hannoverKey.getCountry(), hannoverKey.getId())).thenReturn(Collections.singleton(hannover));
 
-        final Station wangerooge = new Station(new Station.Key("de", "DE20763"), "Wangerooge Westanleger", null, null);
+        final Station wangerooge = new Station(new Station.Key("de", "DE20763"), "Wangerooge Westanleger", null, null, true);
         when(stationDao.findByKey(wangerooge.getKey().getCountry(), wangerooge.getKey().getId())).thenReturn(Collections.singleton(wangerooge));
 
-        final Station paris = new Station(new Station.Key("fr", "8768600"), "Paris-Gare-de-Lyon", null, null);
+        final Station paris = new Station(new Station.Key("fr", "8768600"), "Paris-Gare-de-Lyon", null, null, true);
         when(stationDao.findByKey(paris.getKey().getCountry(), paris.getKey().getId())).thenReturn(Collections.singleton(paris));
 
         repository = new StationsRepository(countryDao, stationDao);

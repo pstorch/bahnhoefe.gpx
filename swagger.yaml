@@ -68,6 +68,11 @@ paths:
         required: false
         type: number
         format: double
+      - name: active
+        in: query
+        description: filter on active/inactive stations
+        required: false
+        type: boolean
       responses:
         '200':
           description: successful operation
@@ -120,6 +125,11 @@ paths:
         required: false
         type: number
         format: double
+      - name: active
+        in: query
+        description: filter on active/inactive stations
+        required: false
+        type: boolean
       responses:
         '200':
           description: successful operation

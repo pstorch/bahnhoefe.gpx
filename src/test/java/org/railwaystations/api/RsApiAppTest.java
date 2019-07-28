@@ -81,6 +81,7 @@ public class RsApiAppTest {
         assertThat(station.getPhotoUrl(), is("https://fotos.railway-stations.org/sites/default/files/previewbig/6932.jpg"));
         assertThat(station.getPhotographer(), is("@khgdrn"));
         assertThat(station.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
+        assertThat(station.isActive(), is(true));
     }
 
     @Test

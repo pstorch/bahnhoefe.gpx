@@ -37,9 +37,9 @@ public class PhotoUploadResourceTest {
     @BeforeEach
     public void setUp() throws IOException {
         final Station.Key key4711 = new Station.Key("de", "4711");
-        final Station station4711 = new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null);
+        final Station station4711 = new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null, true);
         final Station.Key key1234 = new Station.Key("de", "1234");
-        final Station station1234 = new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0"));
+        final Station station1234 = new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0"), true);
         final UserDao userDao = mock(UserDao.class);
         final User userNickname = new User("nickname", "nickname@example.com", "CC0", true, null, true);
         when(userDao.findByEmail("nickname@example.com")).thenReturn(Optional.of(userNickname));
