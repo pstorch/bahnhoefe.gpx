@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20190128.2215'
+  version: '20190927.1940'
   title: RSAPI
   license:
     name: MIT
@@ -11,19 +11,19 @@ info:
 host: api.railway-stations.org
 basePath: /
 tags:
-- name: bahnhofsfotos
-  description: Photos of railway stations
-  externalDocs:
-    description: Find out more
-    url: 'http://www.railway-stations.org'
+  - name: bahnhofsfotos
+    description: Photos of railway stations
+    externalDocs:
+      description: Find out more
+      url: 'http://www.railway-stations.org'
 schemes:
-- https
+  - https
 paths:
   '/':
     get:
       summary: Root resource with link to documentation
       produces:
-      - text/html
+        - text/html
       responses:
         '200':
           description: successful operation
@@ -31,48 +31,48 @@ paths:
     get:
       summary: Finds railway stations by various query criteria
       produces:
-      - application/gpx+xml
-      - application/json
-      - text/plain
+        - application/gpx+xml
+        - application/json
+        - text/plain
       parameters:
-      - name: country
-        in: path
-        description: filter by country code
-        required: true
-        type: string
-      - name: hasPhoto
-        in: query
-        description: filter by photo availalbe/missing
-        required: false
-        type: boolean
-      - name: photographer
-        in: query
-        description: filter by nickname of a photographer
-        required: false
-        type: string
-      - name: maxDistance
-        in: query
-        description: filter by max distance from the coordinates given by lat and lon
-        required: false
-        type: integer
-        format: int64
-      - name: lat
-        in: query
-        description: latitute of the coordinates to filter by max distance
-        required: false
-        type: number
-        format: double
-      - name: lon
-        in: query
-        description: longitude of the coordinates to filter by max distance
-        required: false
-        type: number
-        format: double
-      - name: active
-        in: query
-        description: filter on active/inactive stations
-        required: false
-        type: boolean
+        - name: country
+          in: path
+          description: filter by country code
+          required: true
+          type: string
+        - name: hasPhoto
+          in: query
+          description: filter by photo availalbe/missing
+          required: false
+          type: boolean
+        - name: photographer
+          in: query
+          description: filter by nickname of a photographer
+          required: false
+          type: string
+        - name: maxDistance
+          in: query
+          description: filter by max distance from the coordinates given by lat and lon
+          required: false
+          type: integer
+          format: int64
+        - name: lat
+          in: query
+          description: latitute of the coordinates to filter by max distance
+          required: false
+          type: number
+          format: double
+        - name: lon
+          in: query
+          description: longitude of the coordinates to filter by max distance
+          required: false
+          type: number
+          format: double
+        - name: active
+          in: query
+          description: filter on active/inactive stations
+          required: false
+          type: boolean
       responses:
         '200':
           description: successful operation
@@ -86,50 +86,50 @@ paths:
     get:
       summary: Finds railway stations by various query criteria
       produces:
-      - application/gpx+xml
-      - application/json
-      - text/plain
+        - application/gpx+xml
+        - application/json
+        - text/plain
       parameters:
-      - name: country
-        in: query
-        description: filter by country code
-        required: false
-        type: array
-        items:
+        - name: country
+          in: query
+          description: filter by country code
+          required: false
+          type: array
+          items:
+            type: string
+        - name: hasPhoto
+          in: query
+          description: filter by photo availalbe/missing
+          required: false
+          type: boolean
+        - name: photographer
+          in: query
+          description: filter by nickname of a photographer
+          required: false
           type: string
-      - name: hasPhoto
-        in: query
-        description: filter by photo availalbe/missing
-        required: false
-        type: boolean
-      - name: photographer
-        in: query
-        description: filter by nickname of a photographer
-        required: false
-        type: string
-      - name: maxDistance
-        in: query
-        description: filter by max distance from the coordinates given by lat and lon
-        required: false
-        type: integer
-        format: int64
-      - name: lat
-        in: query
-        description: latitute of the coordinates to filter by max distance
-        required: false
-        type: number
-        format: double
-      - name: lon
-        in: query
-        description: longitude of the coordinates to filter by max distance
-        required: false
-        type: number
-        format: double
-      - name: active
-        in: query
-        description: filter on active/inactive stations
-        required: false
-        type: boolean
+        - name: maxDistance
+          in: query
+          description: filter by max distance from the coordinates given by lat and lon
+          required: false
+          type: integer
+          format: int64
+        - name: lat
+          in: query
+          description: latitute of the coordinates to filter by max distance
+          required: false
+          type: number
+          format: double
+        - name: lon
+          in: query
+          description: longitude of the coordinates to filter by max distance
+          required: false
+          type: number
+          format: double
+        - name: active
+          in: query
+          description: filter on active/inactive stations
+          required: false
+          type: boolean
       responses:
         '200':
           description: successful operation
@@ -141,18 +141,18 @@ paths:
     get:
       summary: Find a railway station by its ID
       produces:
-      - application/json
+        - application/json
       parameters:
-      - name: country
-        in: path
-        description: country code
-        required: true
-        type: string
-      - name: id
-        in: path
-        description: id of the station
-        required: true
-        type: string
+        - name: country
+          in: path
+          description: country code
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: id of the station
+          required: true
+          type: string
       responses:
         '200':
           description: successful operation
@@ -166,14 +166,14 @@ paths:
         List of all photographers of a given country with their number of photos
         taken
       produces:
-      - text/plain
-      - application/json
+        - text/plain
+        - application/json
       parameters:
-      - name: country
-        in: path
-        description: filter by country code
-        required: true
-        type: string
+        - name: country
+          in: path
+          description: filter by country code
+          required: true
+          type: string
       responses:
         '200':
           description: successful operation
@@ -185,8 +185,8 @@ paths:
     get:
       summary: List of all photographers with their number of photos taken
       produces:
-      - text/plain
-      - application/json
+        - text/plain
+        - application/json
       responses:
         '200':
           description: successful operation
@@ -196,14 +196,14 @@ paths:
     get:
       summary: Statistic of photos with and without photos by country
       produces:
-      - text/plain
-      - application/json
+        - text/plain
+        - application/json
       parameters:
-      - name: country
-        in: path
-        description: filter by country code
-        required: true
-        type: string
+        - name: country
+          in: path
+          description: filter by country code
+          required: true
+          type: string
       responses:
         '200':
           description: successful operation
@@ -215,8 +215,8 @@ paths:
     get:
       summary: Overall statistic of photos with and without photos
       produces:
-      - text/plain
-      - application/json
+        - text/plain
+        - application/json
       responses:
         '200':
           description: successful operation
@@ -228,7 +228,7 @@ paths:
     get:
       summary: List of all supported countries with their configuration
       produces:
-      - application/json
+        - application/json
       responses:
         '200':
           description: successful operation
@@ -240,43 +240,65 @@ paths:
     post:
       summary: Upload a new Photo
       consumes:
-      - image/jpeg
-      - image/png
+        - image/jpeg
+        - image/png
       produces:
-      - application/json
+        - application/json
       parameters:
-      - name: image
-        in: body
-        description: image
-        required: true
-        schema:
+        - name: image
+          in: body
+          description: image
+          required: true
+          schema:
+            type: string
+            format: byte
+        - name: Upload-Token
+          in: header
+          description: Upload Token
+          required: true
           type: string
-          format: byte
-      - name: Upload-Token
-        in: header
-        description: Upload Token
-        required: true
-        type: string
-      - name: Email
-        in: header
-        description: email or name of the user
-        required: true
-        type: string
-      - name: Country
-        in: header
-        description: country code
-        required: true
-        type: string
-      - name: Station-Id
-        in: header
-        description: id of the railwaystation
-        required: true
-        type: string
-      - name: Content-Type
-        in: header
-        description: mime type of the image, "image/png" or "image/jpeg"
-        required: true
-        type: string
+        - name: Email
+          in: header
+          description: email or name of the user
+          required: true
+          type: string
+        - name: Country
+          in: header
+          description: country code
+          required: false
+          type: string
+        - name: Station-Id
+          in: header
+          description: id of the railwaystation
+          required: false
+          type: string
+        - name: Content-Type
+          in: header
+          description: mime type of the image, "image/png" or "image/jpeg"
+          required: true
+          type: string
+        - name: Station-Title
+          in: header
+          description: name of the station, for upload of missing stations
+          required: false
+          type: string
+        - name: Latitude
+          in: header
+          description: latitude, for upload of missing stations
+          required: false
+          type: number
+          format: double
+        - name: Longitude
+          in: header
+          description: longitude, for upload of missing stations
+          required: false
+          type: number
+          format: double
+        - name: Comment
+          in: header
+          description: comment of the photographer to the reviewer
+          required: false
+          type: string
       responses:
         '202':
           description: upload successful
@@ -292,16 +314,16 @@ paths:
     post:
       summary: Register for an upload token
       consumes:
-      - application/json
+        - application/json
       produces:
-      - application/json
+        - application/json
       parameters:
-      - name: registration
-        in: body
-        description: Registration information
-        required: true
-        schema:
-          $ref: '#/definitions/Profile'
+        - name: registration
+          in: body
+          description: Registration information
+          required: true
+          schema:
+            $ref: '#/definitions/Profile'
       responses:
         '202':
           description: registration accepted
@@ -315,13 +337,13 @@ paths:
     post:
       summary: Register for an upload token with Google IdToken
       produces:
-      - application/json
+        - application/json
       parameters:
-      - name: Google-Id-Token
-        in: header
-        description: Google IdToken
-        required: true
-        type: string
+        - name: Google-Id-Token
+          in: header
+          description: Google IdToken
+          required: true
+          type: string
       responses:
         '202':
           description: registration accepted, if the email is verified the response contains the full profile with uploadToken
@@ -335,11 +357,11 @@ paths:
     post:
       summary: Requests a new Upload-Token only
       parameters:
-      - name: Email
-        in: header
-        description: email or name of the user
-        required: true
-        type: string
+        - name: Email
+          in: header
+          description: email or name of the user
+          required: true
+          type: string
       responses:
         '202':
           description: request accepted, email with new uploadToken will be sent
@@ -351,18 +373,18 @@ paths:
     get:
       summary: Get the users profile
       produces:
-      - application/json
+        - application/json
       parameters:
-      - name: Upload-Token
-        in: header
-        description: Upload Token
-        required: true
-        type: string
-      - name: Email
-        in: header
-        description: email or name of the user
-        required: true
-        type: string
+        - name: Upload-Token
+          in: header
+          description: Upload Token
+          required: true
+          type: string
+        - name: Email
+          in: header
+          description: email or name of the user
+          required: true
+          type: string
       responses:
         '200':
           description: ok
@@ -373,26 +395,26 @@ paths:
     post:
       summary: Update the users profile. In case the email has been changed, only the email is saved and a new upload token is send.
       consumes:
-      - application/json
+        - application/json
       produces:
-      - application/json
+        - application/json
       parameters:
-      - name: Upload-Token
-        in: header
-        description: Upload Token
-        required: true
-        type: string
-      - name: Email
-        in: header
-        description: email or name of the user
-        required: true
-        type: string
-      - name: profile
-        in: body
-        description: Userprofile
-        required: true
-        schema:
-          $ref: '#/definitions/Profile'
+        - name: Upload-Token
+          in: header
+          description: Upload Token
+          required: true
+          type: string
+        - name: Email
+          in: header
+          description: email or name of the user
+          required: true
+          type: string
+        - name: profile
+          in: body
+          description: Userprofile
+          required: true
+          schema:
+            $ref: '#/definitions/Profile'
       responses:
         '200':
           description: ok
@@ -499,10 +521,10 @@ definitions:
         format: email
       license:
         enum:
-        - CC0
-        - CC0 1.0 Universell (CC0 1.0)
-        - CC4
-        - CC BY-SA 4.0
+          - CC0
+          - CC0 1.0 Universell (CC0 1.0)
+          - CC4
+          - CC BY-SA 4.0
         type: string
       photoOwner:
         type: boolean

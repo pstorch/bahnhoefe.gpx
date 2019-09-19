@@ -1,5 +1,6 @@
 package org.railwaystations.api;
 
+import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.StationDao;
 import org.railwaystations.api.model.Country;
@@ -56,6 +57,14 @@ public class StationsRepository {
 
     public Statistic getStatistic(final String country) {
         return stationDao.getStatistic(country);
+    }
+
+    public Station findByCountryAndId(final String country, final String stationId) {
+        if (StringUtils.isBlank(country) || StringUtils.isBlank(stationId)) {
+            return null;
+        }
+        final Station.Key key = new Station.Key(country, stationId);
+        return findByKey(key);
     }
 
     public Station findByKey(final Station.Key key) {

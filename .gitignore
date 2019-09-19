@@ -2,6 +2,7 @@ target
 .settings
 .project
 .classpath
+.vscode/
 *~
 dependency-reduced-pom.xml
 .idea/

@@ -4,6 +4,7 @@ import io.dropwizard.auth.Auth;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.InputStreamEntity;
 import org.eclipse.jetty.util.URIUtil;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -18,14 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 
 @Path("/photoUpload")
@@ -53,22 +52,33 @@ public class PhotoUploadResource {
     @Consumes({IMAGE_PNG, IMAGE_JPEG})
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(final InputStream body,
-                         @NotNull @HeaderParam("Station-Id") final String stationId,
-                         @NotNull @HeaderParam("Country") final String country,
+                         @HeaderParam("Station-Id") final String stationId,
+                         @HeaderParam("Country") final String country,
                          @HeaderParam("Content-Type") final String contentType,
+                         @HeaderParam("Station-Title") final String stationTitle,
+                         @HeaderParam("Latitude") final Double latitude,
+                         @HeaderParam("Longitude") final Double longitude,
+                         @HeaderParam("Comment") final String comment,
                          @Auth final AuthUser user) {
-        LOG.info("Nickname: {}, Email: {}, Country: {}, Station-Id: {}, Content-Type: {}", user.getName(), user.getUser().getEmail(), country, stationId, contentType);
+        LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Koords: {},{}; Title: {}; Content-Type: {}",
+                user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
 
         if (!user.getUser().isValid()) {
             LOG.warn("User invalid: {}", user.getUser());
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
-        final Station.Key key = new Station.Key(country, stationId);
-        final Station station = repository.findByKey(key);
+        final Station station = repository.findByCountryAndId(country, stationId);
         if (station == null) {
-            LOG.warn("Station '{}' not found", key);
-            return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
+            LOG.warn("Station not found");
+            if (StringUtils.isBlank(stationTitle) || latitude == null || longitude == null) {
+                LOG.warn("Not enough data for missing station: title={}, latitude={}, longitude={}", stationTitle, latitude, longitude);
+                return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
+            }
+            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+                LOG.warn("Lat/Lon out of range: latitude={}, longitude={}", latitude, longitude);
+                return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
+            }
         }
 
         final String extension = mimeToExtension(contentType);
@@ -77,29 +87,55 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
-        final String filename = toFilename(stationId, user.getUser().getNormalizedName(), extension);
-        final File uploadCountryDir = new File(uploadDir, country);
-        final boolean duplicate = isDuplicate(station, uploadCountryDir, filename);
-        final File file = new File(uploadCountryDir, filename);
+        final File uploadDir = new File(this.uploadDir, country != null ? country : "missing");
+        final String filename = toFilename(uploadDir, station, user.getUser().getNormalizedName(), extension);
+        final boolean duplicate = station != null && isDuplicate(station, uploadDir, filename);
+        final File file = new File(uploadDir, filename);
         LOG.info("Writing photo to {}", file);
         try {
-            FileUtils.forceMkdir(uploadCountryDir);
+            FileUtils.forceMkdir(uploadDir);
             final long bytesRead = IOUtils.copyLarge(body, new FileOutputStream(file), 0L, MAX_SIZE);
             if (bytesRead == MAX_SIZE) {
                 FileUtils.deleteQuietly(file);
                 return consumeBodyAndReturn(body, Response.Status.REQUEST_ENTITY_TOO_LARGE);
             }
+            writeInfoFile(stationTitle, latitude, longitude, comment, station, uploadDir, filename);
             String duplicateInfo = "";
             if (duplicate) {
                 duplicateInfo = " (possible duplicate!)";
             }
-            monitor.sendMessage(String.format("New photo upload for %s: http://inbox.railway-stations.org/%s/%s%s", station.getTitle(), country, URIUtil.encodePath(filename), duplicateInfo));
+            if (station != null) {
+                monitor.sendMessage(String.format("New photo upload for %s%n%s%nhttp://inbox.railway-stations.org/%s/%s%s",
+                        station.getTitle(), StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo));
+            } else {
+                monitor.sendMessage(String.format("Photo upload for missing station %s at %s,%s%n%s%nhttp://inbox.railway-stations.org/%s/%s%s",
+                        stationTitle, latitude, longitude,
+                        StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo));
+            }
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
             return consumeBodyAndReturn(body, Response.Status.INTERNAL_SERVER_ERROR);
         }
 
         return duplicate ? Response.status(Response.Status.CONFLICT).build() : Response.accepted().build();
+    }
+
+    private void writeInfoFile(final String stationTitle, final Double latitude, final Double longitude, final String comment,
+                               final Station station, final File uploadDir, final String filename) throws IOException {
+        if (StringUtils.isNotBlank(comment) || station == null) {
+            final File txt = new File(uploadDir, filename + ".txt");
+            final FileOutputStream txtOut = new FileOutputStream(txt);
+            final Collection<String> line = new ArrayList<>();
+            if (station == null) {
+                line.add(stationTitle);
+                line.add(latitude + "," + longitude);
+            }
+            if (StringUtils.isNotBlank(comment)) {
+                line.add(comment);
+            }
+            IOUtils.writeLines(line, null, txtOut, "UTF-8");
+            txtOut.close();
+        }
     }
 
     /**
@@ -112,6 +148,10 @@ public class PhotoUploadResource {
                        @FormDataParam("uploadToken") final String uploadToken,
                        @FormDataParam("stationId") final String stationId,
                        @FormDataParam("countryCode") final String countryCode,
+                       @FormDataParam("stationTitle") final String stationTitle,
+                       @FormDataParam("latitude") final Double latitude,
+                       @FormDataParam("longitude") final Double longitude,
+                       @FormDataParam("comment") final String comment,
                        @FormDataParam("file") final InputStream file,
                        @FormDataParam("file") final FormDataContentDisposition fd,
                        @HeaderParam("Referer") final String referer) {
@@ -125,7 +165,7 @@ public class PhotoUploadResource {
             }
 
             final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
-            final Response response = post(file, stationId, countryCode, contentType, authUser.get());
+            final Response response = post(file, stationId, countryCode, contentType, stationTitle, latitude, longitude, comment, authUser.get());
 
             return createIFrameAnswer(response.getStatusInfo(), referer);
         } catch (final Exception e) {
@@ -140,8 +180,17 @@ public class PhotoUploadResource {
                "</script>";
     }
 
-    private String toFilename(final String stationId, final String nickname, final String extension) {
-        return String.format("%s-%s.%s", nickname, stationId, extension);
+    private String toFilename(final File uploadDir, final Station station, final String nickname, final String extension) {
+        if (station != null) {
+            return String.format("%s-%s.%s", nickname, station.getKey().getId(), extension);
+        }
+        for (int index = 1; index < 1024; index++) {
+            File file = new File(uploadDir, String.format("%s-%s.%s", nickname, index, extension));
+            if (!file.exists()) {
+                return file.getName();
+            }
+        }
+        throw new RuntimeException("More than 1024 missing photos from one nickname");
     }
 
     private boolean isDuplicate(final Station station, final File uploadCountryDir, final String filename) {
