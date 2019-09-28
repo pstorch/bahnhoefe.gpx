@@ -87,7 +87,7 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
-        final File uploadDir = new File(this.uploadDir, country != null ? country : "missing");
+        final File uploadDir = new File(this.uploadDir, StringUtils.isNotBlank(country) ? country : "missing");
         final String filename = toFilename(uploadDir, station, user.getUser().getNormalizedName(), extension);
         final boolean duplicate = station != null && isDuplicate(station, uploadDir, filename);
         final File file = new File(uploadDir, filename);
