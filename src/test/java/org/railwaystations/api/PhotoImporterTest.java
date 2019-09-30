@@ -45,7 +45,7 @@ public class PhotoImporterTest {
 
         final CountryDao countryDao = mock(CountryDao.class);
         when(countryDao.findById("de")).thenReturn(Optional.of(new Country("de")));
-        when(countryDao.findById("fr")).thenReturn(Optional.of(new Country("fr", "France", null, null, null, "CC BY-NC 4.0 International")));
+        when(countryDao.findById("fr")).thenReturn(Optional.of(new Country("fr", "France", null, null, null, "CC BY-NC 4.0 International", null, null)));
 
         final UserDao userDao = mock(UserDao.class);
         when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, true, true, null)));

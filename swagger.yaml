@@ -510,6 +510,12 @@ definitions:
       timetableUrlTemplate:
         type: string
         description: URL template for the timetable, contains {title}, {id} and {DS100} placeholders which need to be replaced
+      providerAndroidApp:
+        type: string
+        description: URL to the Android app of the railway provider
+      providerIosApp:
+        type: string
+        description: URL to the iOS app of the railway provider
   Profile:
     type: object
     description: User profile information
