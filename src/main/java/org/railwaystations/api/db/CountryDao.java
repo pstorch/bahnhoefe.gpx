@@ -29,7 +29,9 @@ public interface CountryDao {
                     rs.getString("email"),
                     rs.getString("twitterTags"),
                     rs.getString("timetableUrlTemplate"),
-                    rs.getString("overrideLicense")
+                    rs.getString("overrideLicense"),
+                    rs.getString("providerAndroidApp"),
+                    rs.getString("providerIosApp")
                     );
         }
     }

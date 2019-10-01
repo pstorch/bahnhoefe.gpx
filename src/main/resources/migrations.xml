@@ -297,4 +297,36 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="12" author="pstorch">
+        <addColumn tableName="countries">
+            <column name="providerAndroidApp" type="varchar(100)"/>
+            <column name="providerIosApp" type="varchar(100)"/>
+        </addColumn>
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="https://play.google.com/store/apps/details?id=de.hafas.android.db"/>
+            <column name="providerIosApp" value="https://apps.apple.com/app/db-navigator/id343555245"/>
+            <where>id = 'de'</where>
+        </update>
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="https://play.google.com/store/apps/details?id=com.sncf.fusion"/>
+            <column name="providerIosApp" value="https://apps.apple.com/app/sncf/id945434433"/>
+            <where>id = 'fr'</where>
+        </update>
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="https://play.google.com/store/apps/details?id=ch.sbb.mobile.android.b2c"/>
+            <column name="providerIosApp" value="https://itunes.apple.com/app/sbb-mobile/id294855237"/>
+            <where>id = 'ch'</where>
+        </update>
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="https://play.google.com/store/apps/details?id=at.oebb.ts"/>
+            <column name="providerIosApp" value="https://itunes.apple.com/app/obb/id1041401604"/>
+            <where>id = 'at'</where>
+        </update>
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="https://play.google.com/store/apps/details?id=de.hafas.android.pkp"/>
+            <column name="providerIosApp" value="https://apps.apple.com/app/bilkom/id529806476"/>
+            <where>id = 'pl'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

@@ -19,8 +19,8 @@ public class CountriesResourceTest {
     public void testList() {
         final CountryDao countryDao = Mockito.mock(CountryDao.class);
         final Set<Country> countryList = new HashSet<>();
-        countryList.add(new Country("xy", "nameXY", "emailXY", "twitterXY", "timetableXY", null));
-        countryList.add(new Country("ab", "nameAB", "emailAB", "twitterAB", "timetableAB", null));
+        countryList.add(new Country("xy", "nameXY", "emailXY", "twitterXY", "timetableXY", "overrideLicenseXY", "providerAndroidAppXY", "providerIosAppXY"));
+        countryList.add(new Country("ab", "nameAB", "emailAB", "twitterAB", "timetableAB", "overrideLicenseAB", "providerAndroidAppAB", "providerIosAppAB"));
         Mockito.when(countryDao.list()).thenReturn(countryList);
 
         final CountriesResource resource = new CountriesResource(countryDao);
@@ -36,6 +36,9 @@ public class CountriesResourceTest {
         assertThat(country.getEmail(), equalTo("email" + country.getCode().toUpperCase()));
         assertThat(country.getTwitterTags(), equalTo("twitter" + country.getCode().toUpperCase()));
         assertThat(country.getTimetableUrlTemplate(), equalTo("timetable" + country.getCode().toUpperCase()));
+        assertThat(country.getOverrideLicense(), equalTo("overrideLicense" + country.getCode().toUpperCase()));
+        assertThat(country.getProviderAndroidApp(), equalTo("providerAndroidApp" + country.getCode().toUpperCase()));
+        assertThat(country.getProviderIosApp(), equalTo("providerIosApp" + country.getCode().toUpperCase()));
     }
 
 }
