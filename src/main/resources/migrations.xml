@@ -329,4 +329,27 @@
         </update>
     </changeSet>
 
+    <changeSet id="13" author="pstorch">
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="de.hafas.android.db"/>
+            <where>id = 'de'</where>
+        </update>
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="com.sncf.fusion"/>
+            <where>id = 'fr'</where>
+        </update>
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="ch.sbb.mobile.android.b2c"/>
+            <where>id = 'ch'</where>
+        </update>
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="at.oebb.ts"/>
+            <where>id = 'at'</where>
+        </update>
+        <update tableName="countries">
+            <column name="providerAndroidApp" value="de.hafas.android.pkp"/>
+            <where>id = 'pl'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>
