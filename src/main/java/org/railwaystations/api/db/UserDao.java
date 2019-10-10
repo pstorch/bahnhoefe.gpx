@@ -33,13 +33,13 @@ public interface UserDao {
     @RegisterRowMapper(UserMapper.class)
     Optional<User> findByEmail(@Bind("email") final String email);
 
-    @SqlUpdate("update users set uploadTokenSalt = :uploadTokenSalt where id = :id")
-    void updateTokenSalt(@Bind("id") final int id, @Bind("uploadTokenSalt") final Long uploadTokenSalt);
+    @SqlUpdate("update users set uploadTokenSalt = null, `key` = :key where id = :id")
+    void updateCredentials(@Bind("id") final int id, @Bind("key") final String key);
 
-    @SqlUpdate("update users set email = :email, uploadTokenSalt = :uploadTokenSalt where id = :id")
-    void updateEmailAndTokenSalt(@Bind("id") final int id, @Bind("email") final String email, @Bind("uploadTokenSalt") final Long uploadTokenSalt);
+    @SqlUpdate("update users set email = :email, `key` = :key where id = :id")
+    void updateEmailAndKey(@Bind("id") final int id, @Bind("email") final String email, @Bind("key") final String key);
 
-    @SqlUpdate("insert into users (id, name, url, license, email, normalizedName, ownPhotos, anonymous, uploadTokenSalt) values (:id, :name, :url, :license, :email, :normalizedName, :ownPhotos, :anonymous, :uploadTokenSalt)")
+    @SqlUpdate("insert into users (id, name, url, license, email, normalizedName, ownPhotos, anonymous, `key`) values (:id, :name, :url, :license, :email, :normalizedName, :ownPhotos, :anonymous, :key)")
     @GetGeneratedKeys("id")
     Integer insert(@BindBean final User user);
 
@@ -56,7 +56,8 @@ public interface UserDao {
                     rs.getString("email"),
                     rs.getBoolean("ownPhotos"),
                     rs.getBoolean("anonymous"),
-                    rs.getLong("uploadTokenSalt")
+                    rs.getLong("uploadTokenSalt"),
+                    rs.getString("key")
                     );
         }
     }

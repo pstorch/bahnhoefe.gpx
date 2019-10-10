@@ -2,7 +2,11 @@ package org.railwaystations.api;
 
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthDynamicFeature;
+import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.AuthValueFactoryProvider;
+import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
+import io.dropwizard.auth.basic.BasicCredentials;
+import io.dropwizard.auth.chained.ChainedAuthFilter;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.db.DataSourceFactory;
@@ -11,11 +15,13 @@ import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import jersey.repackaged.com.google.common.collect.Lists;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.h2.H2DatabasePlugin;
 import org.railwaystations.api.auth.AuthUser;
+import org.railwaystations.api.auth.BasicAuthenticator;
 import org.railwaystations.api.auth.UploadTokenAuthFilter;
 import org.railwaystations.api.auth.UploadTokenAuthenticator;
 import org.railwaystations.api.db.CountryDao;
@@ -31,6 +37,7 @@ import org.railwaystations.api.writer.StatisticTxtWriter;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * RailwayStations API Dropwizard App
@@ -84,12 +91,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         final StationsRepository repository = new StationsRepository(countryDao,
                 stationDao);
 
-        final UploadTokenAuthenticator authenticator = new UploadTokenAuthenticator(userDao, config.getTokenGenerator());
-        environment.jersey().register(new AuthDynamicFeature(
-                                        new UploadTokenAuthFilter.Builder<AuthUser>()
-                                                .setAuthenticator(authenticator).setRealm("RSAPI").buildAuthFilter()));
-        environment.jersey().register(RolesAllowedDynamicFeature.class);
-        environment.jersey().register(new AuthValueFactoryProvider.Binder<>(AuthUser.class));
+        final UploadTokenAuthenticator authenticator = registerAuthFilter(config, environment, userDao);
 
         environment.jersey().register(new StationsResource(repository));
         environment.jersey().register(new PhotographersResource(repository));
@@ -98,7 +100,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new PhotoUploadResource(repository, config.getWorkDir(),
                                                             config.getMonitor(), authenticator));
         environment.jersey().register(new ProfileResource(
-                config.getTokenGenerator(), config.getMonitor(), config.getMailer(), userDao, config.getGoogleClientId()));
+                config.getMonitor(), config.getMailer(), userDao, config.getGoogleClientId()));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
                 new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir())));
         environment.jersey().register(new StationsGpxWriter());
@@ -109,6 +111,24 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().property("jersey.config.server.mediaTypeMappings",
                 "gpx : application/gpx+xml, json : application/json, txt : text/plain");
         config.getMonitor().sendMessage(repository.getCountryStatisticMessage());
+    }
+
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private UploadTokenAuthenticator registerAuthFilter(final RsApiConfiguration config, final Environment environment, final UserDao userDao) {
+        final AuthFilter<BasicCredentials, AuthUser> basicCredentialAuthFilter = new BasicCredentialAuthFilter.Builder<AuthUser>()
+                .setAuthenticator(new BasicAuthenticator(userDao, config.getTokenGenerator()))
+                .setPrefix("Basic")
+                .buildAuthFilter();
+
+        final UploadTokenAuthenticator authenticator = new UploadTokenAuthenticator(userDao, config.getTokenGenerator());
+        final UploadTokenAuthFilter<AuthUser> uploadTokenAuthFilter = new UploadTokenAuthFilter.Builder<AuthUser>()
+                .setAuthenticator(authenticator).setRealm("RSAPI").buildAuthFilter();
+
+        final List<AuthFilter<?, AuthUser>> filters = Lists.newArrayList(basicCredentialAuthFilter, uploadTokenAuthFilter);
+        environment.jersey().register(new AuthDynamicFeature(new ChainedAuthFilter(filters)));
+        environment.jersey().register(RolesAllowedDynamicFeature.class);
+        environment.jersey().register(new AuthValueFactoryProvider.Binder<>(AuthUser.class));
+        return authenticator;
     }
 
     private static class RsApiConfigurationMigrationsBundle extends MigrationsBundle<RsApiConfiguration> {

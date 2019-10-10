@@ -3,7 +3,8 @@ package org.railwaystations.api.resources;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.railwaystations.api.TokenGenerator;
+import org.mockito.ArgumentCaptor;
+import org.railwaystations.api.PasswordUtil;
 import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.mail.MockMailer;
@@ -13,18 +14,10 @@ import org.railwaystations.api.monitoring.MockMonitor;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -41,7 +34,7 @@ public class ProfileResourceTest {
         mailer = new MockMailer();
         userDao = mock(UserDao.class);
 
-        resource = new ProfileResource(new TokenGenerator("dummy"), monitor, mailer, userDao, null);
+        resource = new ProfileResource(monitor, mailer, userDao, null);
     }
 
     @Test
@@ -59,7 +52,7 @@ public class ProfileResourceTest {
         verify(userDao).findByNormalizedName("nickname");
         verify(userDao).findByEmail("nickname@example.com");
         verify(userDao).insert(any(User.class));
-        verify(userDao, never()).updateTokenSalt(anyInt(), any(Long.class));
+        verify(userDao, never()).updateCredentials(anyInt(), anyString());
 
         assertThat(response.getStatus(), equalTo(202));
         assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}"));
@@ -69,11 +62,19 @@ public class ProfileResourceTest {
     }
 
     private void assertEmail(final String nickname) {
-        assertThat(mailer.getText().matches("Hallo " + nickname + ",\n\n" +
+        assertThat(mailer.getText().matches("Hello " + nickname + ",\n\n" +
+                "thank you for your registration.\n" +
+                "Your initial password \\(formerly Upload-Token\\) is: .*\n" +
+                "Please click on http://railway-stations.org/uploadToken/.* to transfer it into the App.\n" +
+                "Alternatively you can scan this QR-Code or log in manually.\n\n" +
+                "Cheers\n" +
+                "Your Railway-Stations-Team\n" +
+                "\n---\n" +
+                "Hallo " + nickname + ",\n\n" +
                 "vielen Dank für Deine Registrierung.\n" +
-                "Dein Upload Token lautet: .*\n" +
-                "Klicke bitte auf http://railway-stations.org/uploadToken/.* um ihn in die App zu übernehmen.\n" +
-                "Alternativ kannst Du auch mit Deinem Smartphone den angehängten QR-Code scannen oder den Code manuell in der Bahnhofsfoto App unter 'Meine Daten' eintragen.\n\n" +
+                "Dein Initial-Passwort \\(ehemals Upload-Token\\) lautet: .*\n" +
+                "Klicke bitte auf http://railway-stations.org/uploadToken/.*, um es in die App zu übernehmen.\n" +
+                "Alternativ kannst Du auch mit Deinem Smartphone den QR-Code scannen oder Dich manuell einloggen.\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"), is(true));
         assertThat(mailer.getQrCode(), notNullValue());
@@ -105,7 +106,7 @@ public class ProfileResourceTest {
         final Response response = resource.register(user);
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New UploadToken{nickname='existing', email='existing@example.com'}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Password{nickname='existing', email='existing@example.com'}"));
     }
 
     @Test
@@ -133,6 +134,29 @@ public class ProfileResourceTest {
 
         assertThat(response.getStatus(), equalTo(200));
         assertThat(response.getEntity(), sameInstance(user));
+    }
+
+    @Test
+    public void testChangePasswordTooShort() {
+        final User user = new User("existing", "existing@example.com", null, true, null, false);
+        final Response response = resource.changePassword(new AuthUser(user), "secret");
+        verify(userDao, never()).updateCredentials(anyInt(), anyString());
+
+        assertThat(response.getStatus(), equalTo(400));
+    }
+
+    @Test
+    public void testChangePassword() {
+        final User user = new User("existing", "existing@example.com", null, true, null, false);
+        user.setId(4711);
+        ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+        final Response response = resource.changePassword(new AuthUser(user), "secretlong");
+        verify(userDao).updateCredentials(idCaptor.capture(), keyCaptor.capture());
+
+        assertThat(response.getStatus(), equalTo(200));
+        assertThat(idCaptor.getValue(), equalTo(4711));
+        assertThat(PasswordUtil.verifyPassword("secretlong", keyCaptor.getValue()), is(true));
     }
 
     @Test
@@ -166,7 +190,7 @@ public class ProfileResourceTest {
 
         assertThat(response.getStatus(), equalTo(202));
         assertEmail("existing");
-        verify(userDao).updateEmailAndTokenSalt(user.getId(), newProfile.getEmail(), newProfile.getUploadTokenSalt());
+        verify(userDao).updateEmailAndKey(user.getId(), newProfile.getEmail(), newProfile.getKey());
         verify(userDao, never()).update(newProfile);
     }
 
@@ -178,7 +202,7 @@ public class ProfileResourceTest {
         final Response response = resource.newUploadToken("existing@example.com");
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New UploadToken{nickname='existing', email='existing@example.com'}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Password{nickname='existing', email='existing@example.com'}"));
     }
 
     @Test
@@ -189,7 +213,7 @@ public class ProfileResourceTest {
         final Response response = resource.newUploadToken("existing");
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New UploadToken{nickname='existing', email='existing@example.com'}"));
+        assertThat(monitor.getMessages().get(0), equalTo("New Password{nickname='existing', email='existing@example.com'}"));
     }
 
     @Test

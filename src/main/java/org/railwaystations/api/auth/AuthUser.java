@@ -15,7 +15,7 @@ public class AuthUser implements Principal {
 
     @Override
     public String getName() {
-        return null;
+        return user.getDisplayName();
     }
 
     public User getUser() {

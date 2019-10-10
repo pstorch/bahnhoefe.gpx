@@ -352,4 +352,21 @@
         </update>
     </changeSet>
 
+    <changeSet id="14" author="pstorch">
+        <addColumn tableName="users">
+            <column name="key" type="varchar(1024)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="15" author="pstorch" context="junit">
+        <update tableName="users">
+            <column name="uploadTokenSalt" value="123456"/>
+            <where>id in (11,15)</where>
+        </update>
+        <update tableName="users">
+            <column name="key" value="246172676F6E32696424763D3139246D3D36353533362C743D322C703D3124426D4F637165757646794E44754132726B566A6A3177246A7568362F6E6C2F49437A4B475570446E6B674171754A304F7A486A62694F587442542F2B62584D49476300000000000000000000000000000000000000000000000000000000000000"/>
+            <where>id = 28</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

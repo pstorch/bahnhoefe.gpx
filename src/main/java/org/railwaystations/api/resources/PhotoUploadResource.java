@@ -63,11 +63,6 @@ public class PhotoUploadResource {
         LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Koords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
 
-        if (!user.getUser().isValid()) {
-            LOG.warn("User invalid: {}", user.getUser());
-            return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
-        }
-
         final Station station = repository.findByCountryAndId(country, stationId);
         if (station == null) {
             LOG.warn("Station not found");
@@ -154,14 +149,18 @@ public class PhotoUploadResource {
                        @FormDataParam("comment") final String comment,
                        @FormDataParam("file") final InputStream file,
                        @FormDataParam("file") final FormDataContentDisposition fd,
-                       @HeaderParam("Referer") final String referer) {
+                       @HeaderParam("Referer") final String referer,
+                       @Auth final Optional<AuthUser> user) {
         LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
 
         try {
-            final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
-            if (!authUser.isPresent()) {
-                final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
-                return createIFrameAnswer(response.getStatusInfo(), referer);
+            Optional<AuthUser> authUser = user;
+            if (!authUser.isPresent()) { // fallback to UploadToken
+                authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
+                if (!authUser.isPresent()) {
+                    final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
+                    return createIFrameAnswer(response.getStatusInfo(), referer);
+                }
             }
 
             final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());

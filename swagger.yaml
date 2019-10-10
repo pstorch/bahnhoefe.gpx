@@ -252,14 +252,18 @@ paths:
           schema:
             type: string
             format: byte
+        - name: Authorization
+          in: header
+          description: basic authorization
+          type: string
         - name: Upload-Token
           in: header
-          description: Upload Token
+          description: DEPRECATED, use basic authorization! Upload Token
           required: true
           type: string
         - name: Email
           in: header
-          description: email or name of the user
+          description: DEPRECATED, use basic authorization! Email or name of the user
           required: true
           type: string
         - name: Country
@@ -305,14 +309,14 @@ paths:
         '400':
           description: wrong request
         '401':
-          description: wrong token
+          description: authorization failed
         '409':
           description: photo already exists
         '413':
           description: image too large (maximum 20 MB)
   /registration:
     post:
-      summary: Register for an upload token
+      summary: Register for an account
       consumes:
         - application/json
       produces:
@@ -336,6 +340,7 @@ paths:
   /registration/withGoogleIdToken:
     post:
       summary: Register for an upload token with Google IdToken
+      description: DEPRECATED, will be removed in near future!
       produces:
         - application/json
       parameters:
@@ -353,9 +358,26 @@ paths:
           description: wrong request
         '409':
           description: conflict with existing name or email
+  /resetPassword:
+    post:
+      summary: Requests a new password only
+      parameters:
+        - name: NameOrEmail
+          in: header
+          description: name or email of the user
+          required: true
+          type: string
+      responses:
+        '202':
+          description: request accepted, email with new password will be sent
+        '400':
+          description: bad request, probably due to email not set
+        '404':
+          description: User not found
   /newUploadToken:
     post:
-      summary: Requests a new Upload-Token only
+      summary: Requests a new Upload-Token (now password) only
+      description: DEPRECATED, use reset password
       parameters:
         - name: Email
           in: header
@@ -364,9 +386,29 @@ paths:
           type: string
       responses:
         '202':
-          description: request accepted, email with new uploadToken will be sent
+          description: request accepted, email with new password (uploadToken) will be sent
         '400':
           description: bad request, probably due to email not set
+        '404':
+          description: User not found
+  /changePassword:
+    post:
+      summary: Change user password
+      parameters:
+        - name: Authorization
+          in: header
+          description: basic authorization with old password
+          type: string
+        - name: New-Password
+          in: header
+          description: new password
+          required: true
+          type: string
+      responses:
+        '200':
+          description: password changed
+        '400':
+          description: bad request, e.g. empty password, too short (< 8 chars)
         '404':
           description: User not found
   /myProfile:
@@ -375,14 +417,18 @@ paths:
       produces:
         - application/json
       parameters:
+        - name: Authorization
+          in: header
+          description: basic authorization
+          type: string
         - name: Upload-Token
           in: header
-          description: Upload Token
+          description: DEPRECATED, use basic authorization! Upload Token
           required: true
           type: string
         - name: Email
           in: header
-          description: email or name of the user
+          description: DEPRECATED, use basic authorization! Email or name of the user
           required: true
           type: string
       responses:
@@ -393,20 +439,24 @@ paths:
         '401':
           description: wrong token
     post:
-      summary: Update the users profile. In case the email has been changed, only the email is saved and a new upload token is send.
+      summary: Update the users profile. In case the email has been changed, only the email is saved and a new password / Upload-Token is send.
       consumes:
         - application/json
       produces:
         - application/json
       parameters:
+        - name: Authorization
+          in: header
+          description: basic authorization
+          type: string
         - name: Upload-Token
           in: header
-          description: Upload Token
+          description: DEPRECATED, use basic authorization! Upload Token
           required: true
           type: string
         - name: Email
           in: header
-          description: email or name of the user
+          description: DEPRECATED, use basic authorization! Email or name of the user
           required: true
           type: string
         - name: profile
@@ -423,7 +473,7 @@ paths:
         '400':
           description: wrong request
         '401':
-          description: wrong token
+          description: authorization failed
         '409':
           description: conflict with existing name or email
 definitions:
@@ -539,5 +589,5 @@ definitions:
       anonymous:
         type: boolean
       uploadToken:
-        description: only filled in responses for verified Google IdToken registrations
+        description: DEPRECATED! only filled in responses for verified Google IdToken registrations
         type: string

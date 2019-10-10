@@ -28,6 +28,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -347,12 +348,20 @@ public class RsApiAppTest {
 
         assertThat(response.getStatus(), is(202));
         assertThat(mailer.getTo(), is("nick.name@example.com"));
-        assertThat(mailer.getSubject(), is("Bahnhofsfotos upload token"));
-        assertThat(mailer.getText().matches("Hallo nickname,\n\n" +
+        assertThat(mailer.getSubject(), is("Railway-Stations.org initial password (Upload-Token)"));
+        assertThat(mailer.getText().matches("Hello nickname,\n\n" +
+                "thank you for your registration.\n" +
+                "Your initial password \\(formerly Upload-Token\\) is: .*\n" +
+                "Please click on http://railway-stations.org/uploadToken/.* to transfer it into the App.\n" +
+                "Alternatively you can scan this QR-Code or log in manually.\n\n" +
+                "Cheers\n" +
+                "Your Railway-Stations-Team\n" +
+                "\n---\n" +
+                "Hallo nickname,\n\n" +
                 "vielen Dank für Deine Registrierung.\n" +
-                "Dein Upload Token lautet: .*\n" +
-                "Klicke bitte auf http://railway-stations.org/uploadToken/.* um ihn in die App zu übernehmen.\n" +
-                "Alternativ kannst Du auch mit Deinem Smartphone den angehängten QR-Code scannen oder den Code manuell in der Bahnhofsfoto App unter 'Meine Daten' eintragen.\n\n" +
+                "Dein Initial-Passwort \\(ehemals Upload-Token\\) lautet: .*\n" +
+                "Klicke bitte auf http://railway-stations.org/uploadToken/.*, um es in die App zu übernehmen.\n" +
+                "Alternativ kannst Du auch mit Deinem Smartphone den QR-Code scannen oder Dich manuell einloggen.\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"), is(true));
     }
@@ -406,7 +415,7 @@ public class RsApiAppTest {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
-                .header("Upload-Token", "3a7eaf7e0b2711bb21b054ab5ca11a3cdd110482")
+                .header("Upload-Token", "154a0dc31376d7620249fe089fb3ad417363f2f8")
                 .header("Email", "khgdrn@example.com")
                 .get();
 
@@ -419,12 +428,56 @@ public class RsApiAppTest {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
-                .header("Upload-Token", "3a7eaf7e0b2711bb21b054ab5ca11a3cdd110482")
+                .header("Upload-Token", "154a0dc31376d7620249fe089fb3ad417363f2f8")
                 .header("Email", "@khgdrn")
                 .get();
 
         assertThat(response.getStatus(), is(200));
         assertProfile(response, "@khgdrn", "https://www.twitter.com/khgdrn", "CC0 1.0 Universell (CC0 1.0)", false, "khgdrn@example.com");
+    }
+
+    @Test
+    public void getMyProfileWithBasicAuthUploadToken() throws IOException {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Authorization", getBasicAuthentication("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8"))
+                .get();
+
+        assertThat(response.getStatus(), is(200));
+        assertProfile(response, "@khgdrn", "https://www.twitter.com/khgdrn", "CC0 1.0 Universell (CC0 1.0)", false, "khgdrn@example.com");
+    }
+
+    @Test
+    public void getMyProfileWithBasicAuthPassword() throws IOException {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Authorization", getBasicAuthentication("@stefanopitz", "y89zFqkL6hro"))
+                .get();
+
+        assertThat(response.getStatus(), is(200));
+        assertProfile(response, "@stefanopitz", "https://twitter.com/stefanopitz", "CC0 1.0 Universell (CC0 1.0)", false, "");
+    }
+
+    @Test
+    public void getMyProfileWithBasicAuthPasswordFail() throws IOException {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Authorization", getBasicAuthentication("@stefanopitz", "blahblubb"))
+                .get();
+
+        assertThat(response.getStatus(), is(401));
+    }
+
+    private String getBasicAuthentication(final String user, final String password) {
+        String token = user + ":" + password;
+        try {
+            return "BASIC " + DatatypeConverter.printBase64Binary(token.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            throw new IllegalStateException("Cannot encode with UTF-8", ex);
+        }
     }
 
     private void assertProfile(final Response response, final String name, final String link, final String license, final boolean anonymous, String email) throws IOException {
@@ -443,7 +496,7 @@ public class RsApiAppTest {
         final Response responseGetBefore = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
-                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
                 .header("Email", "storchp@example.com")
                 .get();
 
@@ -454,7 +507,7 @@ public class RsApiAppTest {
         final Response responsePostUpdate = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
-                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
                 .header("Email", "storchp@example.com")
                 .post(Entity.entity("{\n" +
                         "\t\"nickname\": \"storchp\", \n" +
@@ -471,7 +524,7 @@ public class RsApiAppTest {
         final Response responseGetAfter = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
-                .header("Upload-Token", "4acc11353cecb2e5febeca284745e54febe97299")
+                .header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
                 .header("Email", "storchp@example.com")
                 .get();
 

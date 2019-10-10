@@ -48,10 +48,10 @@ public class PhotoImporterTest {
         when(countryDao.findById("fr")).thenReturn(Optional.of(new Country("fr", "France", null, null, null, "CC BY-NC 4.0 International", null, null)));
 
         final UserDao userDao = mock(UserDao.class);
-        when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, true, true, null)));
-        when(userDao.findByNormalizedName("someuser")).thenReturn(Optional.of(new User("Some User", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, true, true, null)));
-        when(userDao.findByNormalizedName("gabybecker")).thenReturn(Optional.of(new User("@Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, true, true, null)));
-        when(userDao.findByNormalizedName("storchp")).thenReturn(Optional.of(new User("@storchp", null, "CC0 1.0 Universell (CC0 1.0)", 2, null, true, false, null)));
+        when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, true, true, null, null)));
+        when(userDao.findByNormalizedName("someuser")).thenReturn(Optional.of(new User("Some User", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, true, true, null, null)));
+        when(userDao.findByNormalizedName("gabybecker")).thenReturn(Optional.of(new User("@Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, true, true, null, null)));
+        when(userDao.findByNormalizedName("storchp")).thenReturn(Optional.of(new User("@storchp", null, "CC0 1.0 Universell (CC0 1.0)", 2, null, true, false, null, null)));
 
         photoDao = mock(PhotoDao.class);
 

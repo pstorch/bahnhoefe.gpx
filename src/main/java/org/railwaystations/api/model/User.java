@@ -9,10 +9,7 @@ import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -59,7 +56,12 @@ public class User {
     @JsonIgnore
     private Long uploadTokenSalt;
 
-    public User(final String name, final String url, final String license, final int id, final String email, final boolean ownPhotos, final boolean anonymous, final Long uploadTokenSalt) {
+    @JsonIgnore
+    private String key;
+
+    public User(final String name, final String url, final String license, final int id, final String email,
+                final boolean ownPhotos, final boolean anonymous, final Long uploadTokenSalt,
+                final String key) {
         this.name = name;
         this.url = url;
         this.license = license;
@@ -69,6 +71,7 @@ public class User {
         this.ownPhotos = ownPhotos;
         this.anonymous = anonymous;
         this.uploadTokenSalt = uploadTokenSalt;
+        this.key = key;
     }
 
     /**
@@ -90,11 +93,11 @@ public class User {
     }
 
     public User(final String name, final String url, final String license) {
-        this(name, url, license, 0, null, true, false, null);
+        this(name, url, license, 0, null, true, false, null, null);
     }
 
     public User(final String name, final String url, final String license, final boolean anonymous) {
-        this(name, url, license, 0, null, true, anonymous, null);
+        this(name, url, license, 0, null, true, anonymous, null, null);
     }
 
     public static Map<String, User> toNameMap(final List<User> list) {
@@ -239,5 +242,13 @@ public class User {
                 ", ownPhotos=" + ownPhotos +
                 ", anonymous=" + anonymous +
                 '}';
+    }
+
+    public String getKey() {
+        return this.key;
+    }
+
+    public void setKey(final String key) {
+        this.key = key;
     }
 }
