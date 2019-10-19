@@ -33,8 +33,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -396,6 +399,29 @@ public class RsApiAppTest {
                 .post(Entity.entity("", "image/png"));
 
         assertThat(response.getStatus(), is(401));
+    }
+
+    @Test
+    public void photoUploadUnknownStation() throws IOException {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload"))
+                .request()
+                .header("Authorization", getBasicAuthentication("@stefanopitz", "y89zFqkL6hro"))
+                .header("Station-Title", URLEncoder.encode("Achères-Grand-Cormier", "UTF-8"))
+                .header("Latitude", "50.123")
+                .header("Longitude", "10.123")
+                .header("Comment", "Missing Station")
+                .post(Entity.entity("IMAGE_CONTENT", "image/png"));
+
+        assertThat(response.getStatus(), is(202));
+        final File pngFile = new File(MySuite.TMP_WORK_DIR + "/missing", "stefanopitz-1.png");
+        assertThat(pngFile.exists(), is(true));
+        assertThat(IOUtils.readFully(new FileInputStream(pngFile), 13), is("IMAGE_CONTENT".getBytes(Charset.defaultCharset())));
+        final File txtFile = new File(MySuite.TMP_WORK_DIR + "/missing", "stefanopitz-1.png.txt");
+        List<String> textLines = IOUtils.readLines(new FileInputStream(txtFile), StandardCharsets.UTF_8);
+        assertThat(textLines.get(0), is("Achères-Grand-Cormier"));
+        assertThat(textLines.get(1), is("50.123,10.123"));
+        assertThat(textLines.get(2), is("Missing Station"));
     }
 
     @Test

@@ -58,7 +58,7 @@ public class PhotoUploadResourceTest {
     }
 
     private Response whenPostImage(final String content, final String nickname, final String email, final String stationId, final String country,
-                                   final String stationTitle, final Double latitude, final Double longitude, final String comment) {
+                                   final String stationTitle, final Double latitude, final Double longitude, final String comment) throws UnsupportedEncodingException {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
         return resource.post(is, stationId, country, "image/jpeg",
@@ -154,7 +154,7 @@ public class PhotoUploadResourceTest {
     }
 
     @Test
-    public void testPostInvalidCountry() {
+    public void testPostInvalidCountry() throws UnsupportedEncodingException {
         final Response response = resource.post(null, "4711", "xy", "image/jpeg",
                 null, null, null, null,
                 new AuthUser(new User("nickname", "nickname@example.com", "CC0", true, null, false)));

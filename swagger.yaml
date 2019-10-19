@@ -283,7 +283,7 @@ paths:
           type: string
         - name: Station-Title
           in: header
-          description: name of the station, for upload of missing stations
+          description: name of the station, for upload of missing stations (needs to be URL-encoded with UTF-8 charset)
           required: false
           type: string
         - name: Latitude

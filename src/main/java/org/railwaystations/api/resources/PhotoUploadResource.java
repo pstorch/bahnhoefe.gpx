@@ -23,6 +23,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
@@ -55,11 +56,12 @@ public class PhotoUploadResource {
                          @HeaderParam("Station-Id") final String stationId,
                          @HeaderParam("Country") final String country,
                          @HeaderParam("Content-Type") final String contentType,
-                         @HeaderParam("Station-Title") final String stationTitle,
+                         @HeaderParam("Station-Title") final String encStationTitle,
                          @HeaderParam("Latitude") final Double latitude,
                          @HeaderParam("Longitude") final Double longitude,
                          @HeaderParam("Comment") final String comment,
-                         @Auth final AuthUser user) {
+                         @Auth final AuthUser user) throws UnsupportedEncodingException {
+        final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, "UTF-8") : null;
         LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Koords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
 
