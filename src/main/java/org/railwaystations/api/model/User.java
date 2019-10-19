@@ -203,12 +203,14 @@ public class User {
     /**
      * Checks if we have got a name and valid email for registration.
      */
+    @JsonIgnore
     public boolean isValidForRegistration() {
         return StringUtils.isNotBlank(name) &&
                 StringUtils.isNotBlank(email) &&
                 new EmailValidator().isValid(email, null);
     }
 
+    @JsonIgnore
     public boolean isValid() {
         if (!isValidForRegistration()) {
             return false;
