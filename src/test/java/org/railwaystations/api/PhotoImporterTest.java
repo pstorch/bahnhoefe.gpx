@@ -17,7 +17,7 @@ import org.railwaystations.api.monitoring.LoggingMonitor;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class PhotoImporterTest {
 
         final CountryDao countryDao = mock(CountryDao.class);
         when(countryDao.findById("de")).thenReturn(Optional.of(new Country("de")));
-        when(countryDao.findById("fr")).thenReturn(Optional.of(new Country("fr", "France", null, null, null, "CC BY-NC 4.0 International", null, null)));
+        when(countryDao.findById("fr")).thenReturn(Optional.of(new Country("fr", "France", null, null, null, "CC BY-NC 4.0 International", true)));
 
         final UserDao userDao = mock(UserDao.class);
         when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, true, true, null, null)));
@@ -80,7 +80,7 @@ public class PhotoImporterTest {
 
     private File createFile(final String countryCode, final String photographer, final String stationId, final String extension) throws IOException {
         final File importFile = new File(uploadDir.toFile(), countryCode + "/import/" + photographer + "-" + stationId + extension);
-        FileUtils.write(importFile, "test", Charset.forName("UTF-8"));
+        FileUtils.write(importFile, "test", StandardCharsets.UTF_8);
         return importFile;
     }
 

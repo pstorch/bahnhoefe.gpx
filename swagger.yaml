@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20190927.1940'
+  version: '20191019.2245'
   title: RSAPI
   license:
     name: MIT
@@ -560,12 +560,25 @@ definitions:
       timetableUrlTemplate:
         type: string
         description: URL template for the timetable, contains {title}, {id} and {DS100} placeholders which need to be replaced
-      providerAndroidApp:
+      providerApps:
+        type: array
+        description: array with links to provider apps
+        items:
+          $ref: '#/definitions/ProviderApp'
+  ProviderApp:
+    type: object
+    description: Provider App information
+    properties:
+      type:
+        enum:
+          - android
+          - ios
+          - web
         type: string
-        description: URL to the Android app of the railway provider
-      providerIosApp:
+      name:
         type: string
-        description: URL to the iOS app of the railway provider
+      url:
+        type: string
   Profile:
     type: object
     description: User profile information

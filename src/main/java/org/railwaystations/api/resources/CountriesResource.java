@@ -6,6 +6,7 @@ import org.railwaystations.api.model.Country;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 
@@ -21,8 +22,8 @@ public class CountriesResource {
     @GET
     @Path("countries")
     @Produces({MediaType.APPLICATION_JSON})
-    public Collection<Country> list() {
-        return countryDao.list();
+    public Collection<Country> list(@QueryParam("onlyActive") final Boolean onlyActive) {
+        return countryDao.list(onlyActive == null || onlyActive);
     }
 
 }

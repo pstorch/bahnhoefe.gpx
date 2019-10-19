@@ -1,5 +1,8 @@
 package org.railwaystations.api.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SuppressWarnings("PMD.LongVariable")
 public class Country {
 
@@ -9,28 +12,26 @@ public class Country {
     private String twitterTags = "@android_oma, #dbHackathon, #dbOpendata, #Bahnhofsfoto, @khgdrn";
     private String timetableUrlTemplate;
     private String overrideLicense;
-    private String providerAndroidApp;
-    private String providerIosApp;
-
+    private boolean active;
+    private final List<ProviderApp> providerApps = new ArrayList<>();
 
     public Country() {
         super();
     }
 
     public Country(final String code) {
-        this(code, null, null, null, null, null, null, null);
+        this(code, null, null, null, null, null, true);
     }
 
     public Country(final String code, final String name, final String email, final String twitterTags,
-                   final String timetableUrlTemplate, final String overrideLicense, final String providerAndroidApp, final String providerIosApp) {
+                   final String timetableUrlTemplate, final String overrideLicense, final boolean active) {
         this.code = code;
         this.name = name;
         this.email = email != null ? email : this.email;
         this.twitterTags = twitterTags != null ? twitterTags : this.twitterTags;
         this.timetableUrlTemplate = timetableUrlTemplate;
         this.overrideLicense = overrideLicense;
-        this.providerAndroidApp = providerAndroidApp;
-        this.providerIosApp = providerIosApp;
+        this.active = active;
     }
 
     public String getCode() {
@@ -76,11 +77,11 @@ public class Country {
         return overrideLicense;
     }
 
-    public String getProviderAndroidApp() {
-        return providerAndroidApp;
+    public List<ProviderApp> getProviderApps() {
+        return providerApps;
     }
 
-    public String getProviderIosApp() {
-        return providerIosApp;
+    public boolean isActive() {
+        return active;
     }
 }

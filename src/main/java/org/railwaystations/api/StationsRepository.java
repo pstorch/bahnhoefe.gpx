@@ -33,7 +33,7 @@ public class StationsRepository {
     }
 
     public Set<Country> getCountries() {
-        return Collections.unmodifiableSet(countryDao.list());
+        return Collections.unmodifiableSet(countryDao.list(true));
     }
 
     public String getCountryStatisticMessage() {

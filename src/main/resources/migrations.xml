@@ -369,4 +369,63 @@
         </update>
     </changeSet>
 
+    <changeSet id="16" author="pstorch">
+        <dropColumn tableName="countries" columnName="providerAndroidApp"/>
+        <dropColumn tableName="countries" columnName="providerIosApp"/>
+
+        <createTable tableName="providerApps">
+            <column name="countryCode" type="char(2)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="type" type="varchar(10)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="url" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="countryCode"
+                                 baseTableName="providerApps"
+                                 constraintName="fk_country"
+                                 referencedColumnNames="id"
+                                 referencedTableName="countries"/>
+
+        <addColumn tableName="countries">
+            <column name="active" type="boolean" valueBoolean="true" defaultValueBoolean="true"/>
+        </addColumn>
+
+        <insert tableName="countries">
+            <column name="id">it</column>
+            <column name="name">Repubblica Italiana</column>
+            <column name="active" valueBoolean="false"/>
+        </insert>
+        <insert tableName="countries">
+            <column name="id">se</column>
+            <column name="name">Konungariket Sverige</column>
+            <column name="active" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="17" author="pstorch" context="prod">
+        <loadData file="provider_apps.csv" tableName="providerApps">
+            <column name="countryCode" type="string"/>
+            <column name="type" type="string"/>
+            <column name="name" type="string"/>
+            <column name="url" type="string"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet id="18" author="pstorch" context="junit or test">
+        <loadData file="test_provider_apps.csv" tableName="providerApps">
+            <column name="countryCode" type="string"/>
+            <column name="type" type="string"/>
+            <column name="name" type="string"/>
+            <column name="url" type="string"/>
+        </loadData>
+    </changeSet>
+
 </databaseChangeLog>

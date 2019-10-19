@@ -559,6 +559,46 @@ public class RsApiAppTest {
         assertProfile(responseGetAfter, "storchp", "", "CC0 1.0 Universell (CC0 1.0)", true, "storchp@example.com");
     }
 
+    @Test
+    public void countries() throws IOException {
+        final Response response = loadRaw("/countries", 200);
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
+        assertThat(jsonNode, notNullValue());
+        assertThat(jsonNode.isArray(), is(true));
+        assertThat(jsonNode.size(), is(2));
+
+        JsonNode de = jsonNode.get(0);
+        assertThat(de.get("code").asText(), is("de"));
+        assertThat(de.get("name").asText(), is("Deutschland"));
+        assertThat(de.get("providerApps").size(), is(3));
+        assertProviderApp(de, 0, "android", "DB Navigator", "https://play.google.com/store/apps/details?id=de.hafas.android.db");
+        assertProviderApp(de, 1, "android", "FlixTrain", "https://play.google.com/store/apps/details?id=de.meinfernbus");
+        assertProviderApp(de, 2, "ios", "DB Navigator", "https://apps.apple.com/app/db-navigator/id343555245");
+
+        JsonNode ch = jsonNode.get(1);
+        assertThat(ch.get("code").asText(), is("ch"));
+        assertThat(ch.get("name").asText(), is("Schweiz"));
+        assertThat(ch.get("providerApps").size(), is(2));
+        assertProviderApp(ch, 0, "android", "SBB Mobile", "https://play.google.com/store/apps/details?id=ch.sbb.mobile.android.b2c");
+        assertProviderApp(ch, 1, "ios", "SBB Mobile", "https://apps.apple.com/app/sbb-mobile/id294855237");
+    }
+
+    @Test
+    public void countriesAll() throws IOException {
+        final Response response = loadRaw("/countries?onlyActive=false", 200);
+        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
+        assertThat(jsonNode, notNullValue());
+        assertThat(jsonNode.isArray(), is(true));
+        assertThat(jsonNode.size(), is(4));
+    }
+
+    private void assertProviderApp(final JsonNode de, final int i, final String type, final String name, final String url) {
+        JsonNode app = de.get("providerApps").get(i);
+        assertThat(app.get("type").asText(), is(type));
+        assertThat(app.get("name").asText(), is(name));
+        assertThat(app.get("url").asText(), is(url));
+    }
+
     public static final class MySuite {
         private static final String TMP_FILE = createTempFile();
         private static final String TMP_WORK_DIR = createTempDir("workDir");
