@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20191019.2245'
+  version: '20191020.1630'
   title: RSAPI
   license:
     name: MIT
@@ -229,6 +229,12 @@ paths:
       summary: List of all supported countries with their configuration
       produces:
         - application/json
+      parameters:
+        - name: onlyActive
+          in: query
+          description: return only active countries? Defaults to true.
+          required: false
+          type: boolean
       responses:
         '200':
           description: successful operation
@@ -560,6 +566,9 @@ definitions:
       timetableUrlTemplate:
         type: string
         description: URL template for the timetable, contains {title}, {id} and {DS100} placeholders which need to be replaced
+      active:
+        type: boolean
+        description: Is this an active country where we collect photos?
       providerApps:
         type: array
         description: array with links to provider apps
