@@ -518,7 +518,7 @@ public class RsApiAppTest {
     }
 
     @Test
-    public void updateMyProfile() throws IOException {
+    public void updateMyProfileAndChangePassword() throws IOException {
         final Response responseGetBefore = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
@@ -557,6 +557,32 @@ public class RsApiAppTest {
         assertThat(responseGetAfter.getStatus(), is(200));
         assertThat(responseGetAfter.getEntity(), notNullValue());
         assertProfile(responseGetAfter, "storchp", "", "CC0 1.0 Universell (CC0 1.0)", true, "storchp@example.com");
+
+        final Response responseChangePassword = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/changePassword"))
+                .request()
+                .header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
+                .header("Email", "storchp@example.com")
+                .header("New-Password", URLEncoder.encode("\uD83D\uDE0E-1234567890", "UTF-8"))
+                .post(null);
+        assertThat(responseChangePassword.getStatus(), is(200));
+
+        final Response responseAfterChangedPassword = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Authorization", getBasicAuthentication("storchp@example.com", "\uD83D\uDE0E-1234567890"))
+                .get();
+
+        assertThat(responseAfterChangedPassword.getStatus(), is(200));
+
+        final Response responseWithOldPassword = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
+                .request()
+                .header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
+                .header("Email", "storchp@example.com")
+                .get();
+
+        assertThat(responseWithOldPassword.getStatus(), is(401));
     }
 
     @Test

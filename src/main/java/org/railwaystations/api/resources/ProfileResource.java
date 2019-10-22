@@ -32,6 +32,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Optional;
@@ -56,10 +58,11 @@ public class ProfileResource {
 
     @POST
     @Path("changePassword")
-    public Response changePassword(@Auth final AuthUser authUser, @NotNull @HeaderParam("New-Password") final String newPassword) {
+    public Response changePassword(@Auth final AuthUser authUser, @NotNull @HeaderParam("New-Password") final String newPassword) throws UnsupportedEncodingException {
+        final String decodedPassword = URLDecoder.decode(newPassword, "UTF-8");
         final User user = authUser.getUser();
         LOG.info("Password change for '{}'", user.getEmail());
-        final String trimmedPassword = StringUtils.trimToEmpty(newPassword);
+        final String trimmedPassword = StringUtils.trimToEmpty(decodedPassword);
         if (trimmedPassword.length() < 8 ) {
             LOG.warn("Password too short");
             return Response.status(Response.Status.BAD_REQUEST).build();
