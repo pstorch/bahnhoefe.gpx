@@ -237,7 +237,7 @@ public class ProfileResource {
 
     private void saveRegistration(final User registration, final User existing) {
         if (existing != null) {
-            userDao.updateCredentials(existing.getId(), existing.getKey());
+            userDao.updateCredentials(existing.getId(), registration.getKey());
             monitor.sendMessage(
                     String.format("New Password{nickname='%s', email='%s'}",
                             registration.getName(), registration.getEmail()));
