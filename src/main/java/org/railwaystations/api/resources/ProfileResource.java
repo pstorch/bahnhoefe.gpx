@@ -58,6 +58,7 @@ public class ProfileResource {
 
     @POST
     @Path("changePassword")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response changePassword(@Auth final AuthUser authUser, @NotNull @HeaderParam("New-Password") final String newPassword) throws UnsupportedEncodingException {
         final String decodedPassword = URLDecoder.decode(newPassword, "UTF-8");
         final User user = authUser.getUser();
@@ -74,12 +75,14 @@ public class ProfileResource {
 
     @POST
     @Path("newUploadToken")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response newUploadToken(@NotNull @HeaderParam("Email") final String email) {
         return resetPassword(email);
     }
 
     @POST
     @Path("resetPassword")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response resetPassword(@NotNull @HeaderParam("NameOrEmail") final String nameOrEmail) {
         LOG.info("Password reset requested for '{}'", nameOrEmail);
 
