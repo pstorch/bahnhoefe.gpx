@@ -49,6 +49,46 @@ public class PhotoUploadResource {
         this.authenticator = authenticator;
     }
 
+    /**
+     * Not part of the "official" API.
+     * Supports upload of photos via the website.
+     */
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public String post(@FormDataParam("email") final String email,
+                       @FormDataParam("uploadToken") final String uploadToken,
+                       @FormDataParam("stationId") final String stationId,
+                       @FormDataParam("countryCode") final String countryCode,
+                       @FormDataParam("stationTitle") final String stationTitle,
+                       @FormDataParam("latitude") final Double latitude,
+                       @FormDataParam("longitude") final Double longitude,
+                       @FormDataParam("comment") final String comment,
+                       @FormDataParam("file") final InputStream file,
+                       @FormDataParam("file") final FormDataContentDisposition fd,
+                       @HeaderParam("Referer") final String referer,
+                       @Auth final Optional<AuthUser> user) {
+        LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
+
+        try {
+            Optional<AuthUser> authUser = user;
+            if (!authUser.isPresent()) { // fallback to UploadToken
+                authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
+                if (!authUser.isPresent()) {
+                    final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
+                    return createIFrameAnswer(response.getStatusInfo(), referer);
+                }
+            }
+
+            final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
+            final Response response = uploadPhoto(file, stationId, countryCode, contentType, stationTitle, latitude, longitude, comment, authUser.get());
+
+            return createIFrameAnswer(response.getStatusInfo(), referer);
+        } catch (final Exception e) {
+            LOG.error("FormUpload error", e);
+            return createIFrameAnswer(Response.Status.INTERNAL_SERVER_ERROR, referer);
+        }
+    }
+
     @POST
     @Consumes({IMAGE_PNG, IMAGE_JPEG})
     @Produces(MediaType.APPLICATION_JSON)
@@ -59,12 +99,24 @@ public class PhotoUploadResource {
                          @HeaderParam("Station-Title") final String encStationTitle,
                          @HeaderParam("Latitude") final Double latitude,
                          @HeaderParam("Longitude") final Double longitude,
-                         @HeaderParam("Comment") final String comment,
+                         @HeaderParam("Comment") final String encComment,
                          @Auth final AuthUser user) throws UnsupportedEncodingException {
         final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, "UTF-8") : null;
+        final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
         LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Koords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
+        return uploadPhoto(body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
+    }
 
+    private Response uploadPhoto(final InputStream body,
+                         final String stationId,
+                         final String country,
+                         final String contentType,
+                         final String stationTitle,
+                         final Double latitude,
+                         final Double longitude,
+                         final String comment,
+                         final AuthUser user) {
         final Station station = repository.findByCountryAndId(country, stationId);
         if (station == null) {
             LOG.warn("Station not found");
@@ -132,46 +184,6 @@ public class PhotoUploadResource {
             }
             IOUtils.writeLines(line, null, txtOut, "UTF-8");
             txtOut.close();
-        }
-    }
-
-    /**
-     * Not part of the "official" API.
-     * Supports upload of photos via the website.
-     */
-    @POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String post(@FormDataParam("email") final String email,
-                       @FormDataParam("uploadToken") final String uploadToken,
-                       @FormDataParam("stationId") final String stationId,
-                       @FormDataParam("countryCode") final String countryCode,
-                       @FormDataParam("stationTitle") final String stationTitle,
-                       @FormDataParam("latitude") final Double latitude,
-                       @FormDataParam("longitude") final Double longitude,
-                       @FormDataParam("comment") final String comment,
-                       @FormDataParam("file") final InputStream file,
-                       @FormDataParam("file") final FormDataContentDisposition fd,
-                       @HeaderParam("Referer") final String referer,
-                       @Auth final Optional<AuthUser> user) {
-        LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
-
-        try {
-            Optional<AuthUser> authUser = user;
-            if (!authUser.isPresent()) { // fallback to UploadToken
-                authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
-                if (!authUser.isPresent()) {
-                    final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
-                    return createIFrameAnswer(response.getStatusInfo(), referer);
-                }
-            }
-
-            final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
-            final Response response = post(file, stationId, countryCode, contentType, stationTitle, latitude, longitude, comment, authUser.get());
-
-            return createIFrameAnswer(response.getStatusInfo(), referer);
-        } catch (final Exception e) {
-            LOG.error("FormUpload error", e);
-            return createIFrameAnswer(Response.Status.INTERNAL_SERVER_ERROR, referer);
         }
     }
 

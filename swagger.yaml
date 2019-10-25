@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20191022.2150'
+  version: '20191025.2230'
   title: RSAPI
   license:
     name: MIT
@@ -306,7 +306,7 @@ paths:
           format: double
         - name: Comment
           in: header
-          description: comment of the photographer to the reviewer
+          description: comment of the photographer to the reviewer (needs to be URL-encoded with UTF-8 charset)
           required: false
           type: string
       responses:
