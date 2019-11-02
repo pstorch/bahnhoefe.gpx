@@ -117,8 +117,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
     private UploadTokenAuthenticator registerAuthFilter(final RsApiConfiguration config, final Environment environment, final UserDao userDao) {
         final AuthFilter<BasicCredentials, AuthUser> basicCredentialAuthFilter = new BasicCredentialAuthFilter.Builder<AuthUser>()
                 .setAuthenticator(new BasicAuthenticator(userDao, config.getTokenGenerator()))
-                .setPrefix("Basic")
-                .buildAuthFilter();
+                .setRealm("RSAPI").setPrefix("Basic").buildAuthFilter();
 
         final UploadTokenAuthenticator authenticator = new UploadTokenAuthenticator(userDao, config.getTokenGenerator());
         final UploadTokenAuthFilter<AuthUser> uploadTokenAuthFilter = new UploadTokenAuthFilter.Builder<AuthUser>()

@@ -65,18 +65,14 @@ public class PhotoUploadResource {
                        @FormDataParam("comment") final String comment,
                        @FormDataParam("file") final InputStream file,
                        @FormDataParam("file") final FormDataContentDisposition fd,
-                       @HeaderParam("Referer") final String referer,
-                       @Auth final Optional<AuthUser> user) {
+                       @HeaderParam("Referer") final String referer) {
         LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
 
         try {
-            Optional<AuthUser> authUser = user;
-            if (!authUser.isPresent()) { // fallback to UploadToken
-                authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
-                if (!authUser.isPresent()) {
-                    final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
-                    return createIFrameAnswer(response.getStatusInfo(), referer);
-                }
+            Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
+            if (!authUser.isPresent()) {
+                final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
+                return createIFrameAnswer(response.getStatusInfo(), referer);
             }
 
             final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
@@ -103,7 +99,7 @@ public class PhotoUploadResource {
                          @Auth final AuthUser user) throws UnsupportedEncodingException {
         final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, "UTF-8") : null;
         final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
-        LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Koords: {},{}; Title: {}; Content-Type: {}",
+        LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
         return uploadPhoto(body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
     }
