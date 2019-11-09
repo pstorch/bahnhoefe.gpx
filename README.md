@@ -1,11 +1,11 @@
 [![Build Status](https://travis-ci.org/RailwayStations/RSAPI.svg?branch=master)](https://travis-ci.org/RailwayStations/RSAPI) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f28660e9e90e4549871fe8c35fe7bd2d)](https://www.codacy.com/app/peter-storch/RSAPI?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=RailwayStations/RSAPI&amp;utm_campaign=Badge_Grade) [![Coverage Status](https://coveralls.io/repos/github/RailwayStations/RSAPI/badge.svg?branch=master)](https://coveralls.io/github/RailwayStations/RSAPI?branch=master) 
 
 # Railway Stations API
-Backend Service for the https://play.google.com/store/apps/details?id=de.bahnhoefe.deutschlands.bahnhofsfotos App of the [Bahnhofsfotos opendata Project](http://www.railway-stations.org/).
+Backend Service for the https://map.railway-stations.org and the Mobile Apps for [Android](https://github.com/RailwayStations/RSAndroidApp) and [iOS](https://github.com/RailwayStations/Bahnhofsfotos) of the [Bahnhofsfotos opendata Project](https://github.com/RailwayStations).
 It started as a simple GPX Exporter to use the Waypoints in your favorite Map App or GPS Device.
-Later it was enhanced to export a txt list of the Waypoints for the online Map at: http://www.alsgefahn.de/bfmap/bhfueb.html.
-Then it returned the Waypoints as json for the Bahnhofsfotos App.
-The latest addition are the trainstations from switzerland, via country code `ch`, see [Use](#use).
+Later it was enhanced to export a plaintext list of the Waypoints for the online Map at: http://www.alsgefahn.de/bfmap/bhfueb.html.
+Then it returned the Waypoints as json for the Android and iOS Apps as well as the Website.
+Over time more and more countries have been added, see [Use](#use).
 
 This API is hosted at https://api.railway-stations.org or at the Deutsche Bahn developer site: https://developer.deutschebahn.com/store/apis/list where you can also find an online and executable version of the swagger documentation.
 
@@ -71,7 +71,7 @@ The context (`-i` parameter) can take the following values:
 - junit: for automated unit testing during maven build
 
 ## Use
-Point your browser to http://localhost:8080/{country}/stations, where `country` can be "de", "ch", "fi" or "uk"
+Point your browser to `http://localhost:8080/{country}/stations`, where `country` can be "de", "ch", "fi", "uk", ...
 
 With the following query parameter:
 - `hasPhoto`: boolean, indicates if only trainstations with or without a photo should be selected
@@ -82,13 +82,14 @@ With the following query parameter:
 A more detailed API documentation can be found in the [swagger](swagger.yaml) file or online at [developer.deutschebahn.com](https://developer.deutschebahn.com/store/apis/list).
 
 ### Examples
-- all german trainstations: http://localhost:8080/de/stations
-- german trainstations without photo: http://localhost:8080/de/stations?hasPhoto=false
-- austrian trainsations from photographer @android_oma: http://localhost:8080/ch/stations?photographer=@android_oma
-- german trainsations within 20km from FFM mainstation: http://localhost:8080/de/stations?maxDistance=20&lat=50.1060866&lon=8.6615762
-- photographers: http://localhost:8080/photographers.txt
-- german photographers: http://localhost:8080/de/photographers.txt
-- statistic: http://localhost:8080/de/stats.txt
+- all supported countries: https://api.railway-stations.org/countries
+- all german trainstations: https://api.railway-stations.org/de/stations
+- german trainstations without photo: https://api.railway-stations.org/de/stations?hasPhoto=false
+- austrian trainsations from photographer @android_oma: https://api.railway-stations.org/ch/stations?photographer=@android_oma
+- german trainsations within 20km from FFM mainstation: https://api.railway-stations.org/de/stations?maxDistance=20&lat=50.1060866&lon=8.6615762
+- all photographers with count of photos: https://api.railway-stations.org/photographers.txt
+- german photographers: https://api.railway-stations.org/de/photographers.txt
+- statistic per country (de): https://api.railway-stations.org/de/stats.txt
 
 The default output format is json. But can easily be changed to GPX or TXT. Either set the `Accept` header to `text/plain` or `application/gpx+xml` or simply add the extension `.txt` or `.gpx` to the end of the URL.
 
