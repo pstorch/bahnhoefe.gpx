@@ -21,14 +21,18 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class PhotoUploadResourceTest {
 
     private final MockMonitor monitor = new MockMonitor();
@@ -42,10 +46,12 @@ public class PhotoUploadResourceTest {
         final Station station4711 = new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null, true);
         final Station.Key key1234 = new Station.Key("de", "1234");
         final Station station1234 = new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0"), true);
+        final Station.Key key5678 = new Station.Key("de", "5678");
+        final Station station5678 = new Station(key5678, "Phantasia", new Coordinates(51.0, 10.0), "DEF", new Photo(key5678, "URL", new User("nickname", "photographerUrl", "CC0"), null, "CC0"), true);
         final UserDao userDao = mock(UserDao.class);
         final User userNickname = new User("nickname", "nickname@example.com", "CC0", true, null, true);
         when(userDao.findByEmail("nickname@example.com")).thenReturn(Optional.of(userNickname));
-        final User userSomeuser = new User("someuser", "nickname@example.com", "CC0", true, null, true);
+        final User userSomeuser = new User("someuser", "someuser@example.com", "CC0", true, null, true);
         userSomeuser.setUploadTokenSalt(123456L);
         when(userDao.findByEmail("someuser@example.com")).thenReturn(Optional.of(userSomeuser));
 
@@ -53,6 +59,7 @@ public class PhotoUploadResourceTest {
         final StationsRepository repository = mock(StationsRepository.class);
         when(repository.findByCountryAndId(key4711.getCountry(), key4711.getId())).thenReturn(station4711);
         when(repository.findByCountryAndId(key1234.getCountry(), key1234.getId())).thenReturn(station1234);
+        when(repository.findByCountryAndId(key5678.getCountry(), key5678.getId())).thenReturn(station5678);
 
         resource = new PhotoUploadResource(repository, tempDir.toString(), monitor, null);
     }
@@ -129,6 +136,29 @@ public class PhotoUploadResourceTest {
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/de/nickname-4711.jpg"));
     }
 
+    @Test
+    public void testQueryState() throws IOException {
+        givenFileExistsInInbox("de/nickname-4711.jpg");
+        givenFileExistsInInbox("ch/othernick-0815.jpg");
+        givenFileExistsInInbox("missing/nickname-1.jpg");
+        givenFileExistsInInbox("missing/nickname-1.jpg.txt", "Missing Station\n50.9876,9.1234\nSome Comment");
+
+        final List<PhotoUploadResource.UploadStateQuery> uploadStateQueries = new ArrayList<>();
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery("de", "4711", null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery("de", "1234", null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery("de", "5678", null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery("ch", "0815", null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery(null, null, 50.9876, 9.1234));
+
+        final List<PhotoUploadResource.UploadStateQuery> uploadStateQueriesResult = resource.queryState(uploadStateQueries, new AuthUser(new User("nickname", "nickname@example.com", "CC0", true, null, false)));
+
+        assertThat(uploadStateQueriesResult.get(0).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.IN_REVIEW));
+        assertThat(uploadStateQueriesResult.get(1).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.OTHER_USER));
+        assertThat(uploadStateQueriesResult.get(2).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.ACCEPTED));
+        assertThat(uploadStateQueriesResult.get(3).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.UNKNOWN));
+        assertThat(uploadStateQueriesResult.get(4).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.IN_REVIEW));
+    }
+
     private void assertFileWithContentExistsInInbox(final String content, final String filename) throws IOException {
         final File image = new File(tempDir.toFile(), filename);
         assertThat(image.exists(), equalTo(true));
@@ -140,8 +170,12 @@ public class PhotoUploadResourceTest {
     }
 
     private void givenFileExistsInInbox(final String filename) throws IOException {
+        givenFileExistsInInbox(filename, "dummy");
+    }
+
+    private void givenFileExistsInInbox(final String filename, final String content) throws IOException {
         final File existing = new File(tempDir.toFile(), filename);
-        FileUtils.write(existing, "dummy", "UTF-8");
+        FileUtils.write(existing, content, "UTF-8");
     }
 
     @Test

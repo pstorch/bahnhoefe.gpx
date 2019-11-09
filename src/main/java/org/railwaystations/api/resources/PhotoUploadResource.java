@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.activation.MimetypesFileTypeMap;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -26,6 +27,7 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Path("/photoUpload")
@@ -36,6 +38,7 @@ public class PhotoUploadResource {
     private static final long MAX_SIZE = 20_000_000L;
     private static final String IMAGE_PNG = "image/png";
     private static final String IMAGE_JPEG = "image/jpeg";
+    private static final String MISSING = "missing";
 
     private final StationsRepository repository;
     private final File uploadDir;
@@ -104,6 +107,54 @@ public class PhotoUploadResource {
         return uploadPhoto(body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
     }
 
+    @POST
+    @Path("queryState")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<UploadStateQuery> queryState(@NotNull final List<UploadStateQuery> uploadStateQueries, @Auth final AuthUser user) {
+        LOG.info("Query uploadStatus for Nickname: {}", user.getName());
+
+        final String nickname = user.getUser().getNormalizedName();
+        for (final UploadStateQuery uploadStateQuery : uploadStateQueries) {
+            uploadStateQuery.state = UploadStateQuery.UploadStateState.UNKNOWN;
+            final Station station = repository.findByCountryAndId(uploadStateQuery.countryCode, uploadStateQuery.id);
+            if (station != null) {
+                final File[] listFiles = new File(uploadDir, uploadStateQuery.countryCode).listFiles(pathname -> {
+                    final String stationIdentifier = nickname + "-" + station.getKey().getId() + ".";
+                    return pathname.getName().startsWith(stationIdentifier);
+                });
+                if (listFiles != null && listFiles.length > 0) {
+                    uploadStateQuery.state = UploadStateQuery.UploadStateState.IN_REVIEW;
+                } else if (station.hasPhoto()) {
+                    if (station.getPhotographer().equals(user.getUser().getDisplayName())) {
+                        uploadStateQuery.state = UploadStateQuery.UploadStateState.ACCEPTED;
+                    } else {
+                        uploadStateQuery.state = UploadStateQuery.UploadStateState.OTHER_USER;
+                    }
+                }
+            } else if (uploadStateQuery.lat != null && uploadStateQuery.lon != null) {
+                final File[] listFiles = new File(uploadDir, MISSING).listFiles(pathname -> pathname.getName().startsWith(nickname));
+                final String coords = uploadStateQuery.lat + "," + uploadStateQuery.lon;
+                if (listFiles != null) {
+                    for (final File imageFile : listFiles) {
+                        final File txtFile = new File(imageFile.getParent(), imageFile.getName() + ".txt");
+                        if (txtFile.exists()) {
+                            try {
+                                if (FileUtils.readLines(txtFile, "UTF-8").stream().anyMatch(line -> line.contains(coords))) {
+                                    uploadStateQuery.state = UploadStateQuery.UploadStateState.IN_REVIEW;
+                                }
+                            } catch (IOException e) {
+                                LOG.error("Couldn't read text file {}", txtFile, e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return uploadStateQueries;
+    }
+
     private Response uploadPhoto(final InputStream body,
                          final String stationId,
                          final String country,
@@ -132,7 +183,7 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
-        final File uploadDir = new File(this.uploadDir, StringUtils.isNotBlank(country) ? country : "missing");
+        final File uploadDir = new File(this.uploadDir, StringUtils.isNotBlank(country) ? country : MISSING);
         final String filename = toFilename(uploadDir, station, user.getUser().getNormalizedName(), extension);
         final boolean duplicate = station != null && isDuplicate(station, uploadDir, filename);
         final File file = new File(uploadDir, filename);
@@ -235,4 +286,50 @@ public class PhotoUploadResource {
         }
     }
 
+    public static class UploadStateQuery {
+        private String countryCode;
+        private String id;
+        private Double lat;
+        private Double lon;
+        private UploadStateState state = UploadStateState.UNKNOWN;
+
+        public UploadStateQuery() {
+        }
+
+        public UploadStateQuery(String countryCode, String id, Double lat, Double lon) {
+            super();
+            this.countryCode = countryCode;
+            this.id = id;
+            this.lat = lat;
+            this.lon = lon;
+        }
+
+        public String getCountryCode() {
+            return countryCode;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public Double getLat() {
+            return lat;
+        }
+
+        public Double getLon() {
+            return lon;
+        }
+
+        public UploadStateState getState() {
+            return state;
+        }
+
+        public enum UploadStateState {
+            UNKNOWN,
+            IN_REVIEW,
+            ACCEPTED,
+            OTHER_USER;
+        }
+
+    }
 }
