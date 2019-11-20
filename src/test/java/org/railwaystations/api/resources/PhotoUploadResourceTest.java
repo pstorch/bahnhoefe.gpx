@@ -68,7 +68,7 @@ public class PhotoUploadResourceTest {
                                    final String stationTitle, final Double latitude, final Double longitude, final String comment) throws UnsupportedEncodingException {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
-        return resource.post(is, stationId, country, "image/jpeg",
+        return resource.post(is, "UserAgent", stationId, country, "image/jpeg",
                 stationTitle, latitude, longitude, comment,
                 new AuthUser(new User(nickname, email, "CC0", true, null, false)));
     }
@@ -80,7 +80,7 @@ public class PhotoUploadResourceTest {
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "de/nickname-4711.jpg");
         assertFileWithContentExistsInInbox("Some Comment", "de/nickname-4711.jpg.txt");
-        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\nSome Comment\nhttp://inbox.railway-stations.org/de/nickname-4711.jpg"));
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\nSome Comment\nhttp://inbox.railway-stations.org/de/nickname-4711.jpg\nvia UserAgent"));
     }
 
     @Test
@@ -90,7 +90,7 @@ public class PhotoUploadResourceTest {
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "missing/nickname-1.jpg");
         assertFileWithContentExistsInInbox("Missing Station\n50.9876,9.1234\nSome Comment", "missing/nickname-1.jpg.txt");
-        assertThat(monitor.getMessages().get(0), equalTo("Photo upload for missing station Missing Station at 50.9876,9.1234\nSome Comment\nhttp://inbox.railway-stations.org/missing/nickname-1.jpg"));
+        assertThat(monitor.getMessages().get(0), equalTo("Photo upload for missing station Missing Station at 50.9876,9.1234\nSome Comment\nhttp://inbox.railway-stations.org/missing/nickname-1.jpg\nvia UserAgent"));
     }
 
     @ParameterizedTest
@@ -111,7 +111,7 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "de/someuser-4711.jpg");
-        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/de/someuser-4711.jpg"));
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/de/someuser-4711.jpg\nvia UserAgent"));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getStatus(), equalTo(409));
         assertFileWithContentExistsInInbox("image-content", "de/nickname-4711.jpg");
-        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/de/nickname-4711.jpg (possible duplicate!)"));
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/de/nickname-4711.jpg (possible duplicate!)\nvia UserAgent"));
     }
 
     @Test
@@ -133,7 +133,7 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "de/nickname-4711.jpg");
-        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/de/nickname-4711.jpg"));
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/de/nickname-4711.jpg\nvia UserAgent"));
     }
 
     @Test
@@ -184,12 +184,12 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getStatus(), equalTo(409));
         assertFileWithContentExistsInInbox("image-content", "de/nickname-1234.jpg");
-        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Neverland\n\nhttp://inbox.railway-stations.org/de/nickname-1234.jpg (possible duplicate!)"));
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Neverland\n\nhttp://inbox.railway-stations.org/de/nickname-1234.jpg (possible duplicate!)\nvia UserAgent"));
     }
 
     @Test
     public void testPostInvalidCountry() throws UnsupportedEncodingException {
-        final Response response = resource.post(null, "4711", "xy", "image/jpeg",
+        final Response response = resource.post(null, "UserAgent", "4711", "xy", "image/jpeg",
                 null, null, null, null,
                 new AuthUser(new User("nickname", "nickname@example.com", "CC0", true, null, false)));
         assertThat(response.getStatus(), equalTo(400));

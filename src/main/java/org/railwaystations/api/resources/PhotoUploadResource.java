@@ -58,7 +58,8 @@ public class PhotoUploadResource {
      */
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String post(@FormDataParam("email") final String email,
+    public String post(@HeaderParam("User-Agent") final String userAgent,
+                       @FormDataParam("email") final String email,
                        @FormDataParam("uploadToken") final String uploadToken,
                        @FormDataParam("stationId") final String stationId,
                        @FormDataParam("countryCode") final String countryCode,
@@ -79,7 +80,7 @@ public class PhotoUploadResource {
             }
 
             final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
-            final Response response = uploadPhoto(file, stationId, countryCode, contentType, stationTitle, latitude, longitude, comment, authUser.get());
+            final Response response = uploadPhoto(userAgent, file, stationId, countryCode, contentType, stationTitle, latitude, longitude, comment, authUser.get());
 
             return createIFrameAnswer(response.getStatusInfo(), referer);
         } catch (final Exception e) {
@@ -92,6 +93,7 @@ public class PhotoUploadResource {
     @Consumes({IMAGE_PNG, IMAGE_JPEG})
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(final InputStream body,
+                         @HeaderParam("User-Agent") final String userAgent,
                          @HeaderParam("Station-Id") final String stationId,
                          @HeaderParam("Country") final String country,
                          @HeaderParam("Content-Type") final String contentType,
@@ -104,7 +106,7 @@ public class PhotoUploadResource {
         final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
         LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
-        return uploadPhoto(body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
+        return uploadPhoto(userAgent, body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
     }
 
     @POST
@@ -155,15 +157,15 @@ public class PhotoUploadResource {
         return uploadStateQueries;
     }
 
-    private Response uploadPhoto(final InputStream body,
-                         final String stationId,
-                         final String country,
-                         final String contentType,
-                         final String stationTitle,
-                         final Double latitude,
-                         final Double longitude,
-                         final String comment,
-                         final AuthUser user) {
+    private Response uploadPhoto(String userAgent, final InputStream body,
+                                 final String stationId,
+                                 final String country,
+                                 final String contentType,
+                                 final String stationTitle,
+                                 final Double latitude,
+                                 final Double longitude,
+                                 final String comment,
+                                 final AuthUser user) {
         final Station station = repository.findByCountryAndId(country, stationId);
         if (station == null) {
             LOG.warn("Station not found");
@@ -201,12 +203,12 @@ public class PhotoUploadResource {
                 duplicateInfo = " (possible duplicate!)";
             }
             if (station != null) {
-                monitor.sendMessage(String.format("New photo upload for %s%n%s%nhttp://inbox.railway-stations.org/%s/%s%s",
-                        station.getTitle(), StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo));
+                monitor.sendMessage(String.format("New photo upload for %s%n%s%nhttp://inbox.railway-stations.org/%s/%s%s%nvia %s",
+                        station.getTitle(), StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo, userAgent));
             } else {
-                monitor.sendMessage(String.format("Photo upload for missing station %s at %s,%s%n%s%nhttp://inbox.railway-stations.org/%s/%s%s",
+                monitor.sendMessage(String.format("Photo upload for missing station %s at %s,%s%n%s%nhttp://inbox.railway-stations.org/%s/%s%s%nvia %s",
                         stationTitle, latitude, longitude,
-                        StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo));
+                        StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo, userAgent));
             }
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);

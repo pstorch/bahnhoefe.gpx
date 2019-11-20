@@ -68,14 +68,14 @@ public class ProfileResource {
     @POST
     @Path("newUploadToken")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response newUploadToken(@NotNull @HeaderParam("Email") final String email) {
-        return resetPassword(email);
+    public Response newUploadToken(@HeaderParam("User-Agent") final String userAgent, @NotNull @HeaderParam("Email") final String email) {
+        return resetPassword(userAgent, email);
     }
 
     @POST
     @Path("resetPassword")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response resetPassword(@NotNull @HeaderParam("NameOrEmail") final String nameOrEmail) {
+    public Response resetPassword(@HeaderParam("User-Agent") final String userAgent, @NotNull @HeaderParam("NameOrEmail") final String nameOrEmail) {
         LOG.info("Password reset requested for '{}'", nameOrEmail);
 
         final User user = userDao.findByEmail(User.normalizeEmail(nameOrEmail))
@@ -87,13 +87,13 @@ public class ProfileResource {
 
         if (StringUtils.isBlank(user.getEmail())) {
             monitor.sendMessage(
-                    String.format("Password reset for '%s' failed, because Email is empty: '%s'",
-                            nameOrEmail, user));
+                    String.format("Password reset for '%s' failed, because Email is empty: '%s'%nvia %s",
+                            nameOrEmail, user, userAgent));
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
         final String initialPassword = createNewPassword(user);
-        saveRegistration(user, user);
+        saveRegistration(userAgent, user, user);
         sendPasswordMail(user, initialPassword);
         return Response.accepted().build();
     }
@@ -102,7 +102,7 @@ public class ProfileResource {
     @Path("registration")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response register(@NotNull final User registration) {
+    public Response register(@HeaderParam("User-Agent") final String userAgent, @NotNull final User registration) {
         LOG.info("New registration for '{}' with '{}'", registration.getName(), registration.getEmail());
 
         if (!registration.isValidForRegistration()) {
@@ -110,7 +110,7 @@ public class ProfileResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        return register(registration, false);
+        return register(userAgent, registration, false);
     }
 
     private String createNewPassword(@NotNull final User user) {
@@ -122,18 +122,18 @@ public class ProfileResource {
         return initialPassword;
     }
 
-    private Response register(final User registration, final boolean eMailVerified) {
+    private Response register(final String userAgent, final User registration, final boolean eMailVerified) {
         final Optional<User> existingName = userDao.findByNormalizedName(registration.getNormalizedName());
         if (existingName.isPresent() && !registration.getEmail().equals(existingName.get().getEmail())) {
             monitor.sendMessage(
-                    String.format("Registration for user '%s' with eMail '%s' failed, because name is already taken by different eMail '%s'",
-                            registration.getName(), registration.getEmail(), existingName.get().getEmail()));
+                    String.format("Registration for user '%s' with eMail '%s' failed, because name is already taken by different eMail '%s'%nvia %s",
+                            registration.getName(), registration.getEmail(), existingName.get().getEmail(), userAgent));
             return Response.status(Response.Status.CONFLICT).build();
         }
 
         final String initialPassword = createNewPassword(registration);
         final Optional<User> existing = userDao.findByEmail(registration.getEmail());
-        saveRegistration(registration, existing.orElse(null));
+        saveRegistration(userAgent, registration, existing.orElse(null));
 
         if (eMailVerified) {
             LOG.info("Email verified, returning profile");
@@ -157,7 +157,7 @@ public class ProfileResource {
     @Path("myProfile")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateMyProfile(@NotNull final User newProfile, @Auth final AuthUser authUser) {
+    public Response updateMyProfile(@HeaderParam("User-Agent") final String userAgent, @NotNull final User newProfile, @Auth final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Update profile for '{}'", user.getEmail());
 
@@ -174,8 +174,8 @@ public class ProfileResource {
             final String initialPassword = createNewPassword(newProfile);
             userDao.updateEmailAndKey(user.getId(), newProfile.getEmail(), newProfile.getKey());
             monitor.sendMessage(
-                    String.format("Update email for user '%s' from email '%s' to '%s'",
-                            user.getName(), user.getEmail(), newProfile.getEmail()));
+                    String.format("Update email for user '%s' from email '%s' to '%s'%n%s",
+                            user.getName(), user.getEmail(), newProfile.getEmail(), userAgent));
             sendPasswordMail(newProfile, initialPassword);
             return Response.accepted().build();
         }
@@ -215,12 +215,12 @@ public class ProfileResource {
         LOG.info("Password sent to {}", registration.getEmail());
     }
 
-    private void saveRegistration(final User registration, final User existing) {
+    private void saveRegistration(final String userAgent, final User registration, final User existing) {
         if (existing != null) {
             userDao.updateCredentials(existing.getId(), registration.getKey());
             monitor.sendMessage(
-                    String.format("New Password{nickname='%s', email='%s'}",
-                            registration.getName(), registration.getEmail()));
+                    String.format("New Password{nickname='%s', email='%s'}%nvia %s",
+                            registration.getName(), registration.getEmail(), userAgent));
             return;
         }
 
@@ -230,8 +230,9 @@ public class ProfileResource {
         }
         final Integer id = userDao.insert(registration);
         monitor.sendMessage(
-                String.format("New Registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s', anonymous=%s}",
-                        registration.getName(), registration.getEmail(), registration.getLicense(), registration.isOwnPhotos(), registration.getUrl(), registration.isAnonymous()));
+                String.format("New Registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s', anonymous=%s}%nvia %s",
+                        registration.getName(), registration.getEmail(), registration.getLicense(), registration.isOwnPhotos(),
+                        registration.getUrl(), registration.isAnonymous(), userAgent));
 
         LOG.info("User '{}' created with id {}", registration.getName(), id);
     }
