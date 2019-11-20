@@ -1,9 +1,5 @@
 package org.railwaystations.api.resources;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -34,7 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Optional;
 
@@ -42,18 +37,15 @@ import java.util.Optional;
 public class ProfileResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProfileResource.class);
-    private static final JacksonFactory JACKSON_FACTORY = new JacksonFactory();
 
     private final Monitor monitor;
     private final Mailer mailer;
     private final UserDao userDao;
-    private final String googleClientId;
 
-    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao, final String googleClientId) {
+    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao) {
         this.monitor = monitor;
         this.mailer = mailer;
         this.userDao = userDao;
-        this.googleClientId = googleClientId;
     }
 
     @POST
@@ -128,21 +120,6 @@ public class ProfileResource {
         user.setUploadToken(null);
 
         return initialPassword;
-    }
-
-    @POST
-    @Path("registration/withGoogleIdToken")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response registerWithGoogleIdToken(@HeaderParam("Google-Id-Token") final String idToken, @NotNull final User registration) {
-        LOG.info("New GoogleIdToken registration");
-
-        final GoogleIdToken.Payload googleLogin = verifyGoogleIdToken(idToken);
-        if (googleLogin == null) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        return register(new User(googleLogin.get("name").toString(), googleLogin.getEmail(), registration.getLicense(),
-                registration.isOwnPhotos(), registration.getUrl(), registration.isAnonymous()), googleLogin.getEmailVerified());
     }
 
     private Response register(final User registration, final boolean eMailVerified) {
@@ -287,28 +264,6 @@ public class ProfileResource {
             return file;
         } catch (final IOException | WriterException e) {
             throw new RuntimeException("Error creating QR-Code", e);
-        }
-    }
-
-    private GoogleIdToken.Payload verifyGoogleIdToken(final String idTokenString) {
-        final GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), JACKSON_FACTORY)
-                .setAudience(Collections.singletonList(googleClientId))
-                .build();
-        final GoogleIdToken idToken;
-        try {
-            idToken = verifier.verify(idTokenString);
-        } catch (final Exception e) {
-            LOG.error("Unable to verify google idToken", e);
-            return null;
-        }
-        if (idToken != null) {
-            final GoogleIdToken.Payload payload = idToken.getPayload();
-            LOG.info("Google Login for {} with email {} (verified = {})",
-                    payload.get("name"), payload.getEmail(), payload.getEmailVerified());
-            return payload;
-        } else {
-            LOG.warn("Invalid ID token.");
-            return null;
         }
     }
 

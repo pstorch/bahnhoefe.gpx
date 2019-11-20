@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20191109.2100'
+  version: '20191120.1830'
   title: RSAPI
   license:
     name: MIT
@@ -369,27 +369,6 @@ paths:
           description: conflict with existing name or email
         '422':
           description: unprocessable entity, Registration input document error
-  /registration/withGoogleIdToken:
-    post:
-      summary: Register for an upload token with Google IdToken
-      description: DEPRECATED, will be removed in near future!
-      produces:
-        - application/json
-      parameters:
-        - name: Google-Id-Token
-          in: header
-          description: Google IdToken
-          required: true
-          type: string
-      responses:
-        '202':
-          description: registration accepted, if the email is verified the response contains the full profile with uploadToken
-          schema:
-            $ref: '#/definitions/Profile'
-        '400':
-          description: wrong request
-        '409':
-          description: conflict with existing name or email
   /resetPassword:
     post:
       summary: Requests a new password only

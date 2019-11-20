@@ -35,7 +35,7 @@ public class ProfileResourceTest {
         mailer = new MockMailer();
         userDao = mock(UserDao.class);
 
-        resource = new ProfileResource(monitor, mailer, userDao, null);
+        resource = new ProfileResource(monitor, mailer, userDao);
     }
 
     @Test
