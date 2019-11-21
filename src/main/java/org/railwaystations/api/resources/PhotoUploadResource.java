@@ -1,5 +1,6 @@
 package org.railwaystations.api.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.auth.Auth;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -288,6 +289,7 @@ public class PhotoUploadResource {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class UploadStateQuery {
         private String countryCode;
         private String id;
