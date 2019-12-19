@@ -207,7 +207,7 @@ public class PhotoUploadResource {
                 monitor.sendMessage(String.format("New photo upload for %s%n%s%nhttp://inbox.railway-stations.org/%s/%s%s%nvia %s",
                         station.getTitle(), StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo, userAgent));
             } else {
-                monitor.sendMessage(String.format("Photo upload for missing station %s at %s,%s%n%s%nhttp://inbox.railway-stations.org/%s/%s%s%nvia %s",
+                monitor.sendMessage(String.format("Photo upload for missing station %s at http://www.openstreetmap.org/?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%nhttp://inbox.railway-stations.org/%s/%s%s%nvia %s",
                         stationTitle, latitude, longitude,
                         StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo, userAgent));
             }

@@ -90,7 +90,7 @@ public class PhotoUploadResourceTest {
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "missing/nickname-1.jpg");
         assertFileWithContentExistsInInbox("Missing Station\n50.9876,9.1234\nSome Comment", "missing/nickname-1.jpg.txt");
-        assertThat(monitor.getMessages().get(0), equalTo("Photo upload for missing station Missing Station at 50.9876,9.1234\nSome Comment\nhttp://inbox.railway-stations.org/missing/nickname-1.jpg\nvia UserAgent"));
+        assertThat(monitor.getMessages().get(0), equalTo("Photo upload for missing station Missing Station at http://www.openstreetmap.org/?mlat=50.9876&mlon=9.1234&zoom=18&layers=M\nSome Comment\nhttp://inbox.railway-stations.org/missing/nickname-1.jpg\nvia UserAgent"));
     }
 
     @ParameterizedTest
