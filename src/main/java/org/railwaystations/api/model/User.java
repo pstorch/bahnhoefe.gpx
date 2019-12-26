@@ -50,7 +50,7 @@ public class User {
     @JsonProperty("anonymous")
     private boolean anonymous;
 
-    @JsonProperty("uploadToken")
+    @JsonProperty(value = "uploadToken", access = JsonProperty.Access.READ_ONLY)
     private String uploadToken;
 
     @JsonIgnore
@@ -59,9 +59,12 @@ public class User {
     @JsonIgnore
     private String key;
 
+    @JsonProperty(value = "admin", access = JsonProperty.Access.READ_ONLY)
+    private final boolean admin;
+
     public User(final String name, final String url, final String license, final int id, final String email,
                 final boolean ownPhotos, final boolean anonymous, final Long uploadTokenSalt,
-                final String key) {
+                final String key, final boolean admin) {
         this.name = name;
         this.url = url;
         this.license = license;
@@ -72,6 +75,7 @@ public class User {
         this.anonymous = anonymous;
         this.uploadTokenSalt = uploadTokenSalt;
         this.key = key;
+        this.admin = admin;
     }
 
     /**
@@ -90,14 +94,15 @@ public class User {
         this.ownPhotos = photoOwner;
         this.anonymous = anonymous;
         this.url = StringUtils.trimToEmpty(link);
+        this.admin = false;
     }
 
     public User(final String name, final String url, final String license) {
-        this(name, url, license, 0, null, true, false, null, null);
+        this(name, url, license, 0, null, true, false, null, null, false);
     }
 
     public User(final String name, final String url, final String license, final boolean anonymous) {
-        this(name, url, license, 0, null, true, anonymous, null, null);
+        this(name, url, license, 0, null, true, anonymous, null, null, false);
     }
 
     public static Map<String, User> toNameMap(final List<User> list) {
@@ -253,4 +258,9 @@ public class User {
     public void setKey(final String key) {
         this.key = key;
     }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
 }

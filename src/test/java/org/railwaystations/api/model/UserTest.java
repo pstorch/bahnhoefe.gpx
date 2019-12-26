@@ -1,9 +1,14 @@
 package org.railwaystations.api.model;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.io.IOException;
+
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 
@@ -34,6 +39,33 @@ public class UserTest {
                  "        , email@example.com, CC0, false,                   , false"})
     public void testIsValid(final String name, final String email, final String license, final boolean photoOwner, final String link, final boolean expected) {
         assertThat(new User(name, email, license, photoOwner, link, false).isValid(), is(expected));
+    }
+
+    @Test
+    public void testJsonDeserialization() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        User user = mapper.readerFor(User.class).readValue("{\"id\":\"1\", \"nickname\":\"@Nick Name\",\"email\":\"nick@example.com\",\"license\":\"CC0 1.0 Universell (CC0 1.0)\",\"photoOwner\":true,\"link\":\"https://example.com\",\"anonymous\":false,\"uploadToken\":\"token\",\"uploadTokenSalt\":\"123456\",\"key\":\"key\", \"admin\":true}");
+        assertThat(user.getId(), is(0));
+        assertThat(user.getName(), is("@Nick Name"));
+        assertThat(user.getDisplayName(), is("@Nick Name"));
+        assertThat(user.getNormalizedName(), is("nickname"));
+        assertThat(user.getEmail(), is("nick@example.com"));
+        assertThat(user.getLicense(), is("CC0 1.0 Universell (CC0 1.0)"));
+        assertThat(user.isOwnPhotos(), is(true));
+        assertThat(user.getUrl(), is("https://example.com"));
+        assertThat(user.isAnonymous(), is(false));
+        assertThat(user.getUploadToken(), nullValue());
+        assertThat(user.getUploadTokenSalt(), nullValue());
+        assertThat(user.getKey(), nullValue());
+        assertThat(user.isAdmin(), is(false));
+    }
+
+    @Test
+    public void testJsonSerialization() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        User user = new User("@Nick Name", "https://example.com", "CC0 1.0 Universell (CC0 1.0)", 1, "nick@example.com", true, true, 1234L, "key", true);
+        String json = mapper.writerFor(User.class).writeValueAsString(user);
+        assertThat(json, is("{\"nickname\":\"@Nick Name\",\"email\":\"nick@example.com\",\"license\":\"CC0 1.0 Universell (CC0 1.0)\",\"photoOwner\":true,\"link\":\"https://example.com\",\"anonymous\":true,\"admin\":true}"));
     }
 
 }

@@ -57,7 +57,8 @@ public interface UserDao {
                     rs.getBoolean("ownPhotos"),
                     rs.getBoolean("anonymous"),
                     rs.getLong("uploadTokenSalt"),
-                    rs.getString("key")
+                    rs.getString("key"),
+                    rs.getBoolean("admin")
                     );
         }
     }

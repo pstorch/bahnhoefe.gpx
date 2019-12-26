@@ -428,4 +428,24 @@
         </loadData>
     </changeSet>
 
+    <changeSet id="19" author="pstorch">
+        <addColumn tableName="users">
+            <column name="admin" type="boolean" valueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20" author="pstorch" context="junit or test">
+        <update tableName="users">
+            <column name="admin" valueBoolean="true"/>
+            <where>id in (9,15,23)</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="21" author="pstorch" context="prod">
+        <update tableName="users">
+            <column name="admin" valueBoolean="true"/>
+            <where>id in (40,42,45)</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>
