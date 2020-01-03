@@ -24,10 +24,7 @@ import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.auth.BasicAuthenticator;
 import org.railwaystations.api.auth.UploadTokenAuthFilter;
 import org.railwaystations.api.auth.UploadTokenAuthenticator;
-import org.railwaystations.api.db.CountryDao;
-import org.railwaystations.api.db.PhotoDao;
-import org.railwaystations.api.db.StationDao;
-import org.railwaystations.api.db.UserDao;
+import org.railwaystations.api.db.*;
 import org.railwaystations.api.resources.*;
 import org.railwaystations.api.writer.PhotographersTxtWriter;
 import org.railwaystations.api.writer.StationsGpxWriter;
@@ -89,6 +86,8 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         final PhotoDao photoDao = jdbi.onDemand(PhotoDao.class);
         final StationDao stationDao = jdbi.onDemand(StationDao.class);
         StationDao.StationMapper.setPhotoBaseUrl(config.getPhotoBaseUrl());
+        final UploadDao uploadDao = jdbi.onDemand(UploadDao.class);
+        UploadDao.UploadMapper.setInboxBaseUrl(config.getInboxBaseUrl());
 
         final StationsRepository repository = new StationsRepository(countryDao,
                 stationDao);
@@ -99,7 +98,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new PhotographersResource(repository));
         environment.jersey().register(new CountriesResource(countryDao));
         environment.jersey().register(new StatisticResource(repository));
-        environment.jersey().register(new PhotoUploadResource(repository, config.getWorkDir(), config.getMonitor(), authenticator));
+        environment.jersey().register(new PhotoUploadResource(repository, config.getWorkDir(), config.getMonitor(), authenticator, uploadDao));
         environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
                 new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir())));

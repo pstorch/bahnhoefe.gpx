@@ -7,13 +7,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.auth.AuthUser;
+import org.railwaystations.api.db.UploadDao;
 import org.railwaystations.api.db.UserDao;
-import org.railwaystations.api.model.Coordinates;
-import org.railwaystations.api.model.Photo;
-import org.railwaystations.api.model.Station;
-import org.railwaystations.api.model.User;
+import org.railwaystations.api.model.*;
 import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
@@ -25,11 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -39,6 +36,7 @@ public class PhotoUploadResourceTest {
 
     private Path tempDir;
     private PhotoUploadResource resource;
+    private UploadDao uploadDao = null;
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -54,6 +52,7 @@ public class PhotoUploadResourceTest {
         final User userSomeuser = new User("someuser", "someuser@example.com", "CC0", true, null, true);
         userSomeuser.setUploadTokenSalt(123456L);
         when(userDao.findByEmail("someuser@example.com")).thenReturn(Optional.of(userSomeuser));
+        uploadDao = mock(UploadDao.class);
 
         tempDir = Files.createTempDirectory("rsapi");
         final StationsRepository repository = mock(StationsRepository.class);
@@ -61,35 +60,57 @@ public class PhotoUploadResourceTest {
         when(repository.findByCountryAndId(key1234.getCountry(), key1234.getId())).thenReturn(station1234);
         when(repository.findByCountryAndId(key5678.getCountry(), key5678.getId())).thenReturn(station5678);
 
-        resource = new PhotoUploadResource(repository, tempDir.toString(), monitor, null);
+        resource = new PhotoUploadResource(repository, tempDir.toString(), monitor, null, uploadDao);
     }
 
-    private Response whenPostImage(final String content, final String nickname, final String email, final String stationId, final String country,
+    private Response whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
                                    final String stationTitle, final Double latitude, final Double longitude, final String comment) throws UnsupportedEncodingException {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
         return resource.post(is, "UserAgent", stationId, country, "image/jpeg",
                 stationTitle, latitude, longitude, comment,
-                new AuthUser(new User(nickname, email, "CC0", true, null, false)));
+                new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false)));
     }
 
     @Test
     public void testPost() throws IOException {
-        final Response response = whenPostImage("image-content", "@nick name", "nickname@example.com","4711", "de", null, null, null, "Some Comment");
+        ArgumentCaptor<Upload> uploadCaptor = ArgumentCaptor.forClass(Upload.class);
+        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, "Some Comment");
 
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "de/nickname-4711.jpg");
-        assertFileWithContentExistsInInbox("Some Comment", "de/nickname-4711.jpg.txt");
+        verify(uploadDao).insert(uploadCaptor.capture());
+        assertUpload(uploadCaptor.getValue(), "de","4711", null, null);
+
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\nSome Comment\nhttp://inbox.railway-stations.org/de/nickname-4711.jpg\nvia UserAgent"));
+    }
+
+    private void assertUpload(final Upload upload, final String countryCode, final String stationId, final String title, final Coordinates coordinates) {
+        assertThat(upload.getCountryCode(), equalTo(countryCode));
+        assertThat(upload.getStationId(), equalTo(stationId));
+        assertThat(upload.getTitle(), equalTo(title));
+        assertThat(upload.getPhotographerId(), equalTo(42));
+        assertThat(upload.getUploadComment(), equalTo("Some Comment"));
+        assertThat(upload.getCreatedAt() / 1000, equalTo(System.currentTimeMillis() / 1000));
+        if (coordinates != null) {
+            assertThat(upload.getCoordinates().getLat(), equalTo(coordinates.getLat()));
+            assertThat(upload.getCoordinates().getLon(), equalTo(coordinates.getLon()));
+        } else {
+            assertThat(upload.getCoordinates(), nullValue());
+        }
+        assertThat(upload.getDone(), equalTo(false));
     }
 
     @Test
     public void testPostMissingStation() throws IOException {
-        final Response response = whenPostImage("image-content", "@nick name", "nickname@example.com",null, null, "Missing Station", 50.9876d, 9.1234d, "Some Comment");
+        ArgumentCaptor<Upload> uploadCaptor = ArgumentCaptor.forClass(Upload.class);
+        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", 50.9876d, 9.1234d, "Some Comment");
 
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "missing/nickname-1.jpg");
-        assertFileWithContentExistsInInbox("Missing Station\n50.9876,9.1234\nSome Comment", "missing/nickname-1.jpg.txt");
+        verify(uploadDao).insert(uploadCaptor.capture());
+        assertUpload(uploadCaptor.getValue(), null,null, "Missing Station", new Coordinates(50.9876, 9.1234));
+
         assertThat(monitor.getMessages().get(0), equalTo("Photo upload for missing station Missing Station at http://www.openstreetmap.org/?mlat=50.9876&mlon=9.1234&zoom=18&layers=M\nSome Comment\nhttp://inbox.railway-stations.org/missing/nickname-1.jpg\nvia UserAgent"));
     }
 
@@ -100,14 +121,14 @@ public class PhotoUploadResourceTest {
                 "50.9876d, 181d",
     })
     public void testPostMissingStationLatLonOutOfRange(final Double latitude, final Double longitude) throws IOException {
-        final Response response = whenPostImage("image-content", "@nick name", "nickname@example.com",null, null, "Missing Station", latitude, longitude, null);
+        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", latitude, longitude, null);
 
         assertThat(response.getStatus(), equalTo(400));
     }
 
     @Test
     public void testPostSomeUserWithTokenSalt() throws IOException {
-        final Response response = whenPostImage("image-content", "@someuser", "someuser@example.com","4711", "de", null, null, null, null);
+        final Response response = whenPostImage("image-content", "@someuser", 11, "someuser@example.com","4711", "de", null, null, null, null);
 
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "de/someuser-4711.jpg");
@@ -118,7 +139,7 @@ public class PhotoUploadResourceTest {
     public void testPostDuplicateInbox() throws IOException {
         givenFileExistsInInbox("de/@other_nick-4711.jpg");
 
-        final Response response = whenPostImage("image-content", "@nick name", "nickname@example.com","4711", "de", null, null, null, null);
+        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, null);
 
         assertThat(response.getStatus(), equalTo(409));
         assertFileWithContentExistsInInbox("image-content", "de/nickname-4711.jpg");
@@ -129,7 +150,7 @@ public class PhotoUploadResourceTest {
     public void testPostDuplicateInboxSameUser() throws IOException {
         givenFileExistsInInbox("de/nickname-4711.jpg");
 
-        final Response response = whenPostImage("image-content", "@nick name", "nickname@example.com","4711", "de", null, null, null, null);
+        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, null);
 
         assertThat(response.getStatus(), equalTo(202));
         assertFileWithContentExistsInInbox("image-content", "de/nickname-4711.jpg");
@@ -180,7 +201,7 @@ public class PhotoUploadResourceTest {
 
     @Test
     public void testPostDuplicate() throws IOException {
-        final Response response = whenPostImage("image-content", "@nick name", "nickname@example.com","1234", "de", null, null, null, null);
+        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","1234", "de", null, null, null, null);
 
         assertThat(response.getStatus(), equalTo(409));
         assertFileWithContentExistsInInbox("image-content", "de/nickname-1234.jpg");

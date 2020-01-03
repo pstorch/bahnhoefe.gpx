@@ -28,3 +28,4 @@ mailer:
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
 photoBaseUrl: https://fotos.railway-stations.org
+inboxBaseUrl: https://inbox.railway-stations.org

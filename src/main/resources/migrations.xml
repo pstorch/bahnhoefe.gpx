@@ -448,4 +448,34 @@
         </update>
     </changeSet>
 
+    <changeSet id="22" author="pstorch">
+        <createTable tableName="uploads">
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="photographerId" type="integer">
+                <constraints nullable="false" referencedTableName="users" referencedColumnNames="id" foreignKeyName="fk_upload_user"/>
+            </column>
+            <column name="countryCode" type="char(2)"/>
+            <column name="stationId" type="varchar(30)"/>
+            <column name="title" type="varchar(100)"/>
+            <column name="lat" type="double"/>
+            <column name="lon" type="double"/>
+            <column name="extension" type="char(3)"/>
+            <column name="uploadComment" type="varchar(1024)"/>
+            <column name="rejectReason" type="varchar(1024)"/>
+            <column name="done" type="boolean" valueBoolean="false" defaultValueBoolean="false"/>
+            <column name="createdAt" type="long">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="countryCode,stationId"
+                                 baseTableName="uploads"
+                                 constraintName="fk_upload_station"
+                                 onDelete="RESTRICT"
+                                 onUpdate="CASCADE"
+                                 referencedColumnNames="countryCode,id"
+                                 referencedTableName="stations"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -35,18 +35,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressFBWarnings("BC_UNCONFIRMED_CAST_OF_RETURN_VALUE")
@@ -417,11 +413,14 @@ public class RsApiAppTest {
         final File pngFile = new File(MySuite.TMP_WORK_DIR + "/missing", "stefanopitz-1.png");
         assertThat(pngFile.exists(), is(true));
         assertThat(IOUtils.readFully(new FileInputStream(pngFile), 13), is("IMAGE_CONTENT".getBytes(Charset.defaultCharset())));
+
+        /* TODO: replace with validation of new Response message
         final File txtFile = new File(MySuite.TMP_WORK_DIR + "/missing", "stefanopitz-1.png.txt");
         List<String> textLines = IOUtils.readLines(new FileInputStream(txtFile), StandardCharsets.UTF_8);
         assertThat(textLines.get(0), is("Achères-Grand-Cormier"));
         assertThat(textLines.get(1), is("50.123,10.123"));
         assertThat(textLines.get(2), is("Missing Station"));
+         */
     }
 
     @Test

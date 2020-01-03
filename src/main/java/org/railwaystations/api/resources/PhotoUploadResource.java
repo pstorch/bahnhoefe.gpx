@@ -14,7 +14,10 @@ import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.auth.UploadTokenAuthenticator;
 import org.railwaystations.api.auth.UploadTokenCredentials;
+import org.railwaystations.api.db.UploadDao;
+import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Station;
+import org.railwaystations.api.model.Upload;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +29,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,12 +46,14 @@ public class PhotoUploadResource {
     private final File uploadDir;
     private final Monitor monitor;
     private final UploadTokenAuthenticator authenticator;
+    private final UploadDao uploadDao;
 
-    public PhotoUploadResource(final StationsRepository repository, final String uploadDir, final Monitor monitor, final UploadTokenAuthenticator authenticator) {
+    public PhotoUploadResource(final StationsRepository repository, final String uploadDir, final Monitor monitor, final UploadTokenAuthenticator authenticator, final UploadDao uploadDao) {
         this.repository = repository;
         this.uploadDir = new File(uploadDir);
         this.monitor = monitor;
         this.authenticator = authenticator;
+        this.uploadDao = uploadDao;
     }
 
     /**
@@ -168,6 +171,7 @@ public class PhotoUploadResource {
                                  final String comment,
                                  final AuthUser user) {
         final Station station = repository.findByCountryAndId(country, stationId);
+        Coordinates coordinates = null;
         if (station == null) {
             LOG.warn("Station not found");
             if (StringUtils.isBlank(stationTitle) || latitude == null || longitude == null) {
@@ -178,6 +182,7 @@ public class PhotoUploadResource {
                 LOG.warn("Lat/Lon out of range: latitude={}, longitude={}", latitude, longitude);
                 return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
             }
+            coordinates = new Coordinates(latitude, longitude);
         }
 
         final String extension = mimeToExtension(contentType);
@@ -198,7 +203,7 @@ public class PhotoUploadResource {
                 FileUtils.deleteQuietly(file);
                 return consumeBodyAndReturn(body, Response.Status.REQUEST_ENTITY_TOO_LARGE);
             }
-            writeInfoFile(stationTitle, latitude, longitude, comment, station, uploadDir, filename);
+            uploadDao.insert(new Upload(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment));
             String duplicateInfo = "";
             if (duplicate) {
                 duplicateInfo = " (possible duplicate!)";
@@ -217,24 +222,6 @@ public class PhotoUploadResource {
         }
 
         return duplicate ? Response.status(Response.Status.CONFLICT).build() : Response.accepted().build();
-    }
-
-    private void writeInfoFile(final String stationTitle, final Double latitude, final Double longitude, final String comment,
-                               final Station station, final File uploadDir, final String filename) throws IOException {
-        if (StringUtils.isNotBlank(comment) || station == null) {
-            final File txt = new File(uploadDir, filename + ".txt");
-            final FileOutputStream txtOut = new FileOutputStream(txt);
-            final Collection<String> line = new ArrayList<>();
-            if (station == null) {
-                line.add(stationTitle);
-                line.add(latitude + "," + longitude);
-            }
-            if (StringUtils.isNotBlank(comment)) {
-                line.add(comment);
-            }
-            IOUtils.writeLines(line, null, txtOut, "UTF-8");
-            txtOut.close();
-        }
     }
 
     private String createIFrameAnswer(final Response.StatusType status, final String referer) {

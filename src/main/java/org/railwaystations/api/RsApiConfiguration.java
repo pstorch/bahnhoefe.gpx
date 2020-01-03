@@ -30,6 +30,8 @@ public class RsApiConfiguration extends Configuration {
 
     private String photoBaseUrl;
 
+    private String inboxBaseUrl;
+
     private String photoDir;
 
     @Valid
@@ -105,4 +107,11 @@ public class RsApiConfiguration extends Configuration {
         this.photoDir = photoDir;
     }
 
+    public String getInboxBaseUrl() {
+        return inboxBaseUrl;
+    }
+
+    public void setInboxBaseUrl(final String inboxBaseUrl) {
+        this.inboxBaseUrl = inboxBaseUrl;
+    }
 }
