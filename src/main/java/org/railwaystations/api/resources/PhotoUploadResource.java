@@ -161,14 +161,9 @@ public class PhotoUploadResource {
         return uploadStateQueries;
     }
 
-    private Response uploadPhoto(String userAgent, final InputStream body,
-                                 final String stationId,
-                                 final String country,
-                                 final String contentType,
-                                 final String stationTitle,
-                                 final Double latitude,
-                                 final Double longitude,
-                                 final String comment,
+    private Response uploadPhoto(final String userAgent, final InputStream body, final String stationId,
+                                 final String country, final String contentType, final String stationTitle,
+                                 final Double latitude, final Double longitude, final String comment,
                                  final AuthUser user) {
         final Station station = repository.findByCountryAndId(country, stationId);
         Coordinates coordinates = null;
@@ -178,7 +173,7 @@ public class PhotoUploadResource {
                 LOG.warn("Not enough data for missing station: title={}, latitude={}, longitude={}", stationTitle, latitude, longitude);
                 return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
             }
-            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
                 LOG.warn("Lat/Lon out of range: latitude={}, longitude={}", latitude, longitude);
                 return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
             }
@@ -191,37 +186,40 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
         }
 
-        final File uploadDir = new File(this.uploadDir, StringUtils.isNotBlank(country) ? country : MISSING);
-        final String filename = toFilename(uploadDir, station, user.getUser().getNormalizedName(), extension);
-        final boolean duplicate = station != null && isDuplicate(station, uploadDir, filename);
-        final File file = new File(uploadDir, filename);
-        LOG.info("Writing photo to {}", file);
+        final boolean duplicate = isDuplicate(station);
+        File file = null;
+        String inboxUrl = null;
         try {
+            final Integer id = uploadDao.insert(new Upload(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment));
+            final String filename = String.format("%d.%s", id, extension);
+            file = new File(uploadDir, filename);
+            LOG.info("Writing photo to {}", file);
+
             FileUtils.forceMkdir(uploadDir);
             final long bytesRead = IOUtils.copyLarge(body, new FileOutputStream(file), 0L, MAX_SIZE);
             if (bytesRead == MAX_SIZE) {
                 FileUtils.deleteQuietly(file);
                 return consumeBodyAndReturn(body, Response.Status.REQUEST_ENTITY_TOO_LARGE);
             }
-            uploadDao.insert(new Upload(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment));
             String duplicateInfo = "";
             if (duplicate) {
                 duplicateInfo = " (possible duplicate!)";
             }
+            inboxUrl = String.format("http://inbox.railway-stations.org/%s", URIUtil.encodePath(filename));
             if (station != null) {
-                monitor.sendMessage(String.format("New photo upload for %s%n%s%nhttp://inbox.railway-stations.org/%s/%s%s%nvia %s",
-                        station.getTitle(), StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo, userAgent));
+                monitor.sendMessage(String.format("New photo upload for %s%n%s%n%s%s%nvia %s",
+                        station.getTitle(), StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, userAgent));
             } else {
-                monitor.sendMessage(String.format("Photo upload for missing station %s at http://www.openstreetmap.org/?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%nhttp://inbox.railway-stations.org/%s/%s%s%nvia %s",
+                monitor.sendMessage(String.format("Photo upload for missing station %s at http://www.openstreetmap.org/?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%n%s%s%nvia %s",
                         stationTitle, latitude, longitude,
-                        StringUtils.trimToEmpty(comment), uploadDir.getName(), URIUtil.encodePath(filename), duplicateInfo, userAgent));
+                        StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, userAgent));
             }
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
             return consumeBodyAndReturn(body, Response.Status.INTERNAL_SERVER_ERROR);
         }
 
-        return duplicate ? Response.status(Response.Status.CONFLICT).build() : Response.accepted().build();
+        return duplicate ? Response.status(Response.Status.CONFLICT).header("Location", inboxUrl).build() : Response.accepted().header("Location", inboxUrl).build();
     }
 
     private String createIFrameAnswer(final Response.StatusType status, final String referer) {
@@ -230,29 +228,8 @@ public class PhotoUploadResource {
                "</script>";
     }
 
-    private String toFilename(final File uploadDir, final Station station, final String nickname, final String extension) {
-        if (station != null) {
-            return String.format("%s-%s.%s", nickname, station.getKey().getId(), extension);
-        }
-        for (int index = 1; index < 1024; index++) {
-            File file = new File(uploadDir, String.format("%s-%s.%s", nickname, index, extension));
-            if (!file.exists()) {
-                return file.getName();
-            }
-        }
-        throw new RuntimeException("More than 1024 missing photos from one nickname");
-    }
-
-    private boolean isDuplicate(final Station station, final File uploadCountryDir, final String filename) {
-        boolean duplicate = station.hasPhoto();
-        if (!duplicate) {
-            final File[] listFiles = uploadCountryDir.listFiles(pathname -> {
-                final String stationIdentifier = "-" + station.getKey().getId() + ".";
-                return pathname.getName().contains(stationIdentifier) && !pathname.getName().equals(filename);
-            });
-            duplicate = listFiles != null && listFiles.length > 0;
-        }
-        return duplicate;
+    private boolean isDuplicate(final Station station) {
+        return station != null && (station.hasPhoto() ||  uploadDao.countPendingUploadsForStation(station.getKey().getCountry(), station.getKey().getId()) > 0);
     }
 
     private Response consumeBodyAndReturn(final InputStream body, final Response.Status status) {

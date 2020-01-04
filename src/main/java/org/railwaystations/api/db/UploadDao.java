@@ -32,12 +32,15 @@ public interface UploadDao {
     @RegisterRowMapper(UploadMapper.class)
     Set<Station> all();
 
-    @SqlUpdate("insert into uploads (id, countryCode, stationId, title, lat, lon, photographerId, extension, uploadComment, done, createdAt) values (:id, :countryCode, :stationId, :title, :coordinates.lat, :coordinates.lon, :photographerId, :extension, :uploadComment, :done, :createdAt)")
+    @SqlUpdate("insert into uploads (countryCode, stationId, title, lat, lon, photographerId, extension, uploadComment, done, createdAt) values (:countryCode, :stationId, :title, :coordinates.lat, :coordinates.lon, :photographerId, :extension, :uploadComment, :done, :createdAt)")
     @GetGeneratedKeys("id")
     Integer insert(@BindBean final Upload upload);
 
     @SqlUpdate("update uploads set countryCode = :countryCode, stationId = :stationId, rejectReason = :rejectReason, done = :done where id = :id")
     void update(@BindBean final Upload upload);
+
+    @SqlQuery("select count(*) from uploads where countryCode = :countryCode and stationId = :stationId and done = false")
+    int countPendingUploadsForStation(final String countryCode, final String stationId);
 
     class UploadMapper implements RowMapper<Upload> {
 

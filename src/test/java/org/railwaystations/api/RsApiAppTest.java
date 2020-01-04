@@ -33,6 +33,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -410,7 +411,9 @@ public class RsApiAppTest {
                 .post(Entity.entity("IMAGE_CONTENT", "image/png"));
 
         assertThat(response.getStatus(), is(202));
-        final File pngFile = new File(MySuite.TMP_WORK_DIR + "/missing", "stefanopitz-1.png");
+        String location = response.getHeaderString("Location");
+        assertThat(location, notNullValue());
+        final File pngFile = new File(MySuite.TMP_WORK_DIR, new URL(location).getFile());
         assertThat(pngFile.exists(), is(true));
         assertThat(IOUtils.readFully(new FileInputStream(pngFile), 13), is("IMAGE_CONTENT".getBytes(Charset.defaultCharset())));
 

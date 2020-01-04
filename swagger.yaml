@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20191120.1830'
+  version: '20200104.2315'
   title: RSAPI
   license:
     name: MIT
@@ -312,12 +312,22 @@ paths:
       responses:
         '202':
           description: upload successful
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: The Location of the file in the inbox
         '400':
           description: wrong request
         '401':
           description: authorization failed
         '409':
           description: photo already exists
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: The Location of the file in the inbox
         '413':
           description: image too large (maximum 20 MB)
   /photoUpload/queryState:
