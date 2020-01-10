@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200104.2315'
+  version: '20200110.1915'
   title: RSAPI
   license:
     name: MIT
@@ -312,24 +312,24 @@ paths:
       responses:
         '202':
           description: upload successful
-          headers:
-            Location:
-              type: string
-              format: uri
-              description: The Location of the file in the inbox
+          schema:
+            $ref: '#/definitions/UploadResponse'
         '400':
           description: wrong request
+          schema:
+            $ref: '#/definitions/UploadResponse'
         '401':
           description: authorization failed
+          schema:
+            $ref: '#/definitions/UploadResponse'
         '409':
           description: photo already exists
-          headers:
-            Location:
-              type: string
-              format: uri
-              description: The Location of the file in the inbox
+          schema:
+            $ref: '#/definitions/UploadResponse'
         '413':
           description: image too large (maximum 20 MB)
+          schema:
+            $ref: '#/definitions/UploadResponse'
   /photoUpload/queryState:
     post:
       summary: Query the state of photo uploads
@@ -628,6 +628,21 @@ definitions:
       uploadToken:
         description: DEPRECATED! only filled in responses for verified Google IdToken registrations
         type: string
+  UploadResponse:
+    type: object
+    description: Response status of photo uploads
+    properties:
+      code:
+        type: number
+        format: integer
+      message:
+        type: string
+      uploadId:
+        type: number
+        format: integer
+      inboxUrl:
+        type: string
+        format: uri
   UploadStateQuery:
     type: object
     description: Upload state query

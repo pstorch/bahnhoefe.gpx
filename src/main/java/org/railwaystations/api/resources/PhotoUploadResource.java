@@ -1,6 +1,10 @@
 package org.railwaystations.api.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.auth.Auth;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -36,6 +40,8 @@ import java.util.Optional;
 public class PhotoUploadResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhotoUploadResource.class);
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final long MAX_SIZE = 20_000_000L;
     private static final String IMAGE_PNG = "image/png";
@@ -73,23 +79,22 @@ public class PhotoUploadResource {
                        @FormDataParam("comment") final String comment,
                        @FormDataParam("file") final InputStream file,
                        @FormDataParam("file") final FormDataContentDisposition fd,
-                       @HeaderParam("Referer") final String referer) {
+                       @HeaderParam("Referer") final String referer) throws JsonProcessingException {
         LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
 
         try {
             Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
             if (!authUser.isPresent()) {
-                final Response response = consumeBodyAndReturn(file, Response.Status.UNAUTHORIZED);
-                return createIFrameAnswer(response.getStatusInfo(), referer);
+                final UploadResponse response = consumeBodyAndReturn(file, new UploadResponse(Response.Status.UNAUTHORIZED));
+                return createIFrameAnswer(response, referer);
             }
 
             final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
-            final Response response = uploadPhoto(userAgent, file, stationId, countryCode, contentType, stationTitle, latitude, longitude, comment, authUser.get());
-
-            return createIFrameAnswer(response.getStatusInfo(), referer);
+            final UploadResponse response = uploadPhoto(userAgent, file, stationId, countryCode, contentType, stationTitle, latitude, longitude, comment, authUser.get());
+            return createIFrameAnswer(response, referer);
         } catch (final Exception e) {
             LOG.error("FormUpload error", e);
-            return createIFrameAnswer(Response.Status.INTERNAL_SERVER_ERROR, referer);
+            return createIFrameAnswer(new UploadResponse(Response.Status.INTERNAL_SERVER_ERROR), referer);
         }
     }
 
@@ -110,7 +115,8 @@ public class PhotoUploadResource {
         final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
         LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
-        return uploadPhoto(userAgent, body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
+        final UploadResponse uploadResponse = uploadPhoto(userAgent, body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
+        return Response.status(uploadResponse.getStatus()).entity(uploadResponse).build();
     }
 
     @POST
@@ -161,7 +167,7 @@ public class PhotoUploadResource {
         return uploadStateQueries;
     }
 
-    private Response uploadPhoto(final String userAgent, final InputStream body, final String stationId,
+    private UploadResponse uploadPhoto(final String userAgent, final InputStream body, final String stationId,
                                  final String country, final String contentType, final String stationTitle,
                                  final Double latitude, final Double longitude, final String comment,
                                  final AuthUser user) {
@@ -171,11 +177,11 @@ public class PhotoUploadResource {
             LOG.warn("Station not found");
             if (StringUtils.isBlank(stationTitle) || latitude == null || longitude == null) {
                 LOG.warn("Not enough data for missing station: title={}, latitude={}, longitude={}", stationTitle, latitude, longitude);
-                return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
+                return consumeBodyAndReturn(body, new UploadResponse(Response.Status.BAD_REQUEST, "Not enough data for missing station, at least 'title', 'latitude' and 'longitude' have to be provided"));
             }
             if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
                 LOG.warn("Lat/Lon out of range: latitude={}, longitude={}", latitude, longitude);
-                return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
+                return consumeBodyAndReturn(body, new UploadResponse(Response.Status.BAD_REQUEST, "'latitude' and/or 'longitude' out of range"));
             }
             coordinates = new Coordinates(latitude, longitude);
         }
@@ -183,14 +189,15 @@ public class PhotoUploadResource {
         final String extension = mimeToExtension(contentType);
         if (extension == null) {
             LOG.warn("Unknown contentType '{}'", contentType);
-            return consumeBodyAndReturn(body, Response.Status.BAD_REQUEST);
+            return consumeBodyAndReturn(body, new UploadResponse(Response.Status.BAD_REQUEST, "unsupported content type (only jpg and png are supported)"));
         }
 
         final boolean duplicate = isDuplicate(station);
         File file = null;
         String inboxUrl = null;
+        Integer id = null;
         try {
-            final Integer id = uploadDao.insert(new Upload(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment));
+            id = uploadDao.insert(new Upload(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment));
             final String filename = String.format("%d.%s", id, extension);
             file = new File(uploadDir, filename);
             LOG.info("Writing photo to {}", file);
@@ -199,7 +206,7 @@ public class PhotoUploadResource {
             final long bytesRead = IOUtils.copyLarge(body, new FileOutputStream(file), 0L, MAX_SIZE);
             if (bytesRead == MAX_SIZE) {
                 FileUtils.deleteQuietly(file);
-                return consumeBodyAndReturn(body, Response.Status.REQUEST_ENTITY_TOO_LARGE);
+                return consumeBodyAndReturn(body, new UploadResponse(Response.Status.REQUEST_ENTITY_TOO_LARGE, "Photo too large, max " + MAX_SIZE + " bytes allowed"));
             }
             String duplicateInfo = "";
             if (duplicate) {
@@ -216,15 +223,15 @@ public class PhotoUploadResource {
             }
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
-            return consumeBodyAndReturn(body, Response.Status.INTERNAL_SERVER_ERROR);
+            return consumeBodyAndReturn(body, new UploadResponse(Response.Status.INTERNAL_SERVER_ERROR));
         }
 
-        return duplicate ? Response.status(Response.Status.CONFLICT).header("Location", inboxUrl).build() : Response.accepted().header("Location", inboxUrl).build();
+        return new UploadResponse(duplicate ? Response.Status.CONFLICT : Response.Status.ACCEPTED, id, inboxUrl);
     }
 
-    private String createIFrameAnswer(final Response.StatusType status, final String referer) {
+    private String createIFrameAnswer(final UploadResponse response, final String referer) throws JsonProcessingException {
         return "<script language=\"javascript\" type=\"text/javascript\">" +
-               " window.top.window.postMessage('" + status.getStatusCode() + ": " + status.getReasonPhrase() + "', '" + referer + "');" +
+               " window.top.window.postMessage('" + MAPPER.writeValueAsString(response) + "', '" + referer + "');" +
                "</script>";
     }
 
@@ -232,7 +239,7 @@ public class PhotoUploadResource {
         return station != null && (station.hasPhoto() ||  uploadDao.countPendingUploadsForStation(station.getKey().getCountry(), station.getKey().getId()) > 0);
     }
 
-    private Response consumeBodyAndReturn(final InputStream body, final Response.Status status) {
+    private UploadResponse consumeBodyAndReturn(final InputStream body, final UploadResponse response) {
         if (body != null) {
             final InputStreamEntity inputStreamEntity = new InputStreamEntity(body);
             try {
@@ -241,7 +248,7 @@ public class PhotoUploadResource {
                 LOG.warn("Unable to consume body", e);
             }
         }
-        return Response.status(status).build();
+        return response;
     }
 
     private String mimeToExtension(final String contentType) {
@@ -250,6 +257,54 @@ public class PhotoUploadResource {
             case IMAGE_JPEG: return "jpg";
             default:
                 return null;
+        }
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class UploadResponse {
+        private final Response.Status status;
+        private final String message;
+        private final Integer uploadId;
+        private final String inboxUrl;
+
+        public UploadResponse(final Response.Status status, final String message, final Integer uploadId, final String inboxUrl) {
+            this.status = status;
+            this.message = message;
+            this.uploadId = uploadId;
+            this.inboxUrl = inboxUrl;
+        }
+
+        public UploadResponse(final Response.Status status, final String message) {
+            this(status, message, null, null);
+        }
+
+        public UploadResponse(Response.Status status) {
+            this(status, status.getReasonPhrase());
+        }
+
+        public UploadResponse(final Response.Status status, final Integer id, final String inboxUrl) {
+            this(status, status.getReasonPhrase(), id, inboxUrl);
+        }
+
+        @JsonIgnore
+        public Response.Status getStatus() {
+            return status;
+        }
+
+        public int getCode() {
+            return status.getStatusCode();
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Integer getUploadId() {
+            return uploadId;
+        }
+
+        public String getInboxUrl() {
+            return inboxUrl;
         }
     }
 

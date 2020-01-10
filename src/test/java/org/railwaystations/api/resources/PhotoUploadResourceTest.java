@@ -26,6 +26,7 @@ import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
@@ -63,22 +64,25 @@ public class PhotoUploadResourceTest {
         resource = new PhotoUploadResource(repository, tempDir.toString(), monitor, null, uploadDao);
     }
 
-    private Response whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
-                                   final String stationTitle, final Double latitude, final Double longitude, final String comment) throws UnsupportedEncodingException {
+    private PhotoUploadResource.UploadResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
+                                                             final String stationTitle, final Double latitude, final Double longitude, final String comment) throws UnsupportedEncodingException {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
-        return resource.post(is, "UserAgent", stationId, country, "image/jpeg",
+        final Response response = resource.post(is, "UserAgent", stationId, country, "image/jpeg",
                 stationTitle, latitude, longitude, comment,
                 new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false)));
+        return (PhotoUploadResource.UploadResponse) response.getEntity();
     }
 
     @Test
     public void testPost() throws IOException {
         ArgumentCaptor<Upload> uploadCaptor = ArgumentCaptor.forClass(Upload.class);
         when(uploadDao.insert(any())).thenReturn(1);
-        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, "Some Comment");
+        final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, "Some Comment");
 
-        assertThat(response.getStatus(), equalTo(202));
+        assertThat(response.getCode(), equalTo(202));
+        assertThat(response.getUploadId(), equalTo(1));
+        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/1.jpg"));
         assertFileWithContentExistsInInbox("image-content", "1.jpg");
         verify(uploadDao).insert(uploadCaptor.capture());
         assertUpload(uploadCaptor.getValue(), "de","4711", null, null);
@@ -106,9 +110,11 @@ public class PhotoUploadResourceTest {
     public void testPostMissingStation() throws IOException {
         when(uploadDao.insert(any())).thenReturn(4);
         ArgumentCaptor<Upload> uploadCaptor = ArgumentCaptor.forClass(Upload.class);
-        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", 50.9876d, 9.1234d, "Some Comment");
+        final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", 50.9876d, 9.1234d, "Some Comment");
 
-        assertThat(response.getStatus(), equalTo(202));
+        assertThat(response.getCode(), equalTo(202));
+        assertThat(response.getUploadId(), equalTo(4));
+        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/4.jpg"));
         assertFileWithContentExistsInInbox("image-content", "4.jpg");
         verify(uploadDao).insert(uploadCaptor.capture());
         assertUpload(uploadCaptor.getValue(), null,null, "Missing Station", new Coordinates(50.9876, 9.1234));
@@ -123,17 +129,21 @@ public class PhotoUploadResourceTest {
                 "50.9876d, 181d",
     })
     public void testPostMissingStationLatLonOutOfRange(final Double latitude, final Double longitude) throws IOException {
-        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", latitude, longitude, null);
+        final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", latitude, longitude, null);
 
-        assertThat(response.getStatus(), equalTo(400));
+        assertThat(response.getCode(), equalTo(400));
+        assertThat(response.getUploadId(), nullValue());
+        assertThat(response.getInboxUrl(), nullValue());
     }
 
     @Test
     public void testPostSomeUserWithTokenSalt() throws IOException {
         when(uploadDao.insert(any())).thenReturn(3);
-        final Response response = whenPostImage("image-content", "@someuser", 11, "someuser@example.com","4711", "de", null, null, null, null);
+        final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@someuser", 11, "someuser@example.com","4711", "de", null, null, null, null);
 
-        assertThat(response.getStatus(), equalTo(202));
+        assertThat(response.getCode(), equalTo(202));
+        assertThat(response.getUploadId(), equalTo(3));
+        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/3.jpg"));
         assertFileWithContentExistsInInbox("image-content", "3.jpg");
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/3.jpg\nvia UserAgent"));
     }
@@ -143,9 +153,11 @@ public class PhotoUploadResourceTest {
         when(uploadDao.insert(any())).thenReturn(2);
         when(uploadDao.countPendingUploadsForStation("de", "4711")).thenReturn(1);
 
-        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, null);
+        final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, null);
 
-        assertThat(response.getStatus(), equalTo(409));
+        assertThat(response.getCode(), equalTo(409));
+        assertThat(response.getUploadId(), equalTo(2));
+        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/2.jpg"));
         assertFileWithContentExistsInInbox("image-content", "2.jpg");
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/2.jpg (possible duplicate!)\nvia UserAgent"));
     }
@@ -195,19 +207,24 @@ public class PhotoUploadResourceTest {
     @Test
     public void testPostDuplicate() throws IOException {
         when(uploadDao.insert(any())).thenReturn(5);
-        final Response response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","1234", "de", null, null, null, null);
+        final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","1234", "de", null, null, null, null);
 
-        assertThat(response.getStatus(), equalTo(409));
+        assertThat(response.getCode(), equalTo(409));
+        assertThat(response.getUploadId(), equalTo(5));
+        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/5.jpg"));
         assertFileWithContentExistsInInbox("image-content", "5.jpg");
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Neverland\n\nhttp://inbox.railway-stations.org/5.jpg (possible duplicate!)\nvia UserAgent"));
     }
 
     @Test
-    public void testPostInvalidCountry() throws UnsupportedEncodingException {
+    public void testPostInvalidCountry() throws IOException {
         final Response response = resource.post(null, "UserAgent", "4711", "xy", "image/jpeg",
                 null, null, null, null,
                 new AuthUser(new User("nickname", "nickname@example.com", "CC0", true, null, false)));
-        assertThat(response.getStatus(), equalTo(400));
+        final PhotoUploadResource.UploadResponse uploadResponse = (PhotoUploadResource.UploadResponse) response.getEntity();
+        assertThat(uploadResponse.getCode(), equalTo(400));
+        assertThat(uploadResponse.getUploadId(), nullValue());
+        assertThat(uploadResponse.getInboxUrl(), nullValue());
     }
 
 }

@@ -411,19 +411,12 @@ public class RsApiAppTest {
                 .post(Entity.entity("IMAGE_CONTENT", "image/png"));
 
         assertThat(response.getStatus(), is(202));
-        String location = response.getHeaderString("Location");
-        assertThat(location, notNullValue());
-        final File pngFile = new File(MySuite.TMP_WORK_DIR, new URL(location).getFile());
+        JsonNode uploadResponse = MAPPER.readTree((InputStream) response.getEntity());
+        assertThat(uploadResponse.get("uploadId"), notNullValue());
+        assertThat(uploadResponse.get("inboxUrl"), notNullValue());
+        final File pngFile = new File(MySuite.TMP_WORK_DIR, new URL(uploadResponse.get("inboxUrl").asText()).getFile());
         assertThat(pngFile.exists(), is(true));
         assertThat(IOUtils.readFully(new FileInputStream(pngFile), 13), is("IMAGE_CONTENT".getBytes(Charset.defaultCharset())));
-
-        /* TODO: replace with validation of new Response message
-        final File txtFile = new File(MySuite.TMP_WORK_DIR + "/missing", "stefanopitz-1.png.txt");
-        List<String> textLines = IOUtils.readLines(new FileInputStream(txtFile), StandardCharsets.UTF_8);
-        assertThat(textLines.get(0), is("Achères-Grand-Cormier"));
-        assertThat(textLines.get(1), is("50.123,10.123"));
-        assertThat(textLines.get(2), is("Missing Station"));
-         */
     }
 
     @Test
