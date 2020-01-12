@@ -9,7 +9,6 @@ import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.railwaystations.api.model.Coordinates;
-import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Upload;
 
 import java.sql.ResultSet;
@@ -22,15 +21,15 @@ public interface UploadDao {
 
     @SqlQuery(JOIN_QUERY + " where u.id = :id")
     @RegisterRowMapper(UploadMapper.class)
-    Set<Station> findById(@BindList("id") final int id);
+    Upload findById(@BindList("id") final int id);
 
     @SqlQuery(JOIN_QUERY + " where u.done = false")
     @RegisterRowMapper(UploadMapper.class)
-    Set<Station> findOpenUploads();
+    Set<Upload> findOpenUploads();
 
     @SqlQuery(JOIN_QUERY)
     @RegisterRowMapper(UploadMapper.class)
-    Set<Station> all();
+    Set<Upload> all();
 
     @SqlUpdate("insert into uploads (countryCode, stationId, title, lat, lon, photographerId, extension, uploadComment, done, createdAt) values (:countryCode, :stationId, :title, :coordinates.lat, :coordinates.lon, :photographerId, :extension, :uploadComment, :done, :createdAt)")
     @GetGeneratedKeys("id")
@@ -39,8 +38,8 @@ public interface UploadDao {
     @SqlUpdate("update uploads set countryCode = :countryCode, stationId = :stationId, rejectReason = :rejectReason, done = :done where id = :id")
     void update(@BindBean final Upload upload);
 
-    @SqlQuery("select count(*) from uploads where countryCode = :countryCode and stationId = :stationId and done = false")
-    int countPendingUploadsForStation(final String countryCode, final String stationId);
+    @SqlQuery("select count(*) from uploads where countryCode = :countryCode and stationId = :stationId and done = false and photographerId != :photographerId")
+    int countPendingUploadsForStationOfOtherUser(final String countryCode, final String stationId, final int photographerId);
 
     class UploadMapper implements RowMapper<Upload> {
 
@@ -65,13 +64,13 @@ public interface UploadDao {
             }
             boolean done = rs.getBoolean("done");
             String extension = rs.getString("extension");
-            String photoUrl = null;
+            String inboxUrl = null;
             if (!done) {
-                photoUrl = inboxBaseUrl + "/" + id + extension;
+                inboxUrl = inboxBaseUrl + "/" + id + extension;
             }
             return new Upload(id, rs.getString("countryCode"), rs.getString("stationId"), title,
                     coordinates, rs.getInt("photographerId"), rs.getString("photographerNickname"),
-                    extension, photoUrl, rs.getString("uploadComment"), rs.getString("rejectReason"),
+                    extension, inboxUrl, rs.getString("uploadComment"), rs.getString("rejectReason"),
                     rs.getLong("createdAt"), done, null);
         }
 

@@ -1,6 +1,5 @@
 package org.railwaystations.api.resources;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,6 +21,7 @@ import org.railwaystations.api.db.UploadDao;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Upload;
+import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,6 @@ public class PhotoUploadResource {
     private static final long MAX_SIZE = 20_000_000L;
     private static final String IMAGE_PNG = "image/png";
     private static final String IMAGE_JPEG = "image/jpeg";
-    private static final String MISSING = "missing";
 
     private final StationsRepository repository;
     private final File uploadDir;
@@ -83,9 +82,9 @@ public class PhotoUploadResource {
         LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
 
         try {
-            Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
+            final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
             if (!authUser.isPresent()) {
-                final UploadResponse response = consumeBodyAndReturn(file, new UploadResponse(Response.Status.UNAUTHORIZED));
+                final UploadResponse response = consumeBodyAndReturn(file, new UploadResponse(UploadResponse.UploadResponseState.UNAUTHORIZED));
                 return createIFrameAnswer(response, referer);
             }
 
@@ -94,7 +93,7 @@ public class PhotoUploadResource {
             return createIFrameAnswer(response, referer);
         } catch (final Exception e) {
             LOG.error("FormUpload error", e);
-            return createIFrameAnswer(new UploadResponse(Response.Status.INTERNAL_SERVER_ERROR), referer);
+            return createIFrameAnswer(new UploadResponse(UploadResponse.UploadResponseState.ERROR), referer);
         }
     }
 
@@ -116,7 +115,7 @@ public class PhotoUploadResource {
         LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
         final UploadResponse uploadResponse = uploadPhoto(userAgent, body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
-        return Response.status(uploadResponse.getStatus()).entity(uploadResponse).build();
+        return Response.status(uploadResponse.getState().responseStatus).entity(uploadResponse).build();
     }
 
     @POST
@@ -126,39 +125,40 @@ public class PhotoUploadResource {
     public List<UploadStateQuery> queryState(@NotNull final List<UploadStateQuery> uploadStateQueries, @Auth final AuthUser user) {
         LOG.info("Query uploadStatus for Nickname: {}", user.getName());
 
-        final String nickname = user.getUser().getNormalizedName();
         for (final UploadStateQuery uploadStateQuery : uploadStateQueries) {
-            uploadStateQuery.state = UploadStateQuery.UploadStateState.UNKNOWN;
-            final Station station = repository.findByCountryAndId(uploadStateQuery.countryCode, uploadStateQuery.id);
-            if (station != null) {
-                final File[] listFiles = new File(uploadDir, uploadStateQuery.countryCode).listFiles(pathname -> {
-                    final String stationIdentifier = nickname + "-" + station.getKey().getId() + ".";
-                    return pathname.getName().startsWith(stationIdentifier);
-                });
-                if (listFiles != null && listFiles.length > 0) {
-                    uploadStateQuery.state = UploadStateQuery.UploadStateState.IN_REVIEW;
-                } else if (station.hasPhoto()) {
-                    if (station.getPhotographer().equals(user.getUser().getDisplayName())) {
-                        uploadStateQuery.state = UploadStateQuery.UploadStateState.ACCEPTED;
+            uploadStateQuery.state = UploadStateQuery.UploadState.UNKNOWN;
+            if (uploadStateQuery.uploadId != null) {
+                final Upload upload = uploadDao.findById(uploadStateQuery.uploadId);
+                if (upload != null && upload.getPhotographerId() == user.getUser().getId()) {
+                    uploadStateQuery.rejectedReason = upload.getRejectReason();
+                    uploadStateQuery.countryCode = upload.getCountryCode();
+                    uploadStateQuery.stationId = upload.getStationId();
+                    uploadStateQuery.lat = upload.getCoordinates().getLat();
+                    uploadStateQuery.lon = upload.getCoordinates().getLon();
+                    uploadStateQuery.inboxUrl = upload.getInboxUrl();
+
+                    if (upload.getDone()) {
+                        if (upload.getRejectReason() == null) {
+                            uploadStateQuery.state = UploadStateQuery.UploadState.ACCEPTED;
+                        } else {
+                            uploadStateQuery.state = UploadStateQuery.UploadState.REJECTED;
+                        }
                     } else {
-                        uploadStateQuery.state = UploadStateQuery.UploadStateState.OTHER_USER;
+                        if (hasConflict(repository.findByCountryAndId(uploadStateQuery.countryCode, uploadStateQuery.stationId), user.getUser())) {
+                            uploadStateQuery.state = UploadStateQuery.UploadState.CONFLICT;
+                        } else {
+                            uploadStateQuery.state = UploadStateQuery.UploadState.REVIEW;
+                        }
                     }
                 }
-            } else if (uploadStateQuery.lat != null && uploadStateQuery.lon != null) {
-                final File[] listFiles = new File(uploadDir, MISSING).listFiles(pathname -> pathname.getName().startsWith(nickname));
-                final String coords = uploadStateQuery.lat + "," + uploadStateQuery.lon;
-                if (listFiles != null) {
-                    for (final File imageFile : listFiles) {
-                        final File txtFile = new File(imageFile.getParent(), imageFile.getName() + ".txt");
-                        if (txtFile.exists()) {
-                            try {
-                                if (FileUtils.readLines(txtFile, "UTF-8").stream().anyMatch(line -> line.contains(coords))) {
-                                    uploadStateQuery.state = UploadStateQuery.UploadStateState.IN_REVIEW;
-                                }
-                            } catch (IOException e) {
-                                LOG.error("Couldn't read text file {}", txtFile, e);
-                            }
-                        }
+            } else {
+                // legacy upload, try to find station
+                final Station station = repository.findByCountryAndId(uploadStateQuery.countryCode, uploadStateQuery.stationId);
+                if (station != null && station.hasPhoto()) {
+                    if (station.getPhotographerId() == user.getUser().getId()) {
+                        uploadStateQuery.state = UploadStateQuery.UploadState.ACCEPTED;
+                    } else {
+                        uploadStateQuery.state = UploadStateQuery.UploadState.OTHER_USER;
                     }
                 }
             }
@@ -177,11 +177,11 @@ public class PhotoUploadResource {
             LOG.warn("Station not found");
             if (StringUtils.isBlank(stationTitle) || latitude == null || longitude == null) {
                 LOG.warn("Not enough data for missing station: title={}, latitude={}, longitude={}", stationTitle, latitude, longitude);
-                return consumeBodyAndReturn(body, new UploadResponse(Response.Status.BAD_REQUEST, "Not enough data for missing station, at least 'title', 'latitude' and 'longitude' have to be provided"));
+                return consumeBodyAndReturn(body, new UploadResponse(UploadResponse.UploadResponseState.NOT_ENOUGH_DATA, "Not enough data: either 'country' and 'stationId' or 'title', 'latitude' and 'longitude' have to be provided"));
             }
             if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
                 LOG.warn("Lat/Lon out of range: latitude={}, longitude={}", latitude, longitude);
-                return consumeBodyAndReturn(body, new UploadResponse(Response.Status.BAD_REQUEST, "'latitude' and/or 'longitude' out of range"));
+                return consumeBodyAndReturn(body, new UploadResponse(UploadResponse.UploadResponseState.LAT_LON_OUT_OF_RANGE, "'latitude' and/or 'longitude' out of range"));
             }
             coordinates = new Coordinates(latitude, longitude);
         }
@@ -189,10 +189,10 @@ public class PhotoUploadResource {
         final String extension = mimeToExtension(contentType);
         if (extension == null) {
             LOG.warn("Unknown contentType '{}'", contentType);
-            return consumeBodyAndReturn(body, new UploadResponse(Response.Status.BAD_REQUEST, "unsupported content type (only jpg and png are supported)"));
+            return consumeBodyAndReturn(body, new UploadResponse(UploadResponse.UploadResponseState.UNSUPPORTED_CONTENT_TYPE, "unsupported content type (only jpg and png are supported)"));
         }
 
-        final boolean duplicate = isDuplicate(station);
+        final boolean duplicate = hasConflict(station, user.getUser());
         File file = null;
         String inboxUrl = null;
         Integer id = null;
@@ -206,7 +206,7 @@ public class PhotoUploadResource {
             final long bytesRead = IOUtils.copyLarge(body, new FileOutputStream(file), 0L, MAX_SIZE);
             if (bytesRead == MAX_SIZE) {
                 FileUtils.deleteQuietly(file);
-                return consumeBodyAndReturn(body, new UploadResponse(Response.Status.REQUEST_ENTITY_TOO_LARGE, "Photo too large, max " + MAX_SIZE + " bytes allowed"));
+                return consumeBodyAndReturn(body, new UploadResponse(UploadResponse.UploadResponseState.PHOTO_TOO_LARGE, "Photo too large, max " + MAX_SIZE + " bytes allowed"));
             }
             String duplicateInfo = "";
             if (duplicate) {
@@ -223,10 +223,10 @@ public class PhotoUploadResource {
             }
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
-            return consumeBodyAndReturn(body, new UploadResponse(Response.Status.INTERNAL_SERVER_ERROR));
+            return consumeBodyAndReturn(body, new UploadResponse(UploadResponse.UploadResponseState.ERROR));
         }
 
-        return new UploadResponse(duplicate ? Response.Status.CONFLICT : Response.Status.ACCEPTED, id, inboxUrl);
+        return new UploadResponse(duplicate ? UploadResponse.UploadResponseState.CONFLICT : UploadResponse.UploadResponseState.REVIEW, id, inboxUrl);
     }
 
     private String createIFrameAnswer(final UploadResponse response, final String referer) throws JsonProcessingException {
@@ -235,8 +235,14 @@ public class PhotoUploadResource {
                "</script>";
     }
 
-    private boolean isDuplicate(final Station station) {
-        return station != null && (station.hasPhoto() ||  uploadDao.countPendingUploadsForStation(station.getKey().getCountry(), station.getKey().getId()) > 0);
+    private boolean hasConflict(final Station station, final User user) {
+        if (station == null) {
+            return false;
+        }
+        if (station.hasPhoto() && station.getPhotographerId() != user.getId()) {
+            return true;
+        }
+        return uploadDao.countPendingUploadsForStationOfOtherUser(station.getKey().getCountry(), station.getKey().getId(), user.getId()) > 0;
     }
 
     private UploadResponse consumeBodyAndReturn(final InputStream body, final UploadResponse response) {
@@ -262,37 +268,32 @@ public class PhotoUploadResource {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class UploadResponse {
-        private final Response.Status status;
+        private final UploadResponseState state;
         private final String message;
         private final Integer uploadId;
         private final String inboxUrl;
 
-        public UploadResponse(final Response.Status status, final String message, final Integer uploadId, final String inboxUrl) {
-            this.status = status;
+        public UploadResponse(final UploadResponseState state, final String message, final Integer uploadId, final String inboxUrl) {
+            this.state = state;
             this.message = message;
             this.uploadId = uploadId;
             this.inboxUrl = inboxUrl;
         }
 
-        public UploadResponse(final Response.Status status, final String message) {
-            this(status, message, null, null);
+        public UploadResponse(final UploadResponseState state, final String message) {
+            this(state, message, null, null);
         }
 
-        public UploadResponse(Response.Status status) {
-            this(status, status.getReasonPhrase());
+        public UploadResponse(final UploadResponseState state) {
+            this(state, state.responseStatus.getReasonPhrase());
         }
 
-        public UploadResponse(final Response.Status status, final Integer id, final String inboxUrl) {
-            this(status, status.getReasonPhrase(), id, inboxUrl);
+        public UploadResponse(final UploadResponseState state, final Integer id, final String inboxUrl) {
+            this(state, state.responseStatus.getReasonPhrase(), id, inboxUrl);
         }
 
-        @JsonIgnore
-        public Response.Status getStatus() {
-            return status;
-        }
-
-        public int getCode() {
-            return status.getStatusCode();
+        public UploadResponseState getState() {
+            return state;
         }
 
         public String getMessage() {
@@ -306,33 +307,57 @@ public class PhotoUploadResource {
         public String getInboxUrl() {
             return inboxUrl;
         }
+
+        public enum UploadResponseState {
+            REVIEW(Response.Status.ACCEPTED),
+            LAT_LON_OUT_OF_RANGE(Response.Status.BAD_REQUEST),
+            NOT_ENOUGH_DATA(Response.Status.BAD_REQUEST),
+            UNSUPPORTED_CONTENT_TYPE(Response.Status.BAD_REQUEST),
+            PHOTO_TOO_LARGE(Response.Status.REQUEST_ENTITY_TOO_LARGE),
+            CONFLICT(Response.Status.CONFLICT),
+            UNAUTHORIZED(Response.Status.UNAUTHORIZED),
+            ERROR(Response.Status.INTERNAL_SERVER_ERROR);
+
+            final Response.Status responseStatus;
+
+            UploadResponseState(Response.Status responseStatus) {
+                this.responseStatus = responseStatus;
+            }
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class UploadStateQuery {
+        private Integer uploadId;
         private String countryCode;
-        private String id;
+        private String stationId;
         private Double lat;
         private Double lon;
-        private UploadStateState state = UploadStateState.UNKNOWN;
+        private UploadState state = UploadState.UNKNOWN;
+        private String rejectedReason;
+        private String inboxUrl;
 
         public UploadStateQuery() {
         }
 
-        public UploadStateQuery(String countryCode, String id, Double lat, Double lon) {
+        public UploadStateQuery(final Integer uploadId, final String countryCode, final String stationId, final Double lat, final Double lon, final String rejectedReason, final String inboxUrl) {
             super();
+            this.uploadId = uploadId;
             this.countryCode = countryCode;
-            this.id = id;
+            this.stationId = stationId;
             this.lat = lat;
             this.lon = lon;
+            this.rejectedReason = rejectedReason;
+            this.inboxUrl = inboxUrl;
         }
 
         public String getCountryCode() {
             return countryCode;
         }
 
-        public String getId() {
-            return id;
+        public String getStationId() {
+            return stationId;
         }
 
         public Double getLat() {
@@ -343,14 +368,28 @@ public class PhotoUploadResource {
             return lon;
         }
 
-        public UploadStateState getState() {
+        public UploadState getState() {
             return state;
         }
 
-        public enum UploadStateState {
+        public Integer getUploadId() {
+            return uploadId;
+        }
+
+        public String getRejectedReason() {
+            return rejectedReason;
+        }
+
+        public String getInboxUrl() {
+            return inboxUrl;
+        }
+
+        public enum UploadState {
             UNKNOWN,
-            IN_REVIEW,
+            REVIEW,
+            CONFLICT,
             ACCEPTED,
+            REJECTED,
             OTHER_USER;
         }
 

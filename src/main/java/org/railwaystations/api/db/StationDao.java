@@ -19,7 +19,7 @@ import java.util.Set;
 
 public interface StationDao {
 
-    String JOIN_QUERY = "select s.countryCode, s.id, s.DS100, s.title, s.lat, s.lon, s.active, p.url, p.license, p.createdAt, u.name, u.url as photographerUrl, u.license as photographerLicense, u.anonymous from stations s left join photos p on p.countryCode = s.countryCode and p.id = s.id left join users u on u.id = p.photographerId";
+    String JOIN_QUERY = "select s.countryCode, s.id, s.DS100, s.title, s.lat, s.lon, s.active, p.url, p.license, p.createdAt, u.id as photographerId, u.name, u.url as photographerUrl, u.license as photographerLicense, u.anonymous from stations s left join photos p on p.countryCode = s.countryCode and p.id = s.id left join users u on u.id = p.photographerId";
 
     @SqlQuery(JOIN_QUERY + " where s.countryCode in (<countryCodes>)")
     @RegisterRowMapper(StationMapper.class)
@@ -32,6 +32,10 @@ public interface StationDao {
     @SqlQuery(JOIN_QUERY + " where (s.countryCode = :countryCode or :countryCode is null) and s.id = :id")
     @RegisterRowMapper(StationMapper.class)
     Set<Station> findByKey(@Bind("countryCode") final String countryCode, @Bind("id") final String id);
+
+    @SqlQuery(JOIN_QUERY + " where s.id = :id")
+    @RegisterRowMapper(StationMapper.class)
+    Set<Station> findById(@Bind("id") final String id);
 
     @SqlQuery("select count(*) stations, count(p.url) photos, count(distinct p.photographerId) photographers from stations s left join photos p on p.countryCode = s.countryCode and p.id = s.id where s.countryCode = :countryCode or :countryCode is null")
     @RegisterRowMapper(StatisticMapper.class)
@@ -61,7 +65,7 @@ public interface StationDao {
             final String photoUrl = rs.getString("url");
             Photo photo = null;
             if (photoUrl != null) {
-                final User photographer = new User(rs.getString("name"), rs.getString("photographerUrl"), rs.getString("photographerLicense"), rs.getBoolean("anonymous"));
+                final User photographer = new User(rs.getString("name"), rs.getString("photographerUrl"), rs.getString("photographerLicense"), rs.getInt("photographerId"), rs.getBoolean("anonymous"));
                 photo = new Photo(key, photoBaseUrl + photoUrl, photographer, rs.getLong("createdAt"), rs.getString("license"));
             }
             return new Station(key, rs.getString("title"),
@@ -73,7 +77,7 @@ public interface StationDao {
 
     class StatisticMapper implements RowMapper<Statistic> {
         @Override
-        public Statistic map(ResultSet rs, StatementContext ctx) throws SQLException {
+        public Statistic map(final ResultSet rs, final StatementContext ctx) throws SQLException {
             return new Statistic(rs.getInt("stations"), rs.getInt("photos"), rs.getInt("photographers"));
         }
     }

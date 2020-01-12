@@ -1,7 +1,6 @@
 package org.railwaystations.api.resources;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,12 +40,17 @@ public class PhotoUploadResourceTest {
 
     @BeforeEach
     public void setUp() throws IOException {
+        final Station.Key key0815 = new Station.Key("ch", "0815");
+        final Station station0815 = new Station(key0815, "Station 0815", new Coordinates(40.1, 7.0), "LAL", new Photo(key0815, "URL", new User("Jim Knopf", "photographerUrl", "CC0", 18, false), null, "CC0"), true);
         final Station.Key key4711 = new Station.Key("de", "4711");
         final Station station4711 = new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null, true);
         final Station.Key key1234 = new Station.Key("de", "1234");
         final Station station1234 = new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0"), true);
         final Station.Key key5678 = new Station.Key("de", "5678");
         final Station station5678 = new Station(key5678, "Phantasia", new Coordinates(51.0, 10.0), "DEF", new Photo(key5678, "URL", new User("nickname", "photographerUrl", "CC0"), null, "CC0"), true);
+        final Station.Key key9876 = new Station.Key("de", "9876");
+        final Station station9876 = new Station(key9876, "Station 9876", new Coordinates(52.0, 8.0), "EFF", new Photo(key9876, "URL", new User("nickname", "photographerUrl", "CC0", 42, false), null, "CC0"), true);
+
         final UserDao userDao = mock(UserDao.class);
         final User userNickname = new User("nickname", "nickname@example.com", "CC0", true, null, true);
         when(userDao.findByEmail("nickname@example.com")).thenReturn(Optional.of(userNickname));
@@ -60,6 +64,8 @@ public class PhotoUploadResourceTest {
         when(repository.findByCountryAndId(key4711.getCountry(), key4711.getId())).thenReturn(station4711);
         when(repository.findByCountryAndId(key1234.getCountry(), key1234.getId())).thenReturn(station1234);
         when(repository.findByCountryAndId(key5678.getCountry(), key5678.getId())).thenReturn(station5678);
+        when(repository.findByCountryAndId(key0815.getCountry(), key0815.getId())).thenReturn(station0815);
+        when(repository.findByCountryAndId(key9876.getCountry(), key9876.getId())).thenReturn(station9876);
 
         resource = new PhotoUploadResource(repository, tempDir.toString(), monitor, null, uploadDao);
     }
@@ -80,7 +86,7 @@ public class PhotoUploadResourceTest {
         when(uploadDao.insert(any())).thenReturn(1);
         final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, "Some Comment");
 
-        assertThat(response.getCode(), equalTo(202));
+        assertThat(response.getState(), equalTo(PhotoUploadResource.UploadResponse.UploadResponseState.REVIEW));
         assertThat(response.getUploadId(), equalTo(1));
         assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/1.jpg"));
         assertFileWithContentExistsInInbox("image-content", "1.jpg");
@@ -112,7 +118,7 @@ public class PhotoUploadResourceTest {
         ArgumentCaptor<Upload> uploadCaptor = ArgumentCaptor.forClass(Upload.class);
         final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", 50.9876d, 9.1234d, "Some Comment");
 
-        assertThat(response.getCode(), equalTo(202));
+        assertThat(response.getState(), equalTo(PhotoUploadResource.UploadResponse.UploadResponseState.REVIEW));
         assertThat(response.getUploadId(), equalTo(4));
         assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/4.jpg"));
         assertFileWithContentExistsInInbox("image-content", "4.jpg");
@@ -131,7 +137,7 @@ public class PhotoUploadResourceTest {
     public void testPostMissingStationLatLonOutOfRange(final Double latitude, final Double longitude) throws IOException {
         final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", latitude, longitude, null);
 
-        assertThat(response.getCode(), equalTo(400));
+        assertThat(response.getState(), equalTo(PhotoUploadResource.UploadResponse.UploadResponseState.LAT_LON_OUT_OF_RANGE));
         assertThat(response.getUploadId(), nullValue());
         assertThat(response.getInboxUrl(), nullValue());
     }
@@ -141,7 +147,7 @@ public class PhotoUploadResourceTest {
         when(uploadDao.insert(any())).thenReturn(3);
         final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@someuser", 11, "someuser@example.com","4711", "de", null, null, null, null);
 
-        assertThat(response.getCode(), equalTo(202));
+        assertThat(response.getState(), equalTo(PhotoUploadResource.UploadResponse.UploadResponseState.REVIEW));
         assertThat(response.getUploadId(), equalTo(3));
         assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/3.jpg"));
         assertFileWithContentExistsInInbox("image-content", "3.jpg");
@@ -151,11 +157,11 @@ public class PhotoUploadResourceTest {
     @Test
     public void testPostDuplicateInbox() throws IOException {
         when(uploadDao.insert(any())).thenReturn(2);
-        when(uploadDao.countPendingUploadsForStation("de", "4711")).thenReturn(1);
+        when(uploadDao.countPendingUploadsForStationOfOtherUser("de", "4711", 42)).thenReturn(1);
 
         final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, null);
 
-        assertThat(response.getCode(), equalTo(409));
+        assertThat(response.getState(), equalTo(PhotoUploadResource.UploadResponse.UploadResponseState.CONFLICT));
         assertThat(response.getUploadId(), equalTo(2));
         assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/2.jpg"));
         assertFileWithContentExistsInInbox("image-content", "2.jpg");
@@ -164,25 +170,32 @@ public class PhotoUploadResourceTest {
 
     @Test
     public void testQueryState() throws IOException {
-        givenFileExistsInInbox("de/nickname-4711.jpg");
-        givenFileExistsInInbox("ch/othernick-0815.jpg");
-        givenFileExistsInInbox("missing/nickname-1.jpg");
-        givenFileExistsInInbox("missing/nickname-1.jpg.txt", "Missing Station\n50.9876,9.1234\nSome Comment");
+        final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false);
+
+        when(uploadDao.findById(1)).thenReturn(new Upload(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", "https://inbox.railway-stations.org/1.jpg", null, null, 0l, false, null));
+        when(uploadDao.findById(2)).thenReturn(new Upload(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, true, null));
+        when(uploadDao.findById(3)).thenReturn(new Upload(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, "rejected", 0l, true, null));
+        when(uploadDao.findById(4)).thenReturn(new Upload(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, false, null));
 
         final List<PhotoUploadResource.UploadStateQuery> uploadStateQueries = new ArrayList<>();
-        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery("de", "4711", null, null));
-        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery("de", "1234", null, null));
-        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery("de", "5678", null, null));
-        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery("ch", "0815", null, null));
-        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery(null, null, 50.9876, 9.1234));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery(1, "de", "4711", null, null, null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery(null,"ch", "0815", null, null, null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery(2, "de", "1234", null, null, null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery(3, "de", "5678", null, null, null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery(null,null, null, 50.9876, 9.1234, null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery(null,"de", "9876", null, null, null, null));
+        uploadStateQueries.add(new PhotoUploadResource.UploadStateQuery(4,"ch", "0815", null, null, null, null));
 
-        final List<PhotoUploadResource.UploadStateQuery> uploadStateQueriesResult = resource.queryState(uploadStateQueries, new AuthUser(new User("nickname", "nickname@example.com", "CC0", true, null, false)));
+        final List<PhotoUploadResource.UploadStateQuery> uploadStateQueriesResult = resource.queryState(uploadStateQueries, new AuthUser(user));
 
-        assertThat(uploadStateQueriesResult.get(0).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.IN_REVIEW));
-        assertThat(uploadStateQueriesResult.get(1).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.OTHER_USER));
-        assertThat(uploadStateQueriesResult.get(2).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.ACCEPTED));
-        assertThat(uploadStateQueriesResult.get(3).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.UNKNOWN));
-        assertThat(uploadStateQueriesResult.get(4).getState(), is(PhotoUploadResource.UploadStateQuery.UploadStateState.IN_REVIEW));
+        assertThat(uploadStateQueriesResult.get(0).getState(), is(PhotoUploadResource.UploadStateQuery.UploadState.REVIEW));
+        assertThat(uploadStateQueriesResult.get(0).getInboxUrl(), is("https://inbox.railway-stations.org/1.jpg"));
+        assertThat(uploadStateQueriesResult.get(1).getState(), is(PhotoUploadResource.UploadStateQuery.UploadState.OTHER_USER));
+        assertThat(uploadStateQueriesResult.get(2).getState(), is(PhotoUploadResource.UploadStateQuery.UploadState.ACCEPTED));
+        assertThat(uploadStateQueriesResult.get(3).getState(), is(PhotoUploadResource.UploadStateQuery.UploadState.REJECTED));
+        assertThat(uploadStateQueriesResult.get(4).getState(), is(PhotoUploadResource.UploadStateQuery.UploadState.UNKNOWN));
+        assertThat(uploadStateQueriesResult.get(5).getState(), is(PhotoUploadResource.UploadStateQuery.UploadState.ACCEPTED));
+        assertThat(uploadStateQueriesResult.get(6).getState(), is(PhotoUploadResource.UploadStateQuery.UploadState.CONFLICT));
     }
 
     private void assertFileWithContentExistsInInbox(final String content, final String filename) throws IOException {
@@ -195,21 +208,12 @@ public class PhotoUploadResourceTest {
         assertThat(outputBytes, equalTo(inputBytes));
     }
 
-    private void givenFileExistsInInbox(final String filename) throws IOException {
-        givenFileExistsInInbox(filename, "dummy");
-    }
-
-    private void givenFileExistsInInbox(final String filename, final String content) throws IOException {
-        final File existing = new File(tempDir.toFile(), filename);
-        FileUtils.write(existing, content, "UTF-8");
-    }
-
     @Test
     public void testPostDuplicate() throws IOException {
         when(uploadDao.insert(any())).thenReturn(5);
         final PhotoUploadResource.UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","1234", "de", null, null, null, null);
 
-        assertThat(response.getCode(), equalTo(409));
+        assertThat(response.getState(), equalTo(PhotoUploadResource.UploadResponse.UploadResponseState.CONFLICT));
         assertThat(response.getUploadId(), equalTo(5));
         assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/5.jpg"));
         assertFileWithContentExistsInInbox("image-content", "5.jpg");
@@ -222,7 +226,7 @@ public class PhotoUploadResourceTest {
                 null, null, null, null,
                 new AuthUser(new User("nickname", "nickname@example.com", "CC0", true, null, false)));
         final PhotoUploadResource.UploadResponse uploadResponse = (PhotoUploadResource.UploadResponse) response.getEntity();
-        assertThat(uploadResponse.getCode(), equalTo(400));
+        assertThat(uploadResponse.getState(), equalTo(PhotoUploadResource.UploadResponse.UploadResponseState.NOT_ENOUGH_DATA));
         assertThat(uploadResponse.getUploadId(), nullValue());
         assertThat(uploadResponse.getInboxUrl(), nullValue());
     }

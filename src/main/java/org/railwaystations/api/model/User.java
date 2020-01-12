@@ -101,8 +101,8 @@ public class User {
         this(name, url, license, 0, null, true, false, null, null, false);
     }
 
-    public User(final String name, final String url, final String license, final boolean anonymous) {
-        this(name, url, license, 0, null, true, anonymous, null, null, false);
+    public User(final String name, final String url, final String license, final int id, final boolean anonymous) {
+        this(name, url, license, id, null, true, anonymous, null, null, false);
     }
 
     public static Map<String, User> toNameMap(final List<User> list) {

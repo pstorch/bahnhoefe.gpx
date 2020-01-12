@@ -31,7 +31,7 @@ public class Upload {
     private final String extension;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final String photoUrl;
+    private final String inboxUrl;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private final String uploadComment;
@@ -53,7 +53,7 @@ public class Upload {
      */
     public Upload(final int id, final String countryCode, final String stationId, final String title,
                   final Coordinates coordinates, final int photographerId, final String photographerNickname,
-                  final String extension, final String photoUrl, final String uploadComment, final String rejectReason,
+                  final String extension, final String inboxUrl, final String uploadComment, final String rejectReason,
                   final Long createdAt, final boolean done, final Command command) {
         this.id = id;
         this.countryCode = countryCode;
@@ -63,7 +63,7 @@ public class Upload {
         this.photographerId = photographerId;
         this.photographerNickname = photographerNickname;
         this.extension = extension;
-        this.photoUrl = photoUrl;
+        this.inboxUrl = inboxUrl;
         this.uploadComment = uploadComment;
         this.rejectReason = rejectReason;
         this.createdAt = createdAt;
@@ -118,8 +118,8 @@ public class Upload {
         return photographerNickname;
     }
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public String getInboxUrl() {
+        return inboxUrl;
     }
 
     public String getUploadComment() {

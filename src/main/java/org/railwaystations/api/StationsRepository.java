@@ -60,11 +60,18 @@ public class StationsRepository {
     }
 
     public Station findByCountryAndId(final String country, final String stationId) {
-        if (StringUtils.isBlank(country) || StringUtils.isBlank(stationId)) {
+        if (StringUtils.isBlank(stationId)) {
             return null;
         }
-        final Station.Key key = new Station.Key(country, stationId);
-        return findByKey(key);
+        if (StringUtils.isNotBlank(country)) {
+            final Station.Key key = new Station.Key(country, stationId);
+            return findByKey(key);
+        }
+        Set<Station> stations = stationDao.findById(stationId);
+        if (stations.size() > 1) {
+            return null; // id is not unique
+        }
+        return stations.stream().findFirst().orElse(null);
     }
 
     public Station findByKey(final Station.Key key) {

@@ -1,6 +1,7 @@
 package org.railwaystations.api.model;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
@@ -19,6 +20,9 @@ public class Station {
 
     @JsonUnwrapped
     private final Coordinates coordinates;
+
+    @JsonIgnore
+    private int photographerId;
 
     @JsonProperty
     private String photographer;
@@ -66,9 +70,11 @@ public class Station {
         if (photo != null) {
             final User user = photo.getPhotographer();
             if (user != null) {
+                this.photographerId = user.getId();
                 this.photographer = user.getDisplayName();
                 this.photographerUrl = user.getDisplayUrl();
             } else {
+                this.photographerId = 0;
                 this.photographer = "-";
                 this.photographerUrl = "";
             }
@@ -79,6 +85,7 @@ public class Station {
             this.photographerUrl = photo.getPhotographer().getDisplayUrl();
             this.createdAt = photo.getCreatedAt();
         } else {
+            this.photographerId = 0;
             this.photographer = null;
             this.photoUrl = null;
             this.license = null;
@@ -165,6 +172,10 @@ public class Station {
 
     public boolean isActive() {
         return active;
+    }
+
+    public int getPhotographerId() {
+        return photographerId;
     }
 
     @SuppressWarnings("PMD.ShortClassName")

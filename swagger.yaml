@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200110.1915'
+  version: '20200112.2145'
   title: RSAPI
   license:
     name: MIT
@@ -632,9 +632,16 @@ definitions:
     type: object
     description: Response status of photo uploads
     properties:
-      code:
-        type: number
-        format: integer
+      state:
+        enum:
+          - REVIEW
+          - LAT_LON_OUT_OF_RANGE
+          - NOT_ENOUGH_DATA
+          - UNSUPPORTED_CONTENT_TYPE
+          - PHOTO_TOO_LARGE
+          - CONFLICT
+          - UNAUTHORIZED
+          - ERROR
       message:
         type: string
       uploadId:
@@ -647,19 +654,28 @@ definitions:
     type: object
     description: Upload state query
     properties:
+      uploadId:
+        type: integer
       countryCode:
         type: string
-      id:
-        type: string
+      stationId:
+        type: number
+        format: integer
       lat:
         type: number
         format: double
       lon:
         type: number
         format: double
+      rejectedReason:
+        type: string
+      inboxUrl:
+        type: string
       state:
         enum:
           - UNKNOWN
-          - IN_REVIEW
+          - REVIEW
+          - CONFLICT
           - ACCEPTED
+          - REJECTED
           - OTHER_USER
