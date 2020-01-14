@@ -3,6 +3,7 @@ package org.railwaystations.api.db;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
+import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
 import org.jdbi.v3.sqlobject.customizer.BindList;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
@@ -25,13 +26,13 @@ public interface UploadDao {
 
     @SqlQuery(JOIN_QUERY + " where u.done = false")
     @RegisterRowMapper(UploadMapper.class)
-    Set<Upload> findOpenUploads();
+    Set<Upload> findPendingUploads();
 
     @SqlQuery(JOIN_QUERY)
     @RegisterRowMapper(UploadMapper.class)
     Set<Upload> all();
 
-    @SqlUpdate("insert into uploads (countryCode, stationId, title, lat, lon, photographerId, extension, uploadComment, done, createdAt) values (:countryCode, :stationId, :title, :coordinates.lat, :coordinates.lon, :photographerId, :extension, :uploadComment, :done, :createdAt)")
+    @SqlUpdate("insert into uploads (countryCode, stationId, title, lat, lon, photographerId, extension, uploadComment, done, createdAt) values (:countryCode, :stationId, :title, :coordinates?.lat, :coordinates?.lon, :photographerId, :extension, :uploadComment, :done, :createdAt)")
     @GetGeneratedKeys("id")
     Integer insert(@BindBean final Upload upload);
 
@@ -39,7 +40,7 @@ public interface UploadDao {
     void update(@BindBean final Upload upload);
 
     @SqlQuery("select count(*) from uploads where countryCode = :countryCode and stationId = :stationId and done = false and photographerId != :photographerId")
-    int countPendingUploadsForStationOfOtherUser(final String countryCode, final String stationId, final int photographerId);
+    int countPendingUploadsForStationOfOtherUser(@Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId, @Bind("photographerId") final int photographerId);
 
     class UploadMapper implements RowMapper<Upload> {
 

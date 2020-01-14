@@ -1,7 +1,5 @@
 package org.railwaystations.api.resources;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.auth.Auth;
@@ -18,10 +16,7 @@ import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.auth.UploadTokenAuthenticator;
 import org.railwaystations.api.auth.UploadTokenCredentials;
 import org.railwaystations.api.db.UploadDao;
-import org.railwaystations.api.model.Coordinates;
-import org.railwaystations.api.model.Station;
-import org.railwaystations.api.model.Upload;
-import org.railwaystations.api.model.User;
+import org.railwaystations.api.model.*;
 import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +30,9 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-@Path("/photoUpload")
+@Path("/")
 public class PhotoUploadResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhotoUploadResource.class);
@@ -66,6 +62,7 @@ public class PhotoUploadResource {
      * Supports upload of photos via the website.
      */
     @POST
+    @Path("photoUpload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public String post(@HeaderParam("User-Agent") final String userAgent,
                        @FormDataParam("email") final String email,
@@ -98,6 +95,7 @@ public class PhotoUploadResource {
     }
 
     @POST
+    @Path("photoUpload")
     @Consumes({IMAGE_PNG, IMAGE_JPEG})
     @Produces(MediaType.APPLICATION_JSON)
     public Response post(final InputStream body,
@@ -115,62 +113,71 @@ public class PhotoUploadResource {
         LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
         final UploadResponse uploadResponse = uploadPhoto(userAgent, body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
-        return Response.status(uploadResponse.getState().responseStatus).entity(uploadResponse).build();
+        return Response.status(uploadResponse.getState().getResponseStatus()).entity(uploadResponse).build();
     }
 
     @POST
-    @Path("queryState")
+    @Path("photoUpload/queryState")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<UploadStateQuery> queryState(@NotNull final List<UploadStateQuery> uploadStateQueries, @Auth final AuthUser user) {
+    public List<UploadStateQuery> queryState(@NotNull final List<UploadStateQuery> queries, @Auth final AuthUser user) {
         LOG.info("Query uploadStatus for Nickname: {}", user.getName());
 
-        for (final UploadStateQuery uploadStateQuery : uploadStateQueries) {
-            uploadStateQuery.state = UploadStateQuery.UploadState.UNKNOWN;
-            if (uploadStateQuery.uploadId != null) {
-                final Upload upload = uploadDao.findById(uploadStateQuery.uploadId);
+        for (final UploadStateQuery query : queries) {
+            query.setState(UploadStateQuery.UploadState.UNKNOWN);
+            if (query.getUploadId() != null) {
+                final Upload upload = uploadDao.findById(query.getUploadId());
                 if (upload != null && upload.getPhotographerId() == user.getUser().getId()) {
-                    uploadStateQuery.rejectedReason = upload.getRejectReason();
-                    uploadStateQuery.countryCode = upload.getCountryCode();
-                    uploadStateQuery.stationId = upload.getStationId();
-                    uploadStateQuery.lat = upload.getCoordinates().getLat();
-                    uploadStateQuery.lon = upload.getCoordinates().getLon();
-                    uploadStateQuery.inboxUrl = upload.getInboxUrl();
+                    query.setRejectedReason(upload.getRejectReason());
+                    query.setCountryCode(upload.getCountryCode());
+                    query.setStationId(upload.getStationId());
+                    query.setCoordinates(upload.getCoordinates());
+                    query.setInboxUrl(upload.getInboxUrl());
 
                     if (upload.getDone()) {
                         if (upload.getRejectReason() == null) {
-                            uploadStateQuery.state = UploadStateQuery.UploadState.ACCEPTED;
+                            query.setState(UploadStateQuery.UploadState.ACCEPTED);
                         } else {
-                            uploadStateQuery.state = UploadStateQuery.UploadState.REJECTED;
+                            query.setState(UploadStateQuery.UploadState.REJECTED);
                         }
                     } else {
-                        if (hasConflict(repository.findByCountryAndId(uploadStateQuery.countryCode, uploadStateQuery.stationId), user.getUser())) {
-                            uploadStateQuery.state = UploadStateQuery.UploadState.CONFLICT;
+                        if (hasConflict(repository.findByCountryAndId(query.getCountryCode(), query.getStationId()), user.getUser())) {
+                            query.setState(UploadStateQuery.UploadState.CONFLICT);
                         } else {
-                            uploadStateQuery.state = UploadStateQuery.UploadState.REVIEW;
+                            query.setState(UploadStateQuery.UploadState.REVIEW);
                         }
                     }
                 }
             } else {
                 // legacy upload, try to find station
-                final Station station = repository.findByCountryAndId(uploadStateQuery.countryCode, uploadStateQuery.stationId);
+                final Station station = repository.findByCountryAndId(query.getCountryCode(), query.getStationId());
                 if (station != null && station.hasPhoto()) {
                     if (station.getPhotographerId() == user.getUser().getId()) {
-                        uploadStateQuery.state = UploadStateQuery.UploadState.ACCEPTED;
+                        query.setState(UploadStateQuery.UploadState.ACCEPTED);
                     } else {
-                        uploadStateQuery.state = UploadStateQuery.UploadState.OTHER_USER;
+                        query.setState(UploadStateQuery.UploadState.OTHER_USER);
                     }
                 }
             }
         }
 
-        return uploadStateQueries;
+        return queries;
+    }
+
+    @GET
+    @Path("photoUpload/uploads")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Set<Upload> uploads(@Auth final AuthUser user) {
+        if (!user.getUser().isAdmin()) {
+            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+        }
+        return uploadDao.findPendingUploads();
     }
 
     private UploadResponse uploadPhoto(final String userAgent, final InputStream body, final String stationId,
-                                 final String country, final String contentType, final String stationTitle,
-                                 final Double latitude, final Double longitude, final String comment,
-                                 final AuthUser user) {
+                                       final String country, final String contentType, final String stationTitle,
+                                       final Double latitude, final Double longitude, final String comment,
+                                       final AuthUser user) {
         final Station station = repository.findByCountryAndId(country, stationId);
         Coordinates coordinates = null;
         if (station == null) {
@@ -231,8 +238,8 @@ public class PhotoUploadResource {
 
     private String createIFrameAnswer(final UploadResponse response, final String referer) throws JsonProcessingException {
         return "<script language=\"javascript\" type=\"text/javascript\">" +
-               " window.top.window.postMessage('" + MAPPER.writeValueAsString(response) + "', '" + referer + "');" +
-               "</script>";
+                " window.top.window.postMessage('" + MAPPER.writeValueAsString(response) + "', '" + referer + "');" +
+                "</script>";
     }
 
     private boolean hasConflict(final Station station, final User user) {
@@ -259,139 +266,13 @@ public class PhotoUploadResource {
 
     private String mimeToExtension(final String contentType) {
         switch (contentType) {
-            case IMAGE_PNG: return "png";
-            case IMAGE_JPEG: return "jpg";
+            case IMAGE_PNG:
+                return "png";
+            case IMAGE_JPEG:
+                return "jpg";
             default:
                 return null;
         }
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class UploadResponse {
-        private final UploadResponseState state;
-        private final String message;
-        private final Integer uploadId;
-        private final String inboxUrl;
-
-        public UploadResponse(final UploadResponseState state, final String message, final Integer uploadId, final String inboxUrl) {
-            this.state = state;
-            this.message = message;
-            this.uploadId = uploadId;
-            this.inboxUrl = inboxUrl;
-        }
-
-        public UploadResponse(final UploadResponseState state, final String message) {
-            this(state, message, null, null);
-        }
-
-        public UploadResponse(final UploadResponseState state) {
-            this(state, state.responseStatus.getReasonPhrase());
-        }
-
-        public UploadResponse(final UploadResponseState state, final Integer id, final String inboxUrl) {
-            this(state, state.responseStatus.getReasonPhrase(), id, inboxUrl);
-        }
-
-        public UploadResponseState getState() {
-            return state;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public Integer getUploadId() {
-            return uploadId;
-        }
-
-        public String getInboxUrl() {
-            return inboxUrl;
-        }
-
-        public enum UploadResponseState {
-            REVIEW(Response.Status.ACCEPTED),
-            LAT_LON_OUT_OF_RANGE(Response.Status.BAD_REQUEST),
-            NOT_ENOUGH_DATA(Response.Status.BAD_REQUEST),
-            UNSUPPORTED_CONTENT_TYPE(Response.Status.BAD_REQUEST),
-            PHOTO_TOO_LARGE(Response.Status.REQUEST_ENTITY_TOO_LARGE),
-            CONFLICT(Response.Status.CONFLICT),
-            UNAUTHORIZED(Response.Status.UNAUTHORIZED),
-            ERROR(Response.Status.INTERNAL_SERVER_ERROR);
-
-            final Response.Status responseStatus;
-
-            UploadResponseState(Response.Status responseStatus) {
-                this.responseStatus = responseStatus;
-            }
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class UploadStateQuery {
-        private Integer uploadId;
-        private String countryCode;
-        private String stationId;
-        private Double lat;
-        private Double lon;
-        private UploadState state = UploadState.UNKNOWN;
-        private String rejectedReason;
-        private String inboxUrl;
-
-        public UploadStateQuery() {
-        }
-
-        public UploadStateQuery(final Integer uploadId, final String countryCode, final String stationId, final Double lat, final Double lon, final String rejectedReason, final String inboxUrl) {
-            super();
-            this.uploadId = uploadId;
-            this.countryCode = countryCode;
-            this.stationId = stationId;
-            this.lat = lat;
-            this.lon = lon;
-            this.rejectedReason = rejectedReason;
-            this.inboxUrl = inboxUrl;
-        }
-
-        public String getCountryCode() {
-            return countryCode;
-        }
-
-        public String getStationId() {
-            return stationId;
-        }
-
-        public Double getLat() {
-            return lat;
-        }
-
-        public Double getLon() {
-            return lon;
-        }
-
-        public UploadState getState() {
-            return state;
-        }
-
-        public Integer getUploadId() {
-            return uploadId;
-        }
-
-        public String getRejectedReason() {
-            return rejectedReason;
-        }
-
-        public String getInboxUrl() {
-            return inboxUrl;
-        }
-
-        public enum UploadState {
-            UNKNOWN,
-            REVIEW,
-            CONFLICT,
-            ACCEPTED,
-            REJECTED,
-            OTHER_USER;
-        }
-
-    }
 }
