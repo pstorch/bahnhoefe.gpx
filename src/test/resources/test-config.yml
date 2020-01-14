@@ -11,4 +11,5 @@ salt: ${SALT:-dummy}
 mailer:
   "@class": org.railwaystations.api.mail.MockMailer
 photoBaseUrl: https://fotos.railway-stations.org
+inboxBaseUrl: https://inbox.railway-stations.org
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

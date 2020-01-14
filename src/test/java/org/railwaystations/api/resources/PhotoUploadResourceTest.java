@@ -67,7 +67,7 @@ public class PhotoUploadResourceTest {
         when(repository.findByCountryAndId(key0815.getCountry(), key0815.getId())).thenReturn(station0815);
         when(repository.findByCountryAndId(key9876.getCountry(), key9876.getId())).thenReturn(station9876);
 
-        resource = new PhotoUploadResource(repository, tempDir.toString(), monitor, null, uploadDao);
+        resource = new PhotoUploadResource(repository, tempDir.toString(), monitor, null, uploadDao, "http://inbox.railway-stations.org");
     }
 
     private UploadResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,

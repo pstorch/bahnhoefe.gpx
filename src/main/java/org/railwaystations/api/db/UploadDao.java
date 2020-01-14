@@ -67,7 +67,7 @@ public interface UploadDao {
             String extension = rs.getString("extension");
             String inboxUrl = null;
             if (!done) {
-                inboxUrl = inboxBaseUrl + "/" + id + extension;
+                inboxUrl = inboxBaseUrl + "/" + id + "." + extension;
             }
             return new Upload(id, rs.getString("countryCode"), rs.getString("stationId"), title,
                     coordinates, rs.getInt("photographerId"), rs.getString("photographerNickname"),

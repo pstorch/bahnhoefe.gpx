@@ -48,13 +48,15 @@ public class PhotoUploadResource {
     private final Monitor monitor;
     private final UploadTokenAuthenticator authenticator;
     private final UploadDao uploadDao;
+    private final String inboxBaseUrl;
 
-    public PhotoUploadResource(final StationsRepository repository, final String uploadDir, final Monitor monitor, final UploadTokenAuthenticator authenticator, final UploadDao uploadDao) {
+    public PhotoUploadResource(final StationsRepository repository, final String uploadDir, final Monitor monitor, final UploadTokenAuthenticator authenticator, final UploadDao uploadDao, final String inboxBaseUrl) {
         this.repository = repository;
         this.uploadDir = new File(uploadDir);
         this.monitor = monitor;
         this.authenticator = authenticator;
         this.uploadDao = uploadDao;
+        this.inboxBaseUrl = inboxBaseUrl;
     }
 
     /**
@@ -86,7 +88,7 @@ public class PhotoUploadResource {
             }
 
             final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
-            final UploadResponse response = uploadPhoto(userAgent, file, stationId, countryCode, contentType, stationTitle, latitude, longitude, comment, authUser.get());
+            final UploadResponse response = uploadPhoto(userAgent, file, StringUtils.trimToNull(stationId), StringUtils.trimToNull(countryCode), contentType, stationTitle, latitude, longitude, comment, authUser.get());
             return createIFrameAnswer(response, referer);
         } catch (final Exception e) {
             LOG.error("FormUpload error", e);
@@ -112,7 +114,7 @@ public class PhotoUploadResource {
         final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
         LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
-        final UploadResponse uploadResponse = uploadPhoto(userAgent, body, stationId, country, contentType, stationTitle, latitude, longitude, comment, user);
+        final UploadResponse uploadResponse = uploadPhoto(userAgent, body, StringUtils.trimToNull(stationId), StringUtils.trimToNull(country), contentType, stationTitle, latitude, longitude, comment, user);
         return Response.status(uploadResponse.getState().getResponseStatus()).entity(uploadResponse).build();
     }
 
@@ -219,7 +221,7 @@ public class PhotoUploadResource {
             if (duplicate) {
                 duplicateInfo = " (possible duplicate!)";
             }
-            inboxUrl = String.format("http://inbox.railway-stations.org/%s", URIUtil.encodePath(filename));
+            inboxUrl = inboxBaseUrl + "/" + URIUtil.encodePath(filename);
             if (station != null) {
                 monitor.sendMessage(String.format("New photo upload for %s%n%s%n%s%s%nvia %s",
                         station.getTitle(), StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, userAgent));
