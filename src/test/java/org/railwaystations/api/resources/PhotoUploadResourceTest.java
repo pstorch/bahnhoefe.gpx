@@ -172,10 +172,10 @@ public class PhotoUploadResourceTest {
     public void testQueryState() throws IOException {
         final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false);
 
-        when(uploadDao.findById(1)).thenReturn(new Upload(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", "https://inbox.railway-stations.org/1.jpg", null, null, 0l, false, null));
-        when(uploadDao.findById(2)).thenReturn(new Upload(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, true, null));
-        when(uploadDao.findById(3)).thenReturn(new Upload(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, "rejected", 0l, true, null));
-        when(uploadDao.findById(4)).thenReturn(new Upload(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, false, null));
+        when(uploadDao.findById(1)).thenReturn(new Upload(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", "https://inbox.railway-stations.org/1.jpg", null, null, 0l, false, null, false));
+        when(uploadDao.findById(2)).thenReturn(new Upload(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, true, null, false));
+        when(uploadDao.findById(3)).thenReturn(new Upload(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, "rejected", 0l, true, null, false));
+        when(uploadDao.findById(4)).thenReturn(new Upload(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, false, null, false));
 
         final List<UploadStateQuery> uploadStateQueries = new ArrayList<>();
         uploadStateQueries.add(new UploadStateQuery(1, "de", "4711", null, null, null));

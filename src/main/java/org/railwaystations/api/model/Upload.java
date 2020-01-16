@@ -48,13 +48,16 @@ public class Upload {
     @JsonProperty
     private final Command command;
 
+    @JsonProperty
+    private final boolean hasPhoto;
+
     /**
      * Constructor with all values from database
      */
     public Upload(final int id, final String countryCode, final String stationId, final String title,
                   final Coordinates coordinates, final int photographerId, final String photographerNickname,
                   final String extension, final String inboxUrl, final String uploadComment, final String rejectReason,
-                  final Long createdAt, final boolean done, final Command command) {
+                  final Long createdAt, final boolean done, final Command command, final boolean hasPhoto) {
         this.id = id;
         this.countryCode = countryCode;
         this.stationId = stationId;
@@ -69,6 +72,7 @@ public class Upload {
         this.createdAt = createdAt;
         this.done = done;
         this.command = command;
+        this.hasPhoto = hasPhoto;
     }
 
     /**
@@ -77,7 +81,7 @@ public class Upload {
     public Upload(final String countryCode, final String stationId, final String title,
                   final Coordinates coordinates, final int photographerId,
                   final String extension, final String uploadComment) {
-        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, null, uploadComment, null, System.currentTimeMillis(), false, null);
+        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, null, uploadComment, null, System.currentTimeMillis(), false, null, false);
     }
 
     /**
@@ -87,7 +91,7 @@ public class Upload {
                   @JsonProperty("stationId") final String stationId,
                   @JsonProperty("rejectReason") final String rejectReason,
                   @JsonProperty("command") final Command command) {
-        this(id, countryCode, stationId, null, null, 0, null, null, null, null, rejectReason, null, false, command);
+        this(id, countryCode, stationId, null, null, 0, null, null, null, null, rejectReason, null, false, command, false);
     }
 
     public String getCountryCode() {
@@ -144,6 +148,10 @@ public class Upload {
 
     public String getExtension() {
         return extension;
+    }
+
+    public boolean hasPhoto() {
+        return hasPhoto;
     }
 
     public enum Command {

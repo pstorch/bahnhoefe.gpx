@@ -20,10 +20,7 @@ import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.h2.H2DatabasePlugin;
-import org.railwaystations.api.auth.AuthUser;
-import org.railwaystations.api.auth.BasicAuthenticator;
-import org.railwaystations.api.auth.UploadTokenAuthFilter;
-import org.railwaystations.api.auth.UploadTokenAuthenticator;
+import org.railwaystations.api.auth.*;
 import org.railwaystations.api.db.*;
 import org.railwaystations.api.resources.*;
 import org.railwaystations.api.writer.PhotographersTxtWriter;
@@ -116,10 +113,12 @@ public class RsApiApp extends Application<RsApiConfiguration> {
     private UploadTokenAuthenticator registerAuthFilter(final RsApiConfiguration config, final Environment environment, final UserDao userDao) {
         final AuthFilter<BasicCredentials, AuthUser> basicCredentialAuthFilter = new BasicCredentialAuthFilter.Builder<AuthUser>()
                 .setAuthenticator(new BasicAuthenticator(userDao, config.getTokenGenerator()))
+                .setAuthorizer(new UserAuthorizer())
                 .setRealm("RSAPI").setPrefix("Basic").buildAuthFilter();
 
         final UploadTokenAuthenticator authenticator = new UploadTokenAuthenticator(userDao, config.getTokenGenerator());
         final UploadTokenAuthFilter<AuthUser> uploadTokenAuthFilter = new UploadTokenAuthFilter.Builder<AuthUser>()
+                .setAuthorizer(new UserAuthorizer())
                 .setAuthenticator(authenticator).setRealm("RSAPI").buildAuthFilter();
 
         final List<AuthFilter<?, AuthUser>> filters = Lists.newArrayList(basicCredentialAuthFilter, uploadTokenAuthFilter);

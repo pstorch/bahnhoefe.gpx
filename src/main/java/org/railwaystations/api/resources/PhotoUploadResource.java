@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.activation.MimetypesFileTypeMap;
+import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -30,7 +31,6 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Path("/")
 public class PhotoUploadResource {
@@ -167,9 +167,10 @@ public class PhotoUploadResource {
     }
 
     @GET
-    @Path("photoUpload/uploads")
+    @RolesAllowed("ADMIN")
+    @Path("photoUpload/inbox")
     @Produces(MediaType.APPLICATION_JSON)
-    public Set<Upload> uploads(@Auth final AuthUser user) {
+    public List<Upload> inbox(@Auth final AuthUser user) {
         if (!user.getUser().isAdmin()) {
             throw new WebApplicationException(Response.Status.UNAUTHORIZED);
         }

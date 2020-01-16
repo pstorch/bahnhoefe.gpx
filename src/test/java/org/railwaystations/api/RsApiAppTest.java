@@ -36,6 +36,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
@@ -148,7 +149,7 @@ public class RsApiAppTest {
     @Test
     public void stationsTxt() throws IOException {
         final Response response = loadRaw(String.format("/de/%s.txt", "stations"), 200);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), StandardCharsets.UTF_8))) {
             final String header = br.readLine();
             assertThat(header, is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
             int count = 0;
@@ -182,7 +183,7 @@ public class RsApiAppTest {
     private String readSaveStringEntity(final Response response) throws IOException {
         final byte[] buffer = new byte[16000];
         IOUtils.read((InputStream)response.getEntity(), buffer);
-        return new String(buffer, "UTF-8").trim();
+        return new String(buffer, StandardCharsets.UTF_8).trim();
     }
 
     private Station[] assertLoadStations(final String path, final int expectedStatus) {
@@ -237,7 +238,7 @@ public class RsApiAppTest {
     @Test
     public void photographersTxt() throws IOException {
         final Response response = loadRaw("/de/photographers.txt", 200);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), StandardCharsets.UTF_8))) {
             final String header = br.readLine();
             assertThat(header, is("count\tphotographer"));
             int count = 0;
@@ -281,7 +282,7 @@ public class RsApiAppTest {
         assertThat(getStation("/de/stations/5068").hasPhoto(), is(false));
 
         final File importFile = new File(MySuite.TMP_WORK_DIR, "de/import/Gaby Becker-5068.jpg");
-        FileUtils.write(importFile, "test", Charset.forName("UTF-8"));
+        FileUtils.write(importFile, "test", StandardCharsets.UTF_8);
 
         final String text = executeSlackCommand("import");
         assertThat(text, is("Importing photos"));
@@ -315,7 +316,7 @@ public class RsApiAppTest {
     @Test
     public void statisticTxt() throws IOException {
         final Response response = loadRaw("/de/stats.txt", 200);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), "UTF-8"))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), StandardCharsets.UTF_8))) {
             final String header = br.readLine();
             assertThat(header, is("name\tvalue"));
             int count = 0;
@@ -404,14 +405,14 @@ public class RsApiAppTest {
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload"))
                 .request()
                 .header("Authorization", getBasicAuthentication("@stefanopitz", "y89zFqkL6hro"))
-                .header("Station-Title", URLEncoder.encode("Achères-Grand-Cormier", "UTF-8"))
+                .header("Station-Title", URLEncoder.encode("Achères-Grand-Cormier", StandardCharsets.UTF_8.toString()))
                 .header("Latitude", "50.123")
                 .header("Longitude", "10.123")
                 .header("Comment", "Missing Station")
                 .post(Entity.entity("IMAGE_CONTENT", "image/png"));
 
         assertThat(response.getStatus(), is(202));
-        JsonNode uploadResponse = MAPPER.readTree((InputStream) response.getEntity());
+        final JsonNode uploadResponse = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(uploadResponse.get("uploadId"), notNullValue());
         assertThat(uploadResponse.get("inboxUrl"), notNullValue());
         final File pngFile = new File(MySuite.TMP_WORK_DIR, new URL(uploadResponse.get("inboxUrl").asText()).getFile());
@@ -482,7 +483,7 @@ public class RsApiAppTest {
     }
 
     @Test
-    public void getMyProfileWithBasicAuthPasswordFail() throws IOException {
+    public void getMyProfileWithBasicAuthPasswordFail() {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/myProfile"))
                 .request()
@@ -492,16 +493,46 @@ public class RsApiAppTest {
         assertThat(response.getStatus(), is(401));
     }
 
-    private String getBasicAuthentication(final String user, final String password) {
-        String token = user + ":" + password;
-        try {
-            return "BASIC " + DatatypeConverter.printBase64Binary(token.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            throw new IllegalStateException("Cannot encode with UTF-8", ex);
-        }
+    @Test
+    public void getInboxWithBasicAuthPasswordFail() {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload/inbox"))
+                .request()
+                .header("Authorization", getBasicAuthentication("@stefanopitz", "blahblubb"))
+                .get();
+
+        assertThat(response.getStatus(), is(401));
     }
 
-    private void assertProfile(final Response response, final String name, final String link, final String license, final boolean anonymous, String email) throws IOException {
+    @Test
+    public void getInboxWithBasicAuthNotAuthorized() {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload/inbox"))
+                .request()
+                .header("Authorization", getBasicAuthentication("@stefanopitz", "y89zFqkL6hro"))
+                .get();
+
+        assertThat(response.getStatus(), is(403));
+    }
+
+    @Test
+    public void getInboxWithBasicAuth() {
+        final Response response = client.target(
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload/inbox"))
+                .request()
+                .header("Authorization", getBasicAuthentication("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8"))
+                .get();
+
+        assertThat(response.getStatus(), is(200));
+        // TODO: assert response body
+    }
+
+    private String getBasicAuthentication(final String user, final String password) {
+        final String token = user + ":" + password;
+        return "BASIC " + DatatypeConverter.printBase64Binary(token.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private void assertProfile(final Response response, final String name, final String link, final String license, final boolean anonymous, final String email) throws IOException {
         final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(jsonNode.get("nickname").asText(), is(name));
         assertThat(jsonNode.get("email").asText(), is(email));
@@ -558,7 +589,7 @@ public class RsApiAppTest {
                 .request()
                 .header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
                 .header("Email", "storchp@example.com")
-                .header("New-Password", URLEncoder.encode("\uD83D\uDE0E-1234567890", "UTF-8"))
+                .header("New-Password", URLEncoder.encode("\uD83D\uDE0E-1234567890", StandardCharsets.UTF_8.toString()))
                 .post(null);
         assertThat(responseChangePassword.getStatus(), is(200));
 
@@ -588,7 +619,7 @@ public class RsApiAppTest {
         assertThat(jsonNode.isArray(), is(true));
         assertThat(jsonNode.size(), is(2));
 
-        JsonNode de = jsonNode.get(0);
+        final JsonNode de = jsonNode.get(0);
         assertThat(de.get("code").asText(), is("de"));
         assertThat(de.get("name").asText(), is("Deutschland"));
         assertThat(de.get("providerApps").size(), is(3));
@@ -596,7 +627,7 @@ public class RsApiAppTest {
         assertProviderApp(de, 1, "android", "FlixTrain", "https://play.google.com/store/apps/details?id=de.meinfernbus");
         assertProviderApp(de, 2, "ios", "DB Navigator", "https://apps.apple.com/app/db-navigator/id343555245");
 
-        JsonNode ch = jsonNode.get(1);
+        final JsonNode ch = jsonNode.get(1);
         assertThat(ch.get("code").asText(), is("ch"));
         assertThat(ch.get("name").asText(), is("Schweiz"));
         assertThat(ch.get("providerApps").size(), is(2));
@@ -614,7 +645,7 @@ public class RsApiAppTest {
     }
 
     private void assertProviderApp(final JsonNode de, final int i, final String type, final String name, final String url) {
-        JsonNode app = de.get("providerApps").get(i);
+        final JsonNode app = de.get("providerApps").get(i);
         assertThat(app.get("type").asText(), is(type));
         assertThat(app.get("name").asText(), is(name));
         assertThat(app.get("url").asText(), is(url));
