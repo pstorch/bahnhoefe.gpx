@@ -27,6 +27,7 @@ public class PhotoImporter {
     private static final Logger LOG = LoggerFactory.getLogger(PhotoImporter.class);
     private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-([A-Z\\d]+).jpe?g", Pattern.CASE_INSENSITIVE);
     private static final Executor EXECUTOR = Executors.newSingleThreadExecutor();
+    public static final String JPG = "jpg";
 
     private final StationsRepository repository;
     private final UserDao userDao;
@@ -121,7 +122,7 @@ public class PhotoImporter {
                     report.add(new ReportEntry(true, countryCode, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
                 }
-                final Photo photo = new Photo(new Station.Key(countryCode, stationId), "/fotos/" + countryCode + "/" + stationId + ".jpg", user.get(), System.currentTimeMillis(), getLicense(user.get().getLicense(), country));
+                final Photo photo = createPhoto(countryCode, country, stationId, user.get(), JPG);
                 photosToImport.put(importFile, photo);
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
@@ -154,7 +155,7 @@ public class PhotoImporter {
 
                 photoDao.insert(photo);
 
-                moveFile(importFile, countryDir, photo.getStationKey().getId());
+                moveFile(importFile, countryDir, photo.getStationKey().getId(), JPG);
                 LOG.info("Photo " + importFile.getAbsolutePath() + " imported");
                 importCount++;
 
@@ -169,19 +170,23 @@ public class PhotoImporter {
         LOG.info("Imported " + importCount + " for " + countryCode);
     }
 
+    public static Photo createPhoto(final String countryCode, final Optional<Country> country, final String stationId, final User user, final String extension) {
+        return new Photo(new Station.Key(countryCode, stationId), "/fotos/" + countryCode + "/" + stationId + "." + extension, user, System.currentTimeMillis(), getLicense(user.getLicense(), country));
+    }
+
     /**
      * Gets the applicable license for the given country.
      * We need to override the license for some countries, because of limitations of the "Freedom of panorama".
      */
-    private String getLicense(final String photographerLicense, final Optional<Country> country) {
+    public static String getLicense(final String photographerLicense, final Optional<Country> country) {
         if (country.isPresent() && StringUtils.isNotBlank(country.get().getOverrideLicense())) {
             return country.get().getOverrideLicense();
         }
         return photographerLicense;
     }
 
-    private void moveFile(final File importFile, final File countryDir, final String stationId) throws IOException {
-        FileUtils.moveFile(importFile, new File(countryDir, stationId + ".jpg"));
+    public static void moveFile(final File importFile, final File countryDir, final String stationId, final String extension) throws IOException {
+        FileUtils.moveFile(importFile, new File(countryDir, stationId + "." + extension));
     }
 
     public static final class ReportEntry {

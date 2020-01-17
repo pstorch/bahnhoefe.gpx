@@ -9,6 +9,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.auth.AuthUser;
+import org.railwaystations.api.db.CountryDao;
+import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.UploadDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.*;
@@ -35,6 +37,7 @@ public class PhotoUploadResourceTest {
     private final MockMonitor monitor = new MockMonitor();
 
     private Path tempDir;
+    private Path photoDir;
     private PhotoUploadResource resource;
     private UploadDao uploadDao = null;
 
@@ -58,8 +61,11 @@ public class PhotoUploadResourceTest {
         userSomeuser.setUploadTokenSalt(123456L);
         when(userDao.findByEmail("someuser@example.com")).thenReturn(Optional.of(userSomeuser));
         uploadDao = mock(UploadDao.class);
+        final CountryDao countryDao = mock(CountryDao.class);
+        final PhotoDao photoDao = mock(PhotoDao.class);
 
         tempDir = Files.createTempDirectory("rsapi");
+        photoDir = Files.createTempDirectory("rsapi-photos");
         final StationsRepository repository = mock(StationsRepository.class);
         when(repository.findByCountryAndId(key4711.getCountry(), key4711.getId())).thenReturn(station4711);
         when(repository.findByCountryAndId(key1234.getCountry(), key1234.getId())).thenReturn(station1234);
@@ -67,7 +73,7 @@ public class PhotoUploadResourceTest {
         when(repository.findByCountryAndId(key0815.getCountry(), key0815.getId())).thenReturn(station0815);
         when(repository.findByCountryAndId(key9876.getCountry(), key9876.getId())).thenReturn(station9876);
 
-        resource = new PhotoUploadResource(repository, tempDir.toString(), monitor, null, uploadDao, "http://inbox.railway-stations.org");
+        resource = new PhotoUploadResource(repository, tempDir.toString(), photoDir.toString(), monitor, null, uploadDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org");
     }
 
     private UploadResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
@@ -109,7 +115,7 @@ public class PhotoUploadResourceTest {
         } else {
             assertThat(upload.getCoordinates(), nullValue());
         }
-        assertThat(upload.getDone(), equalTo(false));
+        assertThat(upload.isDone(), equalTo(false));
     }
 
     @Test
@@ -172,10 +178,10 @@ public class PhotoUploadResourceTest {
     public void testQueryState() throws IOException {
         final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false);
 
-        when(uploadDao.findById(1)).thenReturn(new Upload(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", "https://inbox.railway-stations.org/1.jpg", null, null, 0l, false, null, false));
-        when(uploadDao.findById(2)).thenReturn(new Upload(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, true, null, false));
-        when(uploadDao.findById(3)).thenReturn(new Upload(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, "rejected", 0l, true, null, false));
-        when(uploadDao.findById(4)).thenReturn(new Upload(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, false, null, false));
+        when(uploadDao.findById(1)).thenReturn(new Upload(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", "https://inbox.railway-stations.org/1.jpg", null, null, 0l, false, null, false, false));
+        when(uploadDao.findById(2)).thenReturn(new Upload(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, true, null, false, false));
+        when(uploadDao.findById(3)).thenReturn(new Upload(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, "rejected", 0l, true, null, false, false));
+        when(uploadDao.findById(4)).thenReturn(new Upload(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, false, null, false, false));
 
         final List<UploadStateQuery> uploadStateQueries = new ArrayList<>();
         uploadStateQueries.add(new UploadStateQuery(1, "de", "4711", null, null, null));

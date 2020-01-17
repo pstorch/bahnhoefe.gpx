@@ -5,7 +5,6 @@ import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
-import org.jdbi.v3.sqlobject.customizer.BindList;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
@@ -19,11 +18,17 @@ import java.util.Set;
 
 public interface UploadDao {
 
-    String JOIN_QUERY = "select u.id, u.countryCode, u.stationId, u.title u_title, s.title s_title, u.lat u_lat, u.lon u_lon, s.lat s_lat, s.lon s_lon, u.photographerId, p.name photographerNickname, u.extension, u.uploadComment, u.rejectReason, u.createdAt, u.done, f.url from uploads u left join stations s on s.countryCode = u.countryCode and s.id = u.stationId left join users p on p.id = u.photographerId left join photos f on f.countryCode = u.countryCode and f.id = u.stationId";
+    String JOIN_QUERY = "select u.id, u.countryCode, u.stationId, u.title u_title, s.title s_title, u.lat u_lat, u.lon u_lon, s.lat s_lat, s.lon s_lon, "
+                    + "     u.photographerId, p.name photographerNickname, u.extension, u.uploadComment, u.rejectReason, u.createdAt, u.done, f.url, "
+                    + "     (select count(*) from uploads u2 where u2.countryCode is not null and u2.countryCode = u.countryCode "
+                    + "         and u2.stationId is not null and u2.stationId = u.stationId and u2.done = false and u2.id != u.id) as conflict"
+                    + " from uploads u left join stations s on s.countryCode = u.countryCode and s.id = u.stationId "
+                    + "     left join users p on p.id = u.photographerId "
+                    + "     left join photos f on f.countryCode = u.countryCode and f.id = u.stationId";
 
     @SqlQuery(JOIN_QUERY + " where u.id = :id")
     @RegisterRowMapper(UploadMapper.class)
-    Upload findById(@BindList("id") final int id);
+    Upload findById(@Bind("id") final int id);
 
     @SqlQuery(JOIN_QUERY + " where u.done = false order by id")
     @RegisterRowMapper(UploadMapper.class)
@@ -38,7 +43,7 @@ public interface UploadDao {
     Integer insert(@BindBean final Upload upload);
 
     @SqlUpdate("update uploads set countryCode = :countryCode, stationId = :stationId, rejectReason = :rejectReason, done = :done where id = :id")
-    void update(@BindBean final Upload upload);
+    void update(@Bind("id") final int id, @Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId, @Bind("rejectReason") final String rejectReason, @Bind("done") final boolean done);
 
     @SqlQuery("select count(*) from uploads where countryCode = :countryCode and stationId = :stationId and done = false and photographerId != :photographerId")
     int countPendingUploadsForStationOfOtherUser(@Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId, @Bind("photographerId") final int photographerId);
@@ -73,7 +78,8 @@ public interface UploadDao {
             return new Upload(id, rs.getString("countryCode"), rs.getString("stationId"), title,
                     coordinates, rs.getInt("photographerId"), rs.getString("photographerNickname"),
                     extension, inboxUrl, rs.getString("uploadComment"), rs.getString("rejectReason"),
-                    rs.getLong("createdAt"), done, null, rs.getString("url") != null);
+                    rs.getLong("createdAt"), done, null, rs.getString("url") != null,
+                    rs.getInt("conflict") > 0);
         }
 
     }

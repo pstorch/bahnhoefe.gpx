@@ -8,8 +8,10 @@ import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
 import org.jdbi.v3.sqlobject.config.ValueColumn;
 import org.jdbi.v3.sqlobject.customizer.Bind;
+import org.jdbi.v3.sqlobject.customizer.BindBean;
 import org.jdbi.v3.sqlobject.customizer.BindList;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
+import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.railwaystations.api.model.*;
 
 import java.sql.ResultSet;
@@ -51,6 +53,9 @@ public interface StationDao {
     @RegisterConstructorMapper(value = Station.Key.class, prefix = "s")
     @ValueColumn("title")
     Map<Station.Key, String> findByName(@Bind("name") final String name);
+
+    @SqlUpdate("insert into stations (countryCode, id, title, lat, lon, active) values (:key.country, :key.id, :title, :coordinates?.lat, :coordinates?.lon, :active)")
+    void insert(@BindBean final Station station);
 
     class StationMapper implements RowMapper<Station> {
 

@@ -82,4 +82,7 @@ public class StationsRepository {
         return stationDao.getPhotographerMap(country);
     }
 
+    public void insert(final Station station) {
+        stationDao.insert(station);
+    }
 }

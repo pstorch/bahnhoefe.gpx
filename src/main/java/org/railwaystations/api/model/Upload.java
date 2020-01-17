@@ -51,13 +51,17 @@ public class Upload {
     @JsonProperty
     private final boolean hasPhoto;
 
+    @JsonProperty("hasConflict")
+    private final boolean conflict;
+
     /**
      * Constructor with all values from database
      */
     public Upload(final int id, final String countryCode, final String stationId, final String title,
                   final Coordinates coordinates, final int photographerId, final String photographerNickname,
                   final String extension, final String inboxUrl, final String uploadComment, final String rejectReason,
-                  final Long createdAt, final boolean done, final Command command, final boolean hasPhoto) {
+                  final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
+                  final boolean conflict) {
         this.id = id;
         this.countryCode = countryCode;
         this.stationId = stationId;
@@ -73,6 +77,7 @@ public class Upload {
         this.done = done;
         this.command = command;
         this.hasPhoto = hasPhoto;
+        this.conflict = conflict;
     }
 
     /**
@@ -81,17 +86,18 @@ public class Upload {
     public Upload(final String countryCode, final String stationId, final String title,
                   final Coordinates coordinates, final int photographerId,
                   final String extension, final String uploadComment) {
-        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, null, uploadComment, null, System.currentTimeMillis(), false, null, false);
+        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, null, uploadComment, null, System.currentTimeMillis(), false, null, false, false);
     }
 
     /**
      * Constructor to deserialize json for updating the records
      */
-    public Upload(@JsonProperty("id") final int id, @JsonProperty("countryCode") final String countryCode,
+    public Upload(@JsonProperty("id") final int id,
+                  @JsonProperty("countryCode") final String countryCode,
                   @JsonProperty("stationId") final String stationId,
                   @JsonProperty("rejectReason") final String rejectReason,
                   @JsonProperty("command") final Command command) {
-        this(id, countryCode, stationId, null, null, 0, null, null, null, null, rejectReason, null, false, command, false);
+        this(id, countryCode, stationId, null, null, 0, null, null, null, null, rejectReason, null, false, command, false, false);
     }
 
     public String getCountryCode() {
@@ -138,7 +144,7 @@ public class Upload {
         return createdAt;
     }
 
-    public boolean getDone() {
+    public boolean isDone() {
         return done;
     }
 
@@ -154,10 +160,17 @@ public class Upload {
         return hasPhoto;
     }
 
+    public boolean hasConflict() {
+        return conflict;
+    }
+
     public enum Command {
-        ACCEPT,
-        REJECT,
-        UPDATE
+        /** Import photo */
+        IMPORT,
+        /** Import photo, even if there is a conflict, create station if not exist */
+        FORCE_IMPORT,
+        /** Reject photo */
+        REJECT
     }
 
 }

@@ -9,4 +9,7 @@ public interface PhotoDao {
     @SqlUpdate("insert into photos (countryCode, id, url, license, photographerId, createdAt) values (:stationKey.country, :stationKey.id, :url, :license, :photographer.id, :createdAt)")
     void insert(@BindBean final Photo photo);
 
+    @SqlUpdate("update photos set url = :url, license = :license, photographerId = :photographer.id, createdAt = :createdAt where countryCode = :stationKey.country and id = :stationKey.id")
+    void update(@BindBean final Photo photo);
+
 }
