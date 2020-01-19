@@ -23,7 +23,7 @@ Release:
 This project can be run as a Docker container. The docker image is automatically built via the above maven build command.
 
 - run locally:
-  ```docker run -it --net=host --rm -p 8080:8080 pstorch/rsapi```
+  ```docker run -it --net=host --rm -p 8080:8080 -e RSAPI_LB_CONTEXT=test pstorch/rsapi```
 
 - run on server:
   - Download the image from docker hub:
@@ -32,7 +32,7 @@ This project can be run as a Docker container. The docker image is automatically
   - Configure the ```config.yml``` file from current directory and put it into the rsapi work directory.
   
   - Run as background service:
-  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -v <photo-main-dir>:/tmp/railway-station-photos pstorch/rsapi:<version>```
+  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -v <photo-main-dir>:/tmp/railway-station-photos -e RSAPI_LB_CONTEXT=test pstorch/rsapi:<version>```
 
   - Remove the (running) container:
   ```docker rm -f rsapi```

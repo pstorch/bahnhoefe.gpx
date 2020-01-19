@@ -330,6 +330,44 @@ paths:
           description: image too large (maximum 20 MB)
           schema:
             $ref: '#/definitions/UploadResponse'
+  /reportGhostStation:
+    post:
+      summary: Report a Ghost-Station, Railway-Stations which don't exist or are not used anymore
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: basic authorization
+          type: string
+        - name: Country
+          in: header
+          description: country code
+          required: false
+          type: string
+        - name: Station-Id
+          in: header
+          description: id of the railwaystation
+          required: false
+          type: string
+        - name: Comment
+          in: header
+          description: comment of the photographer to the reviewer (needs to be URL-encoded with UTF-8 charset)
+          required: false
+          type: string
+      responses:
+        '202':
+          description: report successful
+          schema:
+            $ref: '#/definitions/UploadResponse'
+        '400':
+          description: wrong request
+          schema:
+            $ref: '#/definitions/UploadResponse'
+        '401':
+          description: authorization failed
+          schema:
+            $ref: '#/definitions/UploadResponse'
   /photoUpload/queryState:
     post:
       summary: Query the state of photo uploads

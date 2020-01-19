@@ -14,4 +14,4 @@ ADD target/${JAR_FILE} $RSAPI_HOME/rsapi.jar
 EXPOSE 8080
 EXPOSE 8081
 WORKDIR $RSAPI_HOME
-CMD [ "sh", "-c", "java -jar rsapi.jar server $RSAPI_WORK/config.yml"]
+CMD [ "sh", "-c", "java -jar rsapi.jar db migrate -i $RSAPI_LB_CONTEXT $RSAPI_WORK/config.yml && java -jar rsapi.jar server $RSAPI_WORK/config.yml"]

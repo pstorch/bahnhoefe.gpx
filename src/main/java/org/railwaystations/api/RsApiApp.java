@@ -68,7 +68,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
 
         // Configure CORS parameters
         cors.setInitParameter(ALLOWED_ORIGINS_PARAM, "*");
-        cors.setInitParameter(ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Authorization");
+        cors.setInitParameter(ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Authorization,Comment,Country,Station-Id");
         cors.setInitParameter(ALLOWED_METHODS_PARAM, "OPTIONS,GET,PUT,POST,DELETE,HEAD");
 
         // Add URL mapping

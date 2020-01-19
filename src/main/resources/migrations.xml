@@ -478,4 +478,21 @@
                                  referencedTableName="stations"/>
     </changeSet>
 
+    <changeSet id="23" author="pstorch">
+        <addColumn tableName="uploads">
+            <column name="ghost" type="boolean" valueBoolean="false" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="24" author="pstorch">
+        <dropForeignKeyConstraint baseTableName="uploads"
+                                 constraintName="fk_upload_station"/>
+        <addForeignKeyConstraint baseColumnNames="countryCode,stationId"
+                                 baseTableName="uploads"
+                                 constraintName="fk_upload_station"
+                                 onDelete="SET NULL"
+                                 onUpdate="CASCADE"
+                                 referencedColumnNames="countryCode,id"
+                                 referencedTableName="stations"/>
+    </changeSet>
 </databaseChangeLog>

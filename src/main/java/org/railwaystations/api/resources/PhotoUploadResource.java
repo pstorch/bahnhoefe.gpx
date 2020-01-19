@@ -134,6 +134,30 @@ public class PhotoUploadResource {
     }
 
     @POST
+    @Path("reportGhostStation")
+    @Consumes({IMAGE_PNG, IMAGE_JPEG})
+    @Produces(MediaType.APPLICATION_JSON)
+    public UploadResponse reportGhostStation(@HeaderParam("User-Agent") final String userAgent,
+                                             @HeaderParam("Station-Id") final String stationId,
+                                             @HeaderParam("Country") final String country,
+                                             @HeaderParam("Comment") final String encComment,
+                                             @Auth final AuthUser user) throws UnsupportedEncodingException {
+        final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
+        LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}",
+                user.getName(), user.getUser().getEmail(), country, stationId);
+        final Station station = repository.findByCountryAndId(country, stationId);
+        if (station == null) {
+            return new UploadResponse(UploadResponse.UploadResponseState.NOT_ENOUGH_DATA, "Station not found");
+        }
+        if (StringUtils.isBlank(comment)) {
+            return new UploadResponse(UploadResponse.UploadResponseState.NOT_ENOUGH_DATA, "Comment is mandatory");
+        }
+        final Upload upload = new Upload(country, stationId, null, null, user.getUser().getId(), null, comment, true);
+        final int id = uploadDao.insert(upload);
+        return new UploadResponse(UploadResponse.UploadResponseState.REVIEW, id, null);
+    }
+
+    @POST
     @Path("photoUpload/queryState")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -203,10 +227,18 @@ public class PhotoUploadResource {
                 rejectUpload(upload, command.getRejectReason());
                 break;
             case IMPORT :
-                importUpload(upload, command.getCountryCode(), command.getStationId(), false);
+                if (upload.isGhost()) {
+                    processGhost(upload, false);
+                } else {
+                    importUpload(upload, command.getCountryCode(), command.getStationId(), false);
+                }
                 break;
             case FORCE_IMPORT :
-                importUpload(upload, command.getCountryCode(), command.getStationId(), true);
+                if (upload.isGhost()) {
+                    processGhost(upload, true);
+                } else {
+                    importUpload(upload, command.getCountryCode(), command.getStationId(), true);
+                }
                 break;
             default:
                 throw new WebApplicationException("Unexpected command value: " + command.getCommand(), Response.Status.BAD_REQUEST);
@@ -215,13 +247,28 @@ public class PhotoUploadResource {
         return Response.ok().build();
     }
 
+    private void processGhost(final Upload upload, final boolean force) {
+        final Station station = repository.findByCountryAndId(upload.getCountryCode(), upload.getStationId());
+        if (station == null) {
+           throw new WebApplicationException("Station not found", Response.Status.BAD_REQUEST);
+        }
+        if (force) {
+            repository.delete(station);
+        } else {
+            repository.deactivate(station);
+        }
+        uploadDao.done(upload.getId());
+    }
+
     private void importUpload(final Upload upload, final String countryCode, final String stationId, final boolean force) {
         final File file = getUploadFile(upload.getId(), upload.getExtension());
         LOG.info("Importing upload {}, {}", upload.getId(), file);
+        boolean updateStationKey = false;
 
         Station station = repository.findByCountryAndId(upload.getCountryCode(), upload.getStationId());
         if (station == null) {
             station = repository.findByCountryAndId(countryCode, stationId);
+            updateStationKey = true;
         }
         if (station == null) {
             if (!force) {
@@ -262,7 +309,11 @@ public class PhotoUploadResource {
                 photoDao.insert(photo);
             }
 
-            uploadDao.update(upload.getId(), upload.getCountryCode(), upload.getStationId(), null, true);
+            if (updateStationKey) {
+                uploadDao.done(upload.getId(), countryCode, stationId);
+            } else {
+                uploadDao.done(upload.getId());
+            }
         } catch (final Exception e) {
             LOG.error("Error importing upload {} photo {}", upload.getId(), file);
             throw new WebApplicationException("Error moving file: " + e.getMessage());
@@ -270,7 +321,12 @@ public class PhotoUploadResource {
     }
 
     private void rejectUpload(final Upload upload, final String rejectReason) {
-        uploadDao.update(upload.getId(), upload.getCountryCode(), upload.getStationId(), rejectReason, true);
+        uploadDao.reject(upload.getId(), rejectReason);
+        if (upload.isGhost()) {
+            LOG.info("Rejecting Ghoststation report {}, {}", upload.getId(), rejectReason);
+            return;
+        }
+
         final File file = getUploadFile(upload.getId(), upload.getExtension());
         LOG.info("Rejecting upload {}, {}, {}", upload.getId(), rejectReason, file);
 
@@ -309,10 +365,10 @@ public class PhotoUploadResource {
 
         final boolean duplicate = hasConflict(station, user.getUser().getId());
         File file = null;
-        String inboxUrl = null;
-        Integer id = null;
+        final String inboxUrl;
+        final Integer id;
         try {
-            id = uploadDao.insert(new Upload(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment));
+            id = uploadDao.insert(new Upload(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment, false));
             file = getUploadFile(id, extension);
             LOG.info("Writing photo to {}", file);
 

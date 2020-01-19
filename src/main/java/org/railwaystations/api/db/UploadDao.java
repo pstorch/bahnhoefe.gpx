@@ -19,7 +19,7 @@ import java.util.Set;
 public interface UploadDao {
 
     String JOIN_QUERY = "select u.id, u.countryCode, u.stationId, u.title u_title, s.title s_title, u.lat u_lat, u.lon u_lon, s.lat s_lat, s.lon s_lon, "
-                    + "     u.photographerId, p.name photographerNickname, u.extension, u.uploadComment, u.rejectReason, u.createdAt, u.done, f.url, "
+                    + "     u.photographerId, p.name photographerNickname, u.extension, u.uploadComment, u.rejectReason, u.createdAt, u.done, u.ghost, f.url, "
                     + "     (select count(*) from uploads u2 where u2.countryCode is not null and u2.countryCode = u.countryCode "
                     + "         and u2.stationId is not null and u2.stationId = u.stationId and u2.done = false and u2.id != u.id) as conflict"
                     + " from uploads u left join stations s on s.countryCode = u.countryCode and s.id = u.stationId "
@@ -38,12 +38,18 @@ public interface UploadDao {
     @RegisterRowMapper(UploadMapper.class)
     Set<Upload> all();
 
-    @SqlUpdate("insert into uploads (countryCode, stationId, title, lat, lon, photographerId, extension, uploadComment, done, createdAt) values (:countryCode, :stationId, :title, :coordinates?.lat, :coordinates?.lon, :photographerId, :extension, :uploadComment, :done, :createdAt)")
+    @SqlUpdate("insert into uploads (countryCode, stationId, title, lat, lon, photographerId, extension, uploadComment, done, createdAt, ghost) values (:countryCode, :stationId, :title, :coordinates?.lat, :coordinates?.lon, :photographerId, :extension, :uploadComment, :done, :createdAt, :ghost)")
     @GetGeneratedKeys("id")
     Integer insert(@BindBean final Upload upload);
 
-    @SqlUpdate("update uploads set countryCode = :countryCode, stationId = :stationId, rejectReason = :rejectReason, done = :done where id = :id")
-    void update(@Bind("id") final int id, @Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId, @Bind("rejectReason") final String rejectReason, @Bind("done") final boolean done);
+    @SqlUpdate("update uploads set countryCode = :countryCode, stationId = :stationId, rejectReason = :rejectReason, done = true where id = :id")
+    void done(@Bind("id") final int id, @Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId);
+
+    @SqlUpdate("update uploads set rejectReason = :rejectReason, done = true where id = :id")
+    void reject(@Bind("id") final int id, @Bind("rejectReason") final String rejectReason);
+
+    @SqlUpdate("update uploads set done = true where id = :id")
+    void done(@Bind("id") int id);
 
     @SqlQuery("select count(*) from uploads where countryCode = :countryCode and stationId = :stationId and done = false and photographerId != :photographerId")
     int countPendingUploadsForStationOfOtherUser(@Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId, @Bind("photographerId") final int photographerId);
@@ -70,16 +76,17 @@ public interface UploadDao {
                 title = rs.getString("u_title");
             }
             final boolean done = rs.getBoolean("done");
+            final boolean ghost = rs.getBoolean("ghost");
             final String extension = rs.getString("extension");
             String inboxUrl = null;
-            if (!done) {
+            if (!done && !ghost) {
                 inboxUrl = inboxBaseUrl + "/" + id + "." + extension;
             }
             return new Upload(id, rs.getString("countryCode"), rs.getString("stationId"), title,
                     coordinates, rs.getInt("photographerId"), rs.getString("photographerNickname"),
                     extension, inboxUrl, rs.getString("uploadComment"), rs.getString("rejectReason"),
                     rs.getLong("createdAt"), done, null, rs.getString("url") != null,
-                    rs.getInt("conflict") > 0);
+                    rs.getInt("conflict") > 0, ghost);
         }
 
     }

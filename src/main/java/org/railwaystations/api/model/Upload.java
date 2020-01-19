@@ -54,6 +54,9 @@ public class Upload {
     @JsonProperty("hasConflict")
     private final boolean conflict;
 
+    @JsonProperty("isGhost")
+    private final boolean ghost;
+
     /**
      * Constructor with all values from database
      */
@@ -61,7 +64,7 @@ public class Upload {
                   final Coordinates coordinates, final int photographerId, final String photographerNickname,
                   final String extension, final String inboxUrl, final String uploadComment, final String rejectReason,
                   final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
-                  final boolean conflict) {
+                  final boolean conflict, final boolean ghost) {
         this.id = id;
         this.countryCode = countryCode;
         this.stationId = stationId;
@@ -78,6 +81,7 @@ public class Upload {
         this.command = command;
         this.hasPhoto = hasPhoto;
         this.conflict = conflict;
+        this.ghost = ghost;
     }
 
     /**
@@ -85,8 +89,8 @@ public class Upload {
      */
     public Upload(final String countryCode, final String stationId, final String title,
                   final Coordinates coordinates, final int photographerId,
-                  final String extension, final String uploadComment) {
-        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, null, uploadComment, null, System.currentTimeMillis(), false, null, false, false);
+                  final String extension, final String uploadComment, final boolean ghost) {
+        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, null, uploadComment, null, System.currentTimeMillis(), false, null, false, false, ghost);
     }
 
     /**
@@ -97,7 +101,7 @@ public class Upload {
                   @JsonProperty("stationId") final String stationId,
                   @JsonProperty("rejectReason") final String rejectReason,
                   @JsonProperty("command") final Command command) {
-        this(id, countryCode, stationId, null, null, 0, null, null, null, null, rejectReason, null, false, command, false, false);
+        this(id, countryCode, stationId, null, null, 0, null, null, null, null, rejectReason, null, false, command, false, false, false);
     }
 
     public String getCountryCode() {
@@ -162,6 +166,10 @@ public class Upload {
 
     public boolean hasConflict() {
         return conflict;
+    }
+
+    public boolean isGhost() {
+        return ghost;
     }
 
     public enum Command {

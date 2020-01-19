@@ -57,6 +57,12 @@ public interface StationDao {
     @SqlUpdate("insert into stations (countryCode, id, title, lat, lon, active) values (:key.country, :key.id, :title, :coordinates?.lat, :coordinates?.lon, :active)")
     void insert(@BindBean final Station station);
 
+    @SqlUpdate("delete from stations where countryCode = :key.country and id = :key.id")
+    void delete(@BindBean final Station station);
+
+    @SqlUpdate("update stations set active = false where countryCode = :key.country and id = :key.id")
+    void deactivate(@BindBean final Station station);
+
     class StationMapper implements RowMapper<Station> {
 
         private static String photoBaseUrl = "";

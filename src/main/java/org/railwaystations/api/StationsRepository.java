@@ -64,8 +64,7 @@ public class StationsRepository {
             return null;
         }
         if (StringUtils.isNotBlank(country)) {
-            final Station.Key key = new Station.Key(country, stationId);
-            return findByKey(key);
+            return findByKey(new Station.Key(country, stationId));
         }
         Set<Station> stations = stationDao.findById(stationId);
         if (stations.size() > 1) {
@@ -84,5 +83,13 @@ public class StationsRepository {
 
     public void insert(final Station station) {
         stationDao.insert(station);
+    }
+
+    public void delete(final Station station) {
+        stationDao.delete(station);
+    }
+
+    public void deactivate(final Station station) {
+        stationDao.deactivate(station);
     }
 }
