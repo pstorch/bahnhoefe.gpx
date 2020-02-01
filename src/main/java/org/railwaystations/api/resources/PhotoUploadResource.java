@@ -48,7 +48,7 @@ public class PhotoUploadResource {
     private static final String IMAGE_JPEG = "image/jpeg";
 
     private final StationsRepository repository;
-    private final File uploadDir;
+    private final File inboxDir;
     private final File photoDir;
     private final Monitor monitor;
     private final UploadTokenAuthenticator authenticator;
@@ -57,13 +57,18 @@ public class PhotoUploadResource {
     private final CountryDao countryDao;
     private final PhotoDao photoDao;
     private final String inboxBaseUrl;
+    private final File inboxToProcessDir;
+    private final File inboxProcessedDir;
 
-    public PhotoUploadResource(final StationsRepository repository, final String uploadDir, final String photoDir,
-                               final Monitor monitor, final UploadTokenAuthenticator authenticator, final UploadDao uploadDao,
-                               final UserDao userDao, final CountryDao countryDao, final PhotoDao photoDao,
-                               final String inboxBaseUrl) {
+    public PhotoUploadResource(final StationsRepository repository, final String inboxDir,
+                               final String inboxToProcessDir, final String inboxProcessedDir, final String photoDir,
+                               final Monitor monitor, final UploadTokenAuthenticator authenticator,
+                               final UploadDao uploadDao, final UserDao userDao, final CountryDao countryDao,
+                               final PhotoDao photoDao, final String inboxBaseUrl) {
         this.repository = repository;
-        this.uploadDir = new File(uploadDir);
+        this.inboxDir = new File(inboxDir);
+        this.inboxToProcessDir = new File(inboxToProcessDir);
+        this.inboxProcessedDir = new File(inboxProcessedDir);
         this.photoDir = new File(photoDir);
         this.monitor = monitor;
         this.authenticator = authenticator;
@@ -173,7 +178,7 @@ public class PhotoUploadResource {
                     query.setCountryCode(upload.getCountryCode());
                     query.setStationId(upload.getStationId());
                     query.setCoordinates(upload.getCoordinates());
-                    query.setInboxUrl(upload.getInboxUrl());
+                    query.setFilename(upload.getFilename());
 
                     if (upload.isDone()) {
                         if (upload.getRejectReason() == null) {
@@ -210,7 +215,11 @@ public class PhotoUploadResource {
     @Path("photoUpload/inbox")
     @Produces(MediaType.APPLICATION_JSON)
     public List<Upload> inbox(@Auth final AuthUser user) {
-        return uploadDao.findPendingUploads();
+        final List<Upload> pendingUploads = uploadDao.findPendingUploads();
+        for (Upload upload : pendingUploads) {
+            upload.isProcessed(new File(inboxProcessedDir, upload.getFilename()).exists());
+        }
+        return pendingUploads;
     }
 
     @POST
@@ -261,8 +270,11 @@ public class PhotoUploadResource {
     }
 
     private void importUpload(final Upload upload, final String countryCode, final String stationId, final boolean force) {
-        final File file = getUploadFile(upload.getId(), upload.getExtension());
-        LOG.info("Importing upload {}, {}", upload.getId(), file);
+        final File originalFile = getUploadFile(upload.getFilename());
+        final File processedFile = new File(inboxProcessedDir, upload.getFilename());
+        final File fileToImport = processedFile.exists() ? processedFile : originalFile;
+
+        LOG.info("Importing upload {}, {}", upload.getId(), fileToImport);
         boolean updateStationKey = false;
 
         Station station = repository.findByCountryAndId(upload.getCountryCode(), upload.getStationId());
@@ -299,8 +311,6 @@ public class PhotoUploadResource {
 
         try {
             final File countryDir = new File(photoDir, station.getKey().getCountry());
-            PhotoImporter.moveFile(file, countryDir, station.getKey().getId(), upload.getExtension());
-
             final Photo photo = PhotoImporter.createPhoto(station.getKey().getCountry(), country, station.getKey().getId(), user.get(), upload.getExtension());
             if (station.hasPhoto()) {
                 photoDao.update(photo);
@@ -309,13 +319,20 @@ public class PhotoUploadResource {
                 photoDao.insert(photo);
             }
 
+            if (processedFile.exists()) {
+                PhotoImporter.moveFile(processedFile, countryDir, station.getKey().getId(), upload.getExtension());
+            } else {
+                PhotoImporter.copyFile(originalFile, countryDir, station.getKey().getId(), upload.getExtension());
+            }
+            FileUtils.moveFileToDirectory(originalFile, new File(inboxDir, "done"), true);
+
             if (updateStationKey) {
                 uploadDao.done(upload.getId(), countryCode, stationId);
             } else {
                 uploadDao.done(upload.getId());
             }
         } catch (final Exception e) {
-            LOG.error("Error importing upload {} photo {}", upload.getId(), file);
+            LOG.error("Error importing upload {} photo {}", upload.getId(), fileToImport);
             throw new WebApplicationException("Error moving file: " + e.getMessage());
         }
     }
@@ -327,11 +344,11 @@ public class PhotoUploadResource {
             return;
         }
 
-        final File file = getUploadFile(upload.getId(), upload.getExtension());
+        final File file = getUploadFile(upload.getFilename());
         LOG.info("Rejecting upload {}, {}, {}", upload.getId(), rejectReason, file);
 
         try {
-            final File rejectDir = new File(uploadDir, "rejected");
+            final File rejectDir = new File(inboxDir, "rejected");
             FileUtils.moveFileToDirectory(file, rejectDir, true);
         } catch (final IOException e) {
             LOG.warn("Unable to move rejected file {}", file, e);
@@ -369,15 +386,20 @@ public class PhotoUploadResource {
         final Integer id;
         try {
             id = uploadDao.insert(new Upload(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment, false));
-            file = getUploadFile(id, extension);
+            file = getUploadFile(Upload.getFilename(id, extension));
             LOG.info("Writing photo to {}", file);
 
-            FileUtils.forceMkdir(uploadDir);
+            // write the file to the inbox directory
+            FileUtils.forceMkdir(inboxDir);
             final long bytesRead = IOUtils.copyLarge(body, new FileOutputStream(file), 0L, MAX_SIZE);
             if (bytesRead == MAX_SIZE) {
                 FileUtils.deleteQuietly(file);
                 return consumeBodyAndReturn(body, new UploadResponse(UploadResponse.UploadResponseState.PHOTO_TOO_LARGE, "Photo too large, max " + MAX_SIZE + " bytes allowed"));
             }
+
+            // additionally write the file to the input directory for Vsion.AI
+            FileUtils.copyFileToDirectory(file, inboxToProcessDir, true);
+
             String duplicateInfo = "";
             if (duplicate) {
                 duplicateInfo = " (possible duplicate!)";
@@ -399,8 +421,8 @@ public class PhotoUploadResource {
         return new UploadResponse(duplicate ? UploadResponse.UploadResponseState.CONFLICT : UploadResponse.UploadResponseState.REVIEW, id, inboxUrl);
     }
 
-    private File getUploadFile(final Integer id, final String extension) {
-        return new File(uploadDir, String.format("%d.%s", id, extension));
+    private File getUploadFile(final String filename) {
+        return new File(inboxDir, filename);
     }
 
     private String createIFrameAnswer(final UploadResponse response, final String referer) throws JsonProcessingException {

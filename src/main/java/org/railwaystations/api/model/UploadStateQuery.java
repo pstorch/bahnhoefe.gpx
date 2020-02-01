@@ -14,19 +14,19 @@ public class UploadStateQuery {
     private Coordinates coordinates;
     private UploadState state = UploadState.UNKNOWN;
     private String rejectedReason;
-    private String inboxUrl;
+    private String filename;
 
     public UploadStateQuery() {
     }
 
-    public UploadStateQuery(final Integer uploadId, final String countryCode, final String stationId, final Coordinates coordinates, final String rejectedReason, final String inboxUrl) {
+    public UploadStateQuery(final Integer uploadId, final String countryCode, final String stationId, final Coordinates coordinates, final String rejectedReason, final String filename) {
         super();
         this.uploadId = uploadId;
         this.countryCode = countryCode;
         this.stationId = stationId;
         this.coordinates = coordinates;
         this.rejectedReason = rejectedReason;
-        this.inboxUrl = inboxUrl;
+        this.filename = filename;
     }
 
     public String getCountryCode() {
@@ -53,10 +53,6 @@ public class UploadStateQuery {
         return rejectedReason;
     }
 
-    public String getInboxUrl() {
-        return inboxUrl;
-    }
-
     public void setState(final UploadState state) {
         this.state = state;
     }
@@ -77,8 +73,12 @@ public class UploadStateQuery {
         this.coordinates = coordinates;
     }
 
-    public void setInboxUrl(final String inboxUrl) {
-        this.inboxUrl = inboxUrl;
+    public void setFilename(final String filename) {
+        this.filename = filename;
+    }
+
+    public String getFilename() {
+        return filename;
     }
 
     public enum UploadState {

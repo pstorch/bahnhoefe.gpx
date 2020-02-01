@@ -31,9 +31,6 @@ public class Upload {
     private final String extension;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final String inboxUrl;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private final String uploadComment;
 
     @JsonProperty
@@ -48,21 +45,24 @@ public class Upload {
     @JsonProperty
     private final Command command;
 
-    @JsonProperty
+    @JsonProperty(value = "hasPhoto", access = JsonProperty.Access.READ_ONLY)
     private final boolean hasPhoto;
 
-    @JsonProperty("hasConflict")
+    @JsonProperty(value = "hasConflict", access = JsonProperty.Access.READ_ONLY)
     private final boolean conflict;
 
-    @JsonProperty("isGhost")
+    @JsonProperty(value = "isGhost", access = JsonProperty.Access.READ_ONLY)
     private final boolean ghost;
+
+    @JsonProperty(value = "isProcessed", access = JsonProperty.Access.READ_ONLY)
+    private boolean processed;
 
     /**
      * Constructor with all values from database
      */
     public Upload(final int id, final String countryCode, final String stationId, final String title,
                   final Coordinates coordinates, final int photographerId, final String photographerNickname,
-                  final String extension, final String inboxUrl, final String uploadComment, final String rejectReason,
+                  final String extension, final String uploadComment, final String rejectReason,
                   final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
                   final boolean conflict, final boolean ghost) {
         this.id = id;
@@ -73,7 +73,6 @@ public class Upload {
         this.photographerId = photographerId;
         this.photographerNickname = photographerNickname;
         this.extension = extension;
-        this.inboxUrl = inboxUrl;
         this.uploadComment = uploadComment;
         this.rejectReason = rejectReason;
         this.createdAt = createdAt;
@@ -90,7 +89,7 @@ public class Upload {
     public Upload(final String countryCode, final String stationId, final String title,
                   final Coordinates coordinates, final int photographerId,
                   final String extension, final String uploadComment, final boolean ghost) {
-        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, null, uploadComment, null, System.currentTimeMillis(), false, null, false, false, ghost);
+        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, uploadComment, null, System.currentTimeMillis(), false, null, false, false, ghost);
     }
 
     /**
@@ -101,7 +100,7 @@ public class Upload {
                   @JsonProperty("stationId") final String stationId,
                   @JsonProperty("rejectReason") final String rejectReason,
                   @JsonProperty("command") final Command command) {
-        this(id, countryCode, stationId, null, null, 0, null, null, null, null, rejectReason, null, false, command, false, false, false);
+        this(id, countryCode, stationId, null, null, 0, null, null, null, rejectReason, null, false, command, false, false, false);
     }
 
     public String getCountryCode() {
@@ -130,10 +129,6 @@ public class Upload {
 
     public String getPhotographerNickname() {
         return photographerNickname;
-    }
-
-    public String getInboxUrl() {
-        return inboxUrl;
     }
 
     public String getUploadComment() {
@@ -170,6 +165,25 @@ public class Upload {
 
     public boolean isGhost() {
         return ghost;
+    }
+
+    public String getFilename() {
+        return getFilename(id, extension);
+    }
+
+    public static String getFilename(final Integer id, final String extension) {
+        if (id == null || extension == null) {
+            return null;
+        }
+        return String.format("%d.%s", id, extension);
+    }
+
+    public void isProcessed(final boolean processed) {
+        this.processed = processed;
+    }
+
+    public boolean isProcessed() {
+        return processed;
     }
 
     public enum Command {

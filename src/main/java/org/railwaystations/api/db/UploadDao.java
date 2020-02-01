@@ -56,12 +56,6 @@ public interface UploadDao {
 
     class UploadMapper implements RowMapper<Upload> {
 
-        private static String inboxBaseUrl = "";
-
-        public static void setInboxBaseUrl(final String url) {
-            inboxBaseUrl = url;
-        }
-
         public Upload map(final ResultSet rs, final StatementContext ctx) throws SQLException {
             final int id = rs.getInt("id");
             final String countryCode = rs.getString("countryCode");
@@ -78,13 +72,9 @@ public interface UploadDao {
             final boolean done = rs.getBoolean("done");
             final boolean ghost = rs.getBoolean("ghost");
             final String extension = rs.getString("extension");
-            String inboxUrl = null;
-            if (!done && !ghost) {
-                inboxUrl = inboxBaseUrl + "/" + id + "." + extension;
-            }
             return new Upload(id, rs.getString("countryCode"), rs.getString("stationId"), title,
                     coordinates, rs.getInt("photographerId"), rs.getString("photographerNickname"),
-                    extension, inboxUrl, rs.getString("uploadComment"), rs.getString("rejectReason"),
+                    extension, rs.getString("uploadComment"), rs.getString("rejectReason"),
                     rs.getLong("createdAt"), done, null, rs.getString("url") != null,
                     rs.getInt("conflict") > 0, ghost);
         }

@@ -415,7 +415,7 @@ public class RsApiAppTest {
         final JsonNode uploadResponse = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(uploadResponse.get("uploadId"), notNullValue());
         assertThat(uploadResponse.get("inboxUrl"), notNullValue());
-        final File pngFile = new File(MySuite.TMP_WORK_DIR, new URL(uploadResponse.get("inboxUrl").asText()).getFile());
+        final File pngFile = new File(MySuite.DROPWIZARD.getConfiguration().getInboxDir(), new URL(uploadResponse.get("inboxUrl").asText()).getFile());
         assertThat(pngFile.exists(), is(true));
         assertThat(IOUtils.readFully(new FileInputStream(pngFile), 13), is("IMAGE_CONTENT".getBytes(Charset.defaultCharset())));
     }

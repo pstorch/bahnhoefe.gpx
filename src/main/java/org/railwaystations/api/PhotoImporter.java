@@ -189,6 +189,10 @@ public class PhotoImporter {
         FileUtils.moveFile(importFile, new File(countryDir, stationId + "." + extension));
     }
 
+    public static void copyFile(final File importFile, final File countryDir, final String stationId, final String extension) throws IOException {
+        FileUtils.copyFile(importFile, new File(countryDir, stationId + "." + extension));
+    }
+
     public static final class ReportEntry {
         private final boolean error;
         private final String countryCode;

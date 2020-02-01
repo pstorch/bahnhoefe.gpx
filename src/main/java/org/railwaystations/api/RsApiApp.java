@@ -84,7 +84,6 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         final StationDao stationDao = jdbi.onDemand(StationDao.class);
         StationDao.StationMapper.setPhotoBaseUrl(config.getPhotoBaseUrl());
         final UploadDao uploadDao = jdbi.onDemand(UploadDao.class);
-        UploadDao.UploadMapper.setInboxBaseUrl(config.getInboxBaseUrl());
 
         final StationsRepository repository = new StationsRepository(countryDao,
                 stationDao);
@@ -95,8 +94,10 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new PhotographersResource(repository));
         environment.jersey().register(new CountriesResource(countryDao));
         environment.jersey().register(new StatisticResource(repository));
-        environment.jersey().register(new PhotoUploadResource(repository, config.getWorkDir(), config.getPhotoDir(),
-                config.getMonitor(), authenticator, uploadDao, userDao, countryDao, photoDao, config.getInboxBaseUrl()));
+        environment.jersey().register(new PhotoDownloadResource(config.getPhotoDir(), config.getInboxDir(), config.getInboxProcessedDir()));
+        environment.jersey().register(new PhotoUploadResource(repository, config.getInboxDir(), config.getInboxToProcessDir(),
+                config.getInboxProcessedDir(), config.getPhotoDir(), config.getMonitor(), authenticator,
+                uploadDao, userDao, countryDao, photoDao, config.getInboxBaseUrl()));
         environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
                 new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir())));

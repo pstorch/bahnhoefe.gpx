@@ -12,6 +12,7 @@ import org.railwaystations.api.monitoring.SlackMonitor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.File;
 
 @SuppressWarnings("PMD.LongVariable")
 public class RsApiConfiguration extends Configuration {
@@ -31,6 +32,10 @@ public class RsApiConfiguration extends Configuration {
     private String photoBaseUrl;
 
     private String inboxBaseUrl;
+
+    private String inboxToProcessDir;
+
+    private String inboxProcessedDir;
 
     private String photoDir;
 
@@ -114,4 +119,31 @@ public class RsApiConfiguration extends Configuration {
     public void setInboxBaseUrl(final String inboxBaseUrl) {
         this.inboxBaseUrl = inboxBaseUrl;
     }
+
+    public String getInboxDir() {
+        return getWorkDir() + File.separator + "inbox";
+    }
+
+    public String getInboxProcessedDir() {
+        if (inboxProcessedDir == null) {
+            return getInboxDir() + File.separator + "processed";
+        }
+        return this.inboxProcessedDir;
+    }
+
+    public void setInboxProcessedDir(final String inboxProcessedDir) {
+        this.inboxProcessedDir = inboxProcessedDir;
+    }
+
+    public String getInboxToProcessDir() {
+        if (inboxToProcessDir == null) {
+            return getInboxDir() + File.separator + "toprocess";
+        }
+        return inboxToProcessDir;
+    }
+
+    public void setInboxToProcessDir(final String inboxToProcessDir) {
+        this.inboxToProcessDir = inboxToProcessDir;
+    }
+
 }

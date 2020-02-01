@@ -73,7 +73,9 @@ public class PhotoUploadResourceTest {
         when(repository.findByCountryAndId(key0815.getCountry(), key0815.getId())).thenReturn(station0815);
         when(repository.findByCountryAndId(key9876.getCountry(), key9876.getId())).thenReturn(station9876);
 
-        resource = new PhotoUploadResource(repository, tempDir.toString(), photoDir.toString(), monitor, null, uploadDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org");
+        resource = new PhotoUploadResource(repository, tempDir.toString(), tempDir.resolve( "toprocess").toString(),
+                tempDir.resolve("processed").toString(), photoDir.toString(), monitor, null,
+                uploadDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org");
     }
 
     private UploadResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
@@ -88,7 +90,7 @@ public class PhotoUploadResourceTest {
 
     @Test
     public void testPost() throws IOException {
-        ArgumentCaptor<Upload> uploadCaptor = ArgumentCaptor.forClass(Upload.class);
+        final ArgumentCaptor<Upload> uploadCaptor = ArgumentCaptor.forClass(Upload.class);
         when(uploadDao.insert(any())).thenReturn(1);
         final UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, "Some Comment");
 
@@ -121,7 +123,7 @@ public class PhotoUploadResourceTest {
     @Test
     public void testPostMissingStation() throws IOException {
         when(uploadDao.insert(any())).thenReturn(4);
-        ArgumentCaptor<Upload> uploadCaptor = ArgumentCaptor.forClass(Upload.class);
+        final ArgumentCaptor<Upload> uploadCaptor = ArgumentCaptor.forClass(Upload.class);
         final UploadResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", 50.9876d, 9.1234d, "Some Comment");
 
         assertThat(response.getState(), equalTo(UploadResponse.UploadResponseState.REVIEW));
@@ -178,10 +180,10 @@ public class PhotoUploadResourceTest {
     public void testQueryState() throws IOException {
         final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false);
 
-        when(uploadDao.findById(1)).thenReturn(new Upload(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", "https://inbox.railway-stations.org/1.jpg", null, null, 0l, false, null, false, false, false));
-        when(uploadDao.findById(2)).thenReturn(new Upload(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, true, null, false, false, false));
-        when(uploadDao.findById(3)).thenReturn(new Upload(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, "rejected", 0l, true, null, false, false, false));
-        when(uploadDao.findById(4)).thenReturn(new Upload(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, null, 0l, false, null, false, false, false));
+        when(uploadDao.findById(1)).thenReturn(new Upload(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, 0l, false, null, false, false, false));
+        when(uploadDao.findById(2)).thenReturn(new Upload(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, 0l, true, null, false, false, false));
+        when(uploadDao.findById(3)).thenReturn(new Upload(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, "rejected", 0l, true, null, false, false, false));
+        when(uploadDao.findById(4)).thenReturn(new Upload(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), "jpg", null, null, 0l, false, null, false, false, false));
 
         final List<UploadStateQuery> uploadStateQueries = new ArrayList<>();
         uploadStateQueries.add(new UploadStateQuery(1, "de", "4711", null, null, null));
@@ -195,7 +197,7 @@ public class PhotoUploadResourceTest {
         final List<UploadStateQuery> uploadStateQueriesResult = resource.queryState(uploadStateQueries, new AuthUser(user));
 
         assertThat(uploadStateQueriesResult.get(0).getState(), is(UploadStateQuery.UploadState.REVIEW));
-        assertThat(uploadStateQueriesResult.get(0).getInboxUrl(), is("https://inbox.railway-stations.org/1.jpg"));
+        assertThat(uploadStateQueriesResult.get(0).getFilename(), is("1.jpg"));
         assertThat(uploadStateQueriesResult.get(1).getState(), is(UploadStateQuery.UploadState.OTHER_USER));
         assertThat(uploadStateQueriesResult.get(2).getState(), is(UploadStateQuery.UploadState.ACCEPTED));
         assertThat(uploadStateQueriesResult.get(3).getState(), is(UploadStateQuery.UploadState.REJECTED));
