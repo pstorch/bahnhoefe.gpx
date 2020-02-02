@@ -42,7 +42,7 @@ public interface UploadDao {
     @GetGeneratedKeys("id")
     Integer insert(@BindBean final Upload upload);
 
-    @SqlUpdate("update uploads set countryCode = :countryCode, stationId = :stationId, rejectReason = :rejectReason, done = true where id = :id")
+    @SqlUpdate("update uploads set countryCode = :countryCode, stationId = :stationId, done = true where id = :id")
     void done(@Bind("id") final int id, @Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId);
 
     @SqlUpdate("update uploads set rejectReason = :rejectReason, done = true where id = :id")

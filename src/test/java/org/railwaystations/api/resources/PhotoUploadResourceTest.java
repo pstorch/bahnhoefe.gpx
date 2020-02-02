@@ -96,7 +96,7 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getState(), equalTo(UploadResponse.UploadResponseState.REVIEW));
         assertThat(response.getUploadId(), equalTo(1));
-        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/1.jpg"));
+        assertThat(response.getFilename(), equalTo("1.jpg"));
         assertFileWithContentExistsInInbox("image-content", "1.jpg");
         verify(uploadDao).insert(uploadCaptor.capture());
         assertUpload(uploadCaptor.getValue(), "de","4711", null, null);
@@ -128,7 +128,7 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getState(), equalTo(UploadResponse.UploadResponseState.REVIEW));
         assertThat(response.getUploadId(), equalTo(4));
-        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/4.jpg"));
+        assertThat(response.getFilename(), equalTo("4.jpg"));
         assertFileWithContentExistsInInbox("image-content", "4.jpg");
         verify(uploadDao).insert(uploadCaptor.capture());
         assertUpload(uploadCaptor.getValue(), null,null, "Missing Station", new Coordinates(50.9876, 9.1234));
@@ -147,7 +147,7 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getState(), equalTo(UploadResponse.UploadResponseState.LAT_LON_OUT_OF_RANGE));
         assertThat(response.getUploadId(), nullValue());
-        assertThat(response.getInboxUrl(), nullValue());
+        assertThat(response.getFilename(), nullValue());
     }
 
     @Test
@@ -157,7 +157,7 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getState(), equalTo(UploadResponse.UploadResponseState.REVIEW));
         assertThat(response.getUploadId(), equalTo(3));
-        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/3.jpg"));
+        assertThat(response.getFilename(), equalTo("3.jpg"));
         assertFileWithContentExistsInInbox("image-content", "3.jpg");
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/3.jpg\nvia UserAgent"));
     }
@@ -171,7 +171,7 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getState(), equalTo(UploadResponse.UploadResponseState.CONFLICT));
         assertThat(response.getUploadId(), equalTo(2));
-        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/2.jpg"));
+        assertThat(response.getFilename(), equalTo("2.jpg"));
         assertFileWithContentExistsInInbox("image-content", "2.jpg");
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland\n\nhttp://inbox.railway-stations.org/2.jpg (possible duplicate!)\nvia UserAgent"));
     }
@@ -223,7 +223,7 @@ public class PhotoUploadResourceTest {
 
         assertThat(response.getState(), equalTo(UploadResponse.UploadResponseState.CONFLICT));
         assertThat(response.getUploadId(), equalTo(5));
-        assertThat(response.getInboxUrl(), equalTo("http://inbox.railway-stations.org/5.jpg"));
+        assertThat(response.getFilename(), equalTo("5.jpg"));
         assertFileWithContentExistsInInbox("image-content", "5.jpg");
         assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Neverland\n\nhttp://inbox.railway-stations.org/5.jpg (possible duplicate!)\nvia UserAgent"));
     }
@@ -236,7 +236,7 @@ public class PhotoUploadResourceTest {
         final UploadResponse uploadResponse = (UploadResponse) response.getEntity();
         assertThat(uploadResponse.getState(), equalTo(UploadResponse.UploadResponseState.NOT_ENOUGH_DATA));
         assertThat(uploadResponse.getUploadId(), nullValue());
-        assertThat(uploadResponse.getInboxUrl(), nullValue());
+        assertThat(uploadResponse.getFilename(), nullValue());
     }
 
 }

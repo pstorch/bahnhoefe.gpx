@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200112.2145'
+  version: '20200202.1200'
   title: RSAPI
   license:
     name: MIT
@@ -370,7 +370,7 @@ paths:
             $ref: '#/definitions/UploadResponse'
   /photoUpload/queryState:
     post:
-      summary: Query the state of photo uploads
+      summary: Query the state of photo uploads of the authorized user
       consumes:
         - application/json
       produces:
@@ -394,6 +394,48 @@ paths:
             type: array
             items:
               $ref: '#/definitions/UploadStateQuery'
+  /photoUpload/inbox:
+    get:
+      summary: Get the current inbox, photos under review.
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: basic authorization
+          type: string
+      responses:
+        '200':
+          description: array Upload objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Upload'
+        '401':
+          description: not authorized
+    post:
+      summary: Import or reject an uploaded photo from the inbox
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: UploadCommand
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/UploadCommand'
+        - name: Authorization
+          in: header
+          description: basic authorization
+          type: string
+      responses:
+        '200':
+          description: command successfully
+        '400':
+          description: bad request, something wrong with the data
+        '401':
+          description: not authorized
   /registration:
     post:
       summary: Register for an account
@@ -535,6 +577,114 @@ paths:
           description: authorization failed
         '409':
           description: conflict with existing name or email
+  '/fotos/{country}/{filename}':
+    get:
+      summary: downloads the given photo
+      produces:
+        - image/jpeg
+        - image/png
+      parameters:
+        - name: country
+          in: path
+          description: country code
+          required: true
+          type: string
+        - name: filename
+          in: path
+          description: filename of the photo
+          required: true
+          type: string
+        - name: width
+          in: query
+          description: scale the image to the given width
+          type: number
+          format: integer
+      responses:
+        '200':
+          description: ok
+        '404':
+          description: file not found
+  '/photos/{country}/{filename}':
+    get:
+      summary: downloads the given photo
+      produces:
+        - image/jpeg
+        - image/png
+      parameters:
+        - name: country
+          in: path
+          description: country code
+          required: true
+          type: string
+        - name: filename
+          in: path
+          description: filename of the photo
+          required: true
+          type: string
+        - name: width
+          in: query
+          description: scale the image to the given width
+          type: number
+          format: integer
+      responses:
+        '200':
+          description: ok
+        '404':
+          description: file not found
+  '/inbox/{filename}':
+    get:
+      summary: downloads the given photo from the inbox
+      produces:
+        - image/jpeg
+        - image/png
+      parameters:
+        - name: country
+          in: path
+          description: country code
+          required: true
+          type: string
+        - name: filename
+          in: path
+          description: filename of the photo
+          required: true
+          type: string
+        - name: width
+          in: query
+          description: scale the image to the given width
+          type: number
+          format: integer
+      responses:
+        '200':
+          description: ok
+        '404':
+          description: file not found
+  '/inbox/processed/{filename}':
+    get:
+      summary: downloads the given photo from the processed inbox
+      produces:
+        - image/jpeg
+        - image/png
+      parameters:
+        - name: country
+          in: path
+          description: country code
+          required: true
+          type: string
+        - name: filename
+          in: path
+          description: filename of the photo
+          required: true
+          type: string
+        - name: width
+          in: query
+          description: scale the image to the given width
+          type: number
+          format: integer
+      responses:
+        '200':
+          description: ok
+        '404':
+          description: file not found
 definitions:
   Station:
     type: object
@@ -619,6 +769,9 @@ definitions:
       timetableUrlTemplate:
         type: string
         description: URL template for the timetable, contains {title}, {id} and {DS100} placeholders which need to be replaced
+      overrideLicense:
+        type: string
+        description: if a country needs a special license
       active:
         type: boolean
         description: Is this an active country where we collect photos?
@@ -685,9 +838,9 @@ definitions:
       uploadId:
         type: number
         format: integer
-      inboxUrl:
+      filename:
         type: string
-        format: uri
+        description: filename in inbox
   UploadStateQuery:
     type: object
     description: Upload state query
@@ -707,8 +860,9 @@ definitions:
         format: double
       rejectedReason:
         type: string
-      inboxUrl:
+      filename:
         type: string
+        description: filename in inbox
       state:
         enum:
           - UNKNOWN
@@ -717,3 +871,65 @@ definitions:
           - ACCEPTED
           - REJECTED
           - OTHER_USER
+  Upload:
+    type: object
+    description: Represents an uploaded photo with processing state
+    properties:
+      id:
+        type: number
+        format: integer
+      countryCode:
+        type: string
+      stationId:
+        type: string
+      title:
+        type: string
+      lat:
+        type: number
+        format: double
+      lon:
+        type: number
+        format: double
+      photographerNickname:
+        type: string
+      uploadComment:
+        type: string
+      createdAt:
+        type: number
+        format: long
+      done:
+        type: boolean
+        description: true if this photo was already imported or rejected
+      filename:
+        type: string
+        description: name of the file in inbox
+      hasPhoto:
+        type: boolean
+        description: this station has already a photo (conflict)
+      hasConflict:
+        type: boolean
+        description: conflict with another upload or existing photo
+      isGhost:
+        type: boolean
+        description: this station was reported as ghost station
+      isProcessed:
+        type: boolean
+        description: was this image process (e.g. pixelated)
+  UploadCommand:
+    type: object
+    description: command to import or reject one uploaded photo from the inbox
+    properties:
+      id:
+        type: number
+        format: integer
+      countryCode:
+        type: string
+      stationId:
+        type: string
+      rejectReason:
+        type: string
+      command:
+        enum:
+          - IMPORT
+          - FORCE_IMPORT
+          - REJECT

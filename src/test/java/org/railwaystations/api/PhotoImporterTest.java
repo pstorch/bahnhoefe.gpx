@@ -5,10 +5,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.railwaystations.api.db.CountryDao;
-import org.railwaystations.api.db.PhotoDao;
-import org.railwaystations.api.db.StationDao;
-import org.railwaystations.api.db.UserDao;
+import org.railwaystations.api.db.*;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
 import org.railwaystations.api.model.Station;
@@ -71,7 +68,7 @@ public class PhotoImporterTest {
 
         repository = new StationsRepository(countryDao, stationDao);
 
-        importer = new PhotoImporter(repository, userDao, photoDao, countryDao, new LoggingMonitor(), uploadDir.toString(), photoDir.toString());
+        importer = new PhotoImporter(repository, userDao, photoDao, countryDao, new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), mock(UploadDao.class));
     }
 
     private File createFile(final String countryCode, final String photographer, final String stationId) throws IOException {

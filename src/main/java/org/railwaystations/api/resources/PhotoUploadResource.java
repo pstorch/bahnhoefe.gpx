@@ -418,7 +418,7 @@ public class PhotoUploadResource {
             return consumeBodyAndReturn(body, new UploadResponse(UploadResponse.UploadResponseState.ERROR));
         }
 
-        return new UploadResponse(duplicate ? UploadResponse.UploadResponseState.CONFLICT : UploadResponse.UploadResponseState.REVIEW, id, inboxUrl);
+        return new UploadResponse(duplicate ? UploadResponse.UploadResponseState.CONFLICT : UploadResponse.UploadResponseState.REVIEW, id, file.getName());
     }
 
     private File getUploadFile(final String filename) {

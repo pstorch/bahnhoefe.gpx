@@ -9,13 +9,13 @@ public class UploadResponse {
     private final UploadResponseState state;
     private final String message;
     private final Integer uploadId;
-    private final String inboxUrl;
+    private final String filename;
 
-    public UploadResponse(final UploadResponseState state, final String message, final Integer uploadId, final String inboxUrl) {
+    public UploadResponse(final UploadResponseState state, final String message, final Integer uploadId, final String filename) {
         this.state = state;
         this.message = message;
         this.uploadId = uploadId;
-        this.inboxUrl = inboxUrl;
+        this.filename = filename;
     }
 
     public UploadResponse(final UploadResponseState state, final String message) {
@@ -26,8 +26,8 @@ public class UploadResponse {
         this(state, state.responseStatus.getReasonPhrase());
     }
 
-    public UploadResponse(final UploadResponseState state, final Integer id, final String inboxUrl) {
-        this(state, state.responseStatus.getReasonPhrase(), id, inboxUrl);
+    public UploadResponse(final UploadResponseState state, final Integer id, final String filename) {
+        this(state, state.responseStatus.getReasonPhrase(), id, filename);
     }
 
     public UploadResponseState getState() {
@@ -42,8 +42,8 @@ public class UploadResponse {
         return uploadId;
     }
 
-    public String getInboxUrl() {
-        return inboxUrl;
+    public String getFilename() {
+        return filename;
     }
 
     public enum UploadResponseState {

@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.PhotoDao;
+import org.railwaystations.api.db.UploadDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
@@ -22,6 +23,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Photo importer from legacy inbox directory, which is still being used by batch imports
+ */
 public class PhotoImporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhotoImporter.class);
@@ -36,8 +40,11 @@ public class PhotoImporter {
     private final Monitor monitor;
     private final File uploadDir;
     private final File photoDir;
+    private final UploadDao uploadDao;
 
-    public PhotoImporter(final StationsRepository repository, final UserDao userDao, final PhotoDao photoDao, final CountryDao countryDao, final Monitor monitor, final String uploadDir, final String photoDir) {
+    public PhotoImporter(final StationsRepository repository, final UserDao userDao, final PhotoDao photoDao,
+                         final CountryDao countryDao, final Monitor monitor, final String uploadDir,
+                         final String photoDir, final UploadDao uploadDao) {
         this.repository = repository;
         this.userDao = userDao;
         this.photoDao = photoDao;
@@ -45,6 +52,7 @@ public class PhotoImporter {
         this.monitor = monitor;
         this.uploadDir = new File(uploadDir);
         this.photoDir = new File(photoDir);
+        this.uploadDao = uploadDao;
     }
 
     public void importPhotosAsync() {
@@ -148,7 +156,8 @@ public class PhotoImporter {
                     }
                 }
 
-                if (photosToImport.entrySet().stream().anyMatch(e -> e.getKey() != importFile && e.getValue().getStationKey().equals(photo.getStationKey()))) {
+                if (photosToImport.entrySet().stream().anyMatch(e -> e.getKey() != importFile && e.getValue().getStationKey().equals(photo.getStationKey()))
+                    || uploadDao.countPendingUploadsForStationOfOtherUser(photo.getStationKey().getCountry(), photo.getStationKey().getId(), photo.getPhotographer().getId()) > 0) {
                     report.add(new ReportEntry(true, countryCode, importFile.getAbsolutePath(), "conflict with another photo in inbox"));
                     continue;
                 }
