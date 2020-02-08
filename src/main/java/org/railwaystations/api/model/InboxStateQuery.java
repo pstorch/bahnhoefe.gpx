@@ -6,22 +6,22 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UploadStateQuery {
-    private Integer uploadId;
+public class InboxStateQuery {
+    private Integer id;
     private String countryCode;
     private String stationId;
     @JsonUnwrapped
     private Coordinates coordinates;
-    private UploadState state = UploadState.UNKNOWN;
+    private InboxState state = InboxState.UNKNOWN;
     private String rejectedReason;
     private String filename;
 
-    public UploadStateQuery() {
+    public InboxStateQuery() {
     }
 
-    public UploadStateQuery(final Integer uploadId, final String countryCode, final String stationId, final Coordinates coordinates, final String rejectedReason, final String filename) {
+    public InboxStateQuery(final Integer id, final String countryCode, final String stationId, final Coordinates coordinates, final String rejectedReason, final String filename) {
         super();
-        this.uploadId = uploadId;
+        this.id = id;
         this.countryCode = countryCode;
         this.stationId = stationId;
         this.coordinates = coordinates;
@@ -41,19 +41,19 @@ public class UploadStateQuery {
         return coordinates;
     }
 
-    public UploadState getState() {
+    public InboxState getState() {
         return state;
     }
 
-    public Integer getUploadId() {
-        return uploadId;
+    public Integer getId() {
+        return id;
     }
 
     public String getRejectedReason() {
         return rejectedReason;
     }
 
-    public void setState(final UploadState state) {
+    public void setState(final InboxState state) {
         this.state = state;
     }
 
@@ -81,7 +81,7 @@ public class UploadStateQuery {
         return filename;
     }
 
-    public enum UploadState {
+    public enum InboxState {
         UNKNOWN,
         REVIEW,
         CONFLICT,

@@ -5,32 +5,32 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import javax.ws.rs.core.Response;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UploadResponse {
-    private final UploadResponseState state;
+public class InboxResponse {
+    private final InboxResponseState state;
     private final String message;
-    private final Integer uploadId;
+    private final Integer id;
     private final String filename;
 
-    public UploadResponse(final UploadResponseState state, final String message, final Integer uploadId, final String filename) {
+    public InboxResponse(final InboxResponseState state, final String message, final Integer id, final String filename) {
         this.state = state;
         this.message = message;
-        this.uploadId = uploadId;
+        this.id = id;
         this.filename = filename;
     }
 
-    public UploadResponse(final UploadResponseState state, final String message) {
+    public InboxResponse(final InboxResponseState state, final String message) {
         this(state, message, null, null);
     }
 
-    public UploadResponse(final UploadResponseState state) {
+    public InboxResponse(final InboxResponseState state) {
         this(state, state.responseStatus.getReasonPhrase());
     }
 
-    public UploadResponse(final UploadResponseState state, final Integer id, final String filename) {
+    public InboxResponse(final InboxResponseState state, final Integer id, final String filename) {
         this(state, state.responseStatus.getReasonPhrase(), id, filename);
     }
 
-    public UploadResponseState getState() {
+    public InboxResponseState getState() {
         return state;
     }
 
@@ -38,15 +38,15 @@ public class UploadResponse {
         return message;
     }
 
-    public Integer getUploadId() {
-        return uploadId;
+    public Integer getId() {
+        return id;
     }
 
     public String getFilename() {
         return filename;
     }
 
-    public enum UploadResponseState {
+    public enum InboxResponseState {
         REVIEW(Response.Status.ACCEPTED),
         LAT_LON_OUT_OF_RANGE(Response.Status.BAD_REQUEST),
         NOT_ENOUGH_DATA(Response.Status.BAD_REQUEST),
@@ -58,7 +58,7 @@ public class UploadResponse {
 
         final Response.Status responseStatus;
 
-        UploadResponseState(Response.Status responseStatus) {
+        InboxResponseState(final Response.Status responseStatus) {
             this.responseStatus = responseStatus;
         }
 

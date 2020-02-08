@@ -449,12 +449,12 @@
     </changeSet>
 
     <changeSet id="22" author="pstorch">
-        <createTable tableName="uploads">
+        <createTable tableName="inbox">
             <column name="id" type="integer" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="photographerId" type="integer">
-                <constraints nullable="false" referencedTableName="users" referencedColumnNames="id" foreignKeyName="fk_upload_user"/>
+                <constraints nullable="false" referencedTableName="users" referencedColumnNames="id" foreignKeyName="fk_inbox_user"/>
             </column>
             <column name="countryCode" type="char(2)"/>
             <column name="stationId" type="varchar(30)"/>
@@ -462,37 +462,21 @@
             <column name="lat" type="double"/>
             <column name="lon" type="double"/>
             <column name="extension" type="char(3)"/>
-            <column name="uploadComment" type="varchar(1024)"/>
+            <column name="comment" type="varchar(1024)"/>
             <column name="rejectReason" type="varchar(1024)"/>
             <column name="done" type="boolean" valueBoolean="false" defaultValueBoolean="false"/>
+            <column name="problemReport" type="boolean" valueBoolean="false" defaultValueBoolean="false"/>
             <column name="createdAt" type="long">
                 <constraints nullable="false"/>
             </column>
         </createTable>
         <addForeignKeyConstraint baseColumnNames="countryCode,stationId"
-                                 baseTableName="uploads"
-                                 constraintName="fk_upload_station"
-                                 onDelete="RESTRICT"
-                                 onUpdate="CASCADE"
-                                 referencedColumnNames="countryCode,id"
-                                 referencedTableName="stations"/>
-    </changeSet>
-
-    <changeSet id="23" author="pstorch">
-        <addColumn tableName="uploads">
-            <column name="ghost" type="boolean" valueBoolean="false" defaultValueBoolean="false"/>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="24" author="pstorch">
-        <dropForeignKeyConstraint baseTableName="uploads"
-                                 constraintName="fk_upload_station"/>
-        <addForeignKeyConstraint baseColumnNames="countryCode,stationId"
-                                 baseTableName="uploads"
-                                 constraintName="fk_upload_station"
+                                 baseTableName="inbox"
+                                 constraintName="fk_inbox_station"
                                  onDelete="SET NULL"
                                  onUpdate="CASCADE"
                                  referencedColumnNames="countryCode,id"
                                  referencedTableName="stations"/>
     </changeSet>
+
 </databaseChangeLog>

@@ -68,7 +68,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
 
         // Configure CORS parameters
         cors.setInitParameter(ALLOWED_ORIGINS_PARAM, "*");
-        cors.setInitParameter(ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Authorization,Comment,Country,Station-Id");
+        cors.setInitParameter(ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Authorization,Comment,Country,Station-Id,NameOrEmail");
         cors.setInitParameter(ALLOWED_METHODS_PARAM, "OPTIONS,GET,PUT,POST,DELETE,HEAD");
 
         // Add URL mapping
@@ -83,7 +83,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         final PhotoDao photoDao = jdbi.onDemand(PhotoDao.class);
         final StationDao stationDao = jdbi.onDemand(StationDao.class);
         StationDao.StationMapper.setPhotoBaseUrl(config.getPhotoBaseUrl());
-        final UploadDao uploadDao = jdbi.onDemand(UploadDao.class);
+        final InboxDao inboxDao = jdbi.onDemand(InboxDao.class);
 
         final StationsRepository repository = new StationsRepository(countryDao,
                 stationDao);
@@ -95,12 +95,12 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new CountriesResource(countryDao));
         environment.jersey().register(new StatisticResource(repository));
         environment.jersey().register(new PhotoDownloadResource(config.getPhotoDir(), config.getInboxDir(), config.getInboxProcessedDir()));
-        environment.jersey().register(new PhotoUploadResource(repository, config.getInboxDir(), config.getInboxToProcessDir(),
+        environment.jersey().register(new InboxResource(repository, config.getInboxDir(), config.getInboxToProcessDir(),
                 config.getInboxProcessedDir(), config.getPhotoDir(), config.getMonitor(), authenticator,
-                uploadDao, userDao, countryDao, photoDao, config.getInboxBaseUrl()));
+                inboxDao, userDao, countryDao, photoDao, config.getInboxBaseUrl()));
         environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
-                new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir(), uploadDao)));
+                new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir(), inboxDao)));
         environment.jersey().register(new StationsGpxWriter());
         environment.jersey().register(new StationsTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());

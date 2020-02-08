@@ -33,7 +33,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -412,12 +411,15 @@ public class RsApiAppTest {
                 .post(Entity.entity("IMAGE_CONTENT", "image/png"));
 
         assertThat(response.getStatus(), is(202));
-        final JsonNode uploadResponse = MAPPER.readTree((InputStream) response.getEntity());
-        assertThat(uploadResponse.get("uploadId"), notNullValue());
-        assertThat(uploadResponse.get("inboxUrl"), notNullValue());
-        final File pngFile = new File(MySuite.DROPWIZARD.getConfiguration().getInboxDir(), new URL(uploadResponse.get("inboxUrl").asText()).getFile());
-        assertThat(pngFile.exists(), is(true));
-        assertThat(IOUtils.readFully(new FileInputStream(pngFile), 13), is("IMAGE_CONTENT".getBytes(Charset.defaultCharset())));
+        final JsonNode inboxResponse = MAPPER.readTree((InputStream) response.getEntity());
+        assertThat(inboxResponse.get("id"), notNullValue());
+        assertThat(inboxResponse.get("filename"), notNullValue());
+
+        // download uploaded photo from inbox
+        final Response photoResponse = client.target(
+                String.format("http://localhost:%d%s%s", RULE.getLocalPort(), "/inbox/", inboxResponse.get("filename").asText()))
+                .request().get();
+        assertThat(IOUtils.readFully((InputStream)photoResponse.getEntity(), 13), is("IMAGE_CONTENT".getBytes(Charset.defaultCharset())));
     }
 
     @Test
@@ -496,7 +498,7 @@ public class RsApiAppTest {
     @Test
     public void getInboxWithBasicAuthPasswordFail() {
         final Response response = client.target(
-                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload/inbox"))
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/adminInbox"))
                 .request()
                 .header("Authorization", getBasicAuthentication("@stefanopitz", "blahblubb"))
                 .get();
@@ -507,7 +509,7 @@ public class RsApiAppTest {
     @Test
     public void getInboxWithBasicAuthNotAuthorized() {
         final Response response = client.target(
-                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload/inbox"))
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/adminInbox"))
                 .request()
                 .header("Authorization", getBasicAuthentication("@stefanopitz", "y89zFqkL6hro"))
                 .get();
@@ -518,7 +520,7 @@ public class RsApiAppTest {
     @Test
     public void getInboxWithBasicAuth() {
         final Response response = client.target(
-                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload/inbox"))
+                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/adminInbox"))
                 .request()
                 .header("Authorization", getBasicAuthentication("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8"))
                 .get();

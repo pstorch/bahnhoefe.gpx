@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Upload {
+public class InboxEntry {
 
     @JsonProperty
     private final int id;
@@ -31,7 +31,7 @@ public class Upload {
     private final String extension;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final String uploadComment;
+    private final String comment;
 
     @JsonProperty
     private final String rejectReason;
@@ -51,8 +51,8 @@ public class Upload {
     @JsonProperty(value = "hasConflict", access = JsonProperty.Access.READ_ONLY)
     private final boolean conflict;
 
-    @JsonProperty(value = "isGhost", access = JsonProperty.Access.READ_ONLY)
-    private final boolean ghost;
+    @JsonProperty(value = "isProblemReport", access = JsonProperty.Access.READ_ONLY)
+    private final boolean problemReport;
 
     @JsonProperty(value = "isProcessed", access = JsonProperty.Access.READ_ONLY)
     private boolean processed;
@@ -60,11 +60,11 @@ public class Upload {
     /**
      * Constructor with all values from database
      */
-    public Upload(final int id, final String countryCode, final String stationId, final String title,
-                  final Coordinates coordinates, final int photographerId, final String photographerNickname,
-                  final String extension, final String uploadComment, final String rejectReason,
-                  final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
-                  final boolean conflict, final boolean ghost) {
+    public InboxEntry(final int id, final String countryCode, final String stationId, final String title,
+                      final Coordinates coordinates, final int photographerId, final String photographerNickname,
+                      final String extension, final String comment, final String rejectReason,
+                      final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
+                      final boolean conflict, final boolean problemReport) {
         this.id = id;
         this.countryCode = countryCode;
         this.stationId = stationId;
@@ -73,33 +73,33 @@ public class Upload {
         this.photographerId = photographerId;
         this.photographerNickname = photographerNickname;
         this.extension = extension;
-        this.uploadComment = uploadComment;
+        this.comment = comment;
         this.rejectReason = rejectReason;
         this.createdAt = createdAt;
         this.done = done;
         this.command = command;
         this.hasPhoto = hasPhoto;
         this.conflict = conflict;
-        this.ghost = ghost;
+        this.problemReport = problemReport;
     }
 
     /**
      * Constructor to insert new record from photoUpload
      */
-    public Upload(final String countryCode, final String stationId, final String title,
-                  final Coordinates coordinates, final int photographerId,
-                  final String extension, final String uploadComment, final boolean ghost) {
-        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, uploadComment, null, System.currentTimeMillis(), false, null, false, false, ghost);
+    public InboxEntry(final String countryCode, final String stationId, final String title,
+                      final Coordinates coordinates, final int photographerId,
+                      final String extension, final String comment, final boolean problemReport) {
+        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, comment, null, System.currentTimeMillis(), false, null, false, false, problemReport);
     }
 
     /**
      * Constructor to deserialize json for updating the records
      */
-    public Upload(@JsonProperty("id") final int id,
-                  @JsonProperty("countryCode") final String countryCode,
-                  @JsonProperty("stationId") final String stationId,
-                  @JsonProperty("rejectReason") final String rejectReason,
-                  @JsonProperty("command") final Command command) {
+    public InboxEntry(@JsonProperty("id") final int id,
+                      @JsonProperty("countryCode") final String countryCode,
+                      @JsonProperty("stationId") final String stationId,
+                      @JsonProperty("rejectReason") final String rejectReason,
+                      @JsonProperty("command") final Command command) {
         this(id, countryCode, stationId, null, null, 0, null, null, null, rejectReason, null, false, command, false, false, false);
     }
 
@@ -131,8 +131,8 @@ public class Upload {
         return photographerNickname;
     }
 
-    public String getUploadComment() {
-        return uploadComment;
+    public String getComment() {
+        return comment;
     }
 
     public String getRejectReason() {
@@ -163,8 +163,8 @@ public class Upload {
         return conflict;
     }
 
-    public boolean isGhost() {
-        return ghost;
+    public boolean isProblemReport() {
+        return problemReport;
     }
 
     public String getFilename() {

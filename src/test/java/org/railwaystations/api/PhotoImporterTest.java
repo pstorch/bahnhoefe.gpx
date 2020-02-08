@@ -68,7 +68,7 @@ public class PhotoImporterTest {
 
         repository = new StationsRepository(countryDao, stationDao);
 
-        importer = new PhotoImporter(repository, userDao, photoDao, countryDao, new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), mock(UploadDao.class));
+        importer = new PhotoImporter(repository, userDao, photoDao, countryDao, new LoggingMonitor(), uploadDir.toString(), photoDir.toString(), mock(InboxDao.class));
     }
 
     private File createFile(final String countryCode, final String photographer, final String stationId) throws IOException {

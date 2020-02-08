@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200202.1200'
+  version: '20200207.2300'
   title: RSAPI
   license:
     name: MIT
@@ -15,7 +15,7 @@ tags:
     description: Photos of railway stations
     externalDocs:
       description: Find out more
-      url: 'http://www.railway-stations.org'
+      url: 'https://www.railway-stations.org'
 schemes:
   - https
 paths:
@@ -313,26 +313,26 @@ paths:
         '202':
           description: upload successful
           schema:
-            $ref: '#/definitions/UploadResponse'
+            $ref: '#/definitions/InboxResponse'
         '400':
           description: wrong request
           schema:
-            $ref: '#/definitions/UploadResponse'
+            $ref: '#/definitions/InboxResponse'
         '401':
           description: authorization failed
           schema:
-            $ref: '#/definitions/UploadResponse'
+            $ref: '#/definitions/InboxResponse'
         '409':
           description: photo already exists
           schema:
-            $ref: '#/definitions/UploadResponse'
+            $ref: '#/definitions/InboxResponse'
         '413':
           description: image too large (maximum 20 MB)
           schema:
-            $ref: '#/definitions/UploadResponse'
-  /reportGhostStation:
+            $ref: '#/definitions/InboxResponse'
+  /reportProblem:
     post:
-      summary: Report a Ghost-Station, Railway-Stations which don't exist or are not used anymore
+      summary: Report a for a Railway-Station
       produces:
         - application/json
       parameters:
@@ -359,16 +359,16 @@ paths:
         '202':
           description: report successful
           schema:
-            $ref: '#/definitions/UploadResponse'
+            $ref: '#/definitions/InboxResponse'
         '400':
           description: wrong request
           schema:
-            $ref: '#/definitions/UploadResponse'
+            $ref: '#/definitions/InboxResponse'
         '401':
           description: authorization failed
           schema:
-            $ref: '#/definitions/UploadResponse'
-  /photoUpload/queryState:
+            $ref: '#/definitions/InboxResponse'
+  /userInbox:
     post:
       summary: Query the state of photo uploads of the authorized user
       consumes:
@@ -382,7 +382,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/UploadStateQuery'
+              $ref: '#/definitions/InboxStateQuery'
         - name: Authorization
           in: header
           description: basic authorization
@@ -393,10 +393,10 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/UploadStateQuery'
-  /photoUpload/inbox:
+              $ref: '#/definitions/InboxStateQuery'
+  /adminInbox:
     get:
-      summary: Get the current inbox, photos under review.
+      summary: Get the current inbox, photos and problem reports under review.
       produces:
         - application/json
       parameters:
@@ -406,15 +406,15 @@ paths:
           type: string
       responses:
         '200':
-          description: array Upload objects
+          description: array of inbox objects
           schema:
             type: array
             items:
-              $ref: '#/definitions/Upload'
+              $ref: '#/definitions/InboxEntry'
         '401':
           description: not authorized
     post:
-      summary: Import or reject an uploaded photo from the inbox
+      summary: Import or reject an uploaded photo or a problem report from the inbox
       consumes:
         - application/json
       produces:
@@ -424,7 +424,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/UploadCommand'
+            $ref: '#/definitions/InboxCommand'
         - name: Authorization
           in: header
           description: basic authorization
@@ -816,12 +816,9 @@ definitions:
         type: string
       anonymous:
         type: boolean
-      uploadToken:
-        description: DEPRECATED! only filled in responses for verified Google IdToken registrations
-        type: string
-  UploadResponse:
+  InboxResponse:
     type: object
-    description: Response status of photo uploads
+    description: Response status of photo uploads and problem reports
     properties:
       state:
         enum:
@@ -835,17 +832,17 @@ definitions:
           - ERROR
       message:
         type: string
-      uploadId:
+      id:
         type: number
         format: integer
       filename:
         type: string
         description: filename in inbox
-  UploadStateQuery:
+  InboxStateQuery:
     type: object
     description: Upload state query
     properties:
-      uploadId:
+      id:
         type: integer
       countryCode:
         type: string
@@ -871,7 +868,7 @@ definitions:
           - ACCEPTED
           - REJECTED
           - OTHER_USER
-  Upload:
+  InboxEntry:
     type: object
     description: Represents an uploaded photo with processing state
     properties:
@@ -892,7 +889,7 @@ definitions:
         format: double
       photographerNickname:
         type: string
-      uploadComment:
+      comment:
         type: string
       createdAt:
         type: number
@@ -909,15 +906,15 @@ definitions:
       hasConflict:
         type: boolean
         description: conflict with another upload or existing photo
-      isGhost:
+      isProblemReport:
         type: boolean
-        description: this station was reported as ghost station
+        description: this station has a reported problem
       isProcessed:
         type: boolean
         description: was this image process (e.g. pixelated)
-  UploadCommand:
+  InboxCommand:
     type: object
-    description: command to import or reject one uploaded photo from the inbox
+    description: command to import or reject an inbox entry
     properties:
       id:
         type: number
