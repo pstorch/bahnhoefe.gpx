@@ -257,12 +257,21 @@ public class InboxResource {
         return Response.ok().build();
     }
 
+    @GET
+    @RolesAllowed("ADMIN")
+    @Path("adminInboxCount")
+    @Produces(MediaType.APPLICATION_JSON)
+    public InboxCountResponse adminInboxCount(@Auth final AuthUser user) {
+        return new InboxCountResponse(inboxDao.countPendingInboxEntries());
+    }
+
     private void processProblemReport(final InboxEntry inboxEntry) {
         final Station station = repository.findByCountryAndId(inboxEntry.getCountryCode(), inboxEntry.getStationId());
         if (station == null) {
            throw new WebApplicationException("Station not found", Response.Status.BAD_REQUEST);
         }
         inboxDao.done(inboxEntry.getId());
+        LOG.info("Rejecting problem report {} accepted", inboxEntry.getId());
     }
 
     private void importUpload(final InboxEntry inboxEntry, final String countryCode, final String stationId, final boolean force) {
@@ -330,6 +339,7 @@ public class InboxResource {
             } else {
                 inboxDao.done(inboxEntry.getId());
             }
+            LOG.info("Upload {} accepted: {}", inboxEntry.getId(), fileToImport);
         } catch (final Exception e) {
             LOG.error("Error importing upload {} photo {}", inboxEntry.getId(), fileToImport);
             throw new WebApplicationException("Error moving file: " + e.getMessage());
@@ -339,7 +349,7 @@ public class InboxResource {
     private void rejectInboxEntry(final InboxEntry inboxEntry, final String rejectReason) {
         inboxDao.reject(inboxEntry.getId(), rejectReason);
         if (inboxEntry.isProblemReport()) {
-            LOG.info("Rejecting Ghoststation report {}, {}", inboxEntry.getId(), rejectReason);
+            LOG.info("Rejecting problem report {}, {}", inboxEntry.getId(), rejectReason);
             return;
         }
 
@@ -460,6 +470,18 @@ public class InboxResource {
                 return "jpg";
             default:
                 return null;
+        }
+    }
+
+    private static class InboxCountResponse {
+        private final int pendingInboxEntries;
+
+        public InboxCountResponse(final int pendingInboxEntries) {
+            this.pendingInboxEntries = pendingInboxEntries;
+        }
+
+        public int getPendingInboxEntries() {
+            return pendingInboxEntries;
         }
     }
 

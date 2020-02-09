@@ -54,6 +54,9 @@ public interface InboxDao {
     @SqlQuery("select count(*) from inbox where countryCode = :countryCode and stationId = :stationId and done = false and photographerId != :photographerId")
     int countPendingInboxEntriesForStationOfOtherUser(@Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId, @Bind("photographerId") final int photographerId);
 
+    @SqlQuery("select count(*) from inbox where done = false")
+    int countPendingInboxEntries();
+
     class InboxEntryMapper implements RowMapper<InboxEntry> {
 
         public InboxEntry map(final ResultSet rs, final StatementContext ctx) throws SQLException {

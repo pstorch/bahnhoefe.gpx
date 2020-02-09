@@ -479,4 +479,10 @@
                                  referencedTableName="stations"/>
     </changeSet>
 
+    <changeSet id="23" author="pstorch" context="junit or test">
+        <update tableName="photos">
+            <column name="url" valueComputed="concat('/fotos/', countryCode, substring(url, 32))"/>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

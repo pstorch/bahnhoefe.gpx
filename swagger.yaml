@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200207.2300'
+  version: '20200208.1910'
   title: RSAPI
   license:
     name: MIT
@@ -394,6 +394,16 @@ paths:
             type: array
             items:
               $ref: '#/definitions/InboxStateQuery'
+  /adminInboxCount:
+    get:
+      summary: Count pending inbox items
+      produces:
+        - application/json
+      responses:
+        200:
+          description: count of pending inbox items
+          schema:
+            $ref: '#/definitions/InboxCountResponse'
   /adminInbox:
     get:
       summary: Get the current inbox, photos and problem reports under review.
@@ -930,3 +940,10 @@ definitions:
           - IMPORT
           - FORCE_IMPORT
           - REJECT
+  InboxCountResponse:
+    type: object
+    description: counts the pending inbox entries
+    properties:
+      pendingInboxEntries:
+        type: number
+        format: integer
