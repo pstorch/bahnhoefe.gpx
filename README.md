@@ -23,16 +23,16 @@ Release:
 This project can be run as a Docker container. The docker image is automatically built via the above maven build command.
 
 - run locally:
-  ```docker run -it --net=host --rm -p 8080:8080 -e RSAPI_LB_CONTEXT=test pstorch/rsapi```
+  ```docker run -it --net=host --rm -p 8080:8080 -e RSAPI_LB_CONTEXT=test railwaystations/rsapi```
 
 - run on server:
   - Download the image from docker hub:
-  ```docker pull pstorch/rsapi:<version>```
+  ```docker pull railwaystations/rsapi:<version>```
   
   - Configure the ```config.yml``` file from current directory and put it into the rsapi work directory.
   
   - Run as background service:
-  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -v <photo-main-dir>:/tmp/railway-station-photos -e RSAPI_LB_CONTEXT=test pstorch/rsapi:<version>```
+  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -v <photo-main-dir>:/tmp/railway-station-photos -e RSAPI_LB_CONTEXT=test railwaystations/rsapi:<version>```
 
   - Remove the (running) container:
   ```docker rm -f rsapi```
@@ -49,7 +49,7 @@ This project can be run as a Docker container. The docker image is automatically
   - Restart (e.g. after config change):
   ```docker restart rsapi```
   
-Ready to use images are published at https://hub.docker.com/r/pstorch/rsapi/
+Ready to use images are published at https://hub.docker.com/repository/docker/railwaystations/rsapi
 
 ## Maria DB
 
