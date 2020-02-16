@@ -140,26 +140,29 @@ public class InboxResource {
 
     @POST
     @Path("reportProblem")
-    @Consumes({IMAGE_PNG, IMAGE_JPEG})
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public InboxResponse reportProblem(@HeaderParam("User-Agent") final String userAgent,
-                                       @HeaderParam("Station-Id") final String stationId,
-                                       @HeaderParam("Country") final String country,
-                                       @HeaderParam("Comment") final String encComment,
-                                       @Auth final AuthUser user) throws UnsupportedEncodingException {
-        final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
-        LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}",
-                user.getName(), user.getUser().getEmail(), country, stationId);
-        final Station station = repository.findByCountryAndId(country, stationId);
+                                       @NotNull() final ProblemReport problemReport,
+                                       @Auth final AuthUser user) {
+        LOG.info("New problem report: Nickname: {}; Country: {}; Station-Id: {}",
+                user.getName(), problemReport.getCountryCode(), problemReport.getStationId());
+        final Station station = repository.findByCountryAndId(problemReport.getCountryCode(), problemReport.getStationId());
         if (station == null) {
             return new InboxResponse(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA, "Station not found");
         }
-        if (StringUtils.isBlank(comment)) {
+        if (StringUtils.isBlank(problemReport.getComment())) {
             return new InboxResponse(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA, "Comment is mandatory");
         }
-        final InboxEntry inboxEntry = new InboxEntry(country, stationId, null, null, user.getUser().getId(), null, comment, true);
-        final int id = inboxDao.insert(inboxEntry);
-        return new InboxResponse(InboxResponse.InboxResponseState.REVIEW, id, null);
+        if (problemReport.getType() == null) {
+            return new InboxResponse(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA, "Problem type is mandatory");
+        }
+        final InboxEntry inboxEntry = new InboxEntry(problemReport.getCountryCode(), problemReport.getStationId(),
+                null, null, user.getUser().getId(), null, problemReport.getComment(),
+                problemReport.getType());
+        monitor.sendMessage(String.format("New problem report for %s%n%s: %s%nvia %s",
+                station.getTitle(), problemReport.getType(), StringUtils.trimToEmpty(problemReport.getComment()), userAgent));
+        return new InboxResponse(InboxResponse.InboxResponseState.REVIEW, inboxDao.insert(inboxEntry));
     }
 
     @POST
@@ -179,6 +182,8 @@ public class InboxResource {
                     query.setStationId(inboxEntry.getStationId());
                     query.setCoordinates(inboxEntry.getCoordinates());
                     query.setFilename(inboxEntry.getFilename());
+                    query.setInboxUrl(getInboxUrl(inboxEntry.getFilename(), isProcessed(inboxEntry.getFilename())));
+
 
                     if (inboxEntry.isDone()) {
                         if (inboxEntry.getRejectReason() == null) {
@@ -218,9 +223,18 @@ public class InboxResource {
         final List<InboxEntry> pendingInboxEntries = inboxDao.findPendingInboxEntries();
         for (final InboxEntry inboxEntry : pendingInboxEntries) {
             final String filename = inboxEntry.getFilename();
-            inboxEntry.isProcessed(filename != null && new File(inboxProcessedDir, filename).exists());
+            inboxEntry.isProcessed(isProcessed(filename));
+            inboxEntry.setInboxUrl(getInboxUrl(filename, inboxEntry.isProcessed()));
         }
         return pendingInboxEntries;
+    }
+
+    private String getInboxUrl(final String filename, final boolean processed) {
+        return inboxBaseUrl + (processed ? "/processed/" : "/") + filename;
+    }
+
+    private boolean isProcessed(final String filename) {
+        return filename != null && new File(inboxProcessedDir, filename).exists();
     }
 
     @POST
@@ -237,18 +251,22 @@ public class InboxResource {
                 rejectInboxEntry(inboxEntry, command.getRejectReason());
                 break;
             case IMPORT :
-                if (inboxEntry.isProblemReport()) {
-                    processProblemReport(inboxEntry);
-                } else {
-                    importUpload(inboxEntry, command.getCountryCode(), command.getStationId(), false);
-                }
+                importUpload(inboxEntry, command.getCountryCode(), command.getStationId(), false);
                 break;
             case FORCE_IMPORT :
-                if (inboxEntry.isProblemReport()) {
-                    processProblemReport(inboxEntry);
-                } else {
-                    importUpload(inboxEntry, command.getCountryCode(), command.getStationId(), true);
-                }
+                importUpload(inboxEntry, command.getCountryCode(), command.getStationId(), true);
+                break;
+            case DEACTIVATE_STATION:
+                deactivateStation(inboxEntry);
+                break;
+            case DELETE_STATION:
+                deleteStation(inboxEntry);
+                break;
+            case DELETE_PHOTO:
+                deletePhoto(inboxEntry);
+                break;
+            case MARK_SOLVED:
+                markProblemReportSolved(inboxEntry);
                 break;
             default:
                 throw new WebApplicationException("Unexpected command value: " + command.getCommand(), Response.Status.BAD_REQUEST);
@@ -265,13 +283,39 @@ public class InboxResource {
         return new InboxCountResponse(inboxDao.countPendingInboxEntries());
     }
 
-    private void processProblemReport(final InboxEntry inboxEntry) {
+    private void deactivateStation(final InboxEntry inboxEntry) {
+        final Station station = assertStationExists(inboxEntry);
+        repository.deactivate(station);
+        inboxDao.done(inboxEntry.getId());
+        LOG.info("Problem report {} station {} deactivated", inboxEntry.getId(), station.getKey());
+    }
+
+    private void deleteStation(final InboxEntry inboxEntry) {
+        final Station station = assertStationExists(inboxEntry);
+        repository.delete(station);
+        inboxDao.done(inboxEntry.getId());
+        LOG.info("Problem report {} station {} deleted", inboxEntry.getId(), station.getKey());
+    }
+
+    private void deletePhoto(final InboxEntry inboxEntry) {
+        final Station station = assertStationExists(inboxEntry);
+        photoDao.delete(station.getKey());
+        inboxDao.done(inboxEntry.getId());
+        LOG.info("Problem report {} photo of station {} deleted", inboxEntry.getId(), station.getKey());
+    }
+
+    private void markProblemReportSolved(final InboxEntry inboxEntry) {
+        assertStationExists(inboxEntry);
+        inboxDao.done(inboxEntry.getId());
+        LOG.info("Problem report {} accepted", inboxEntry.getId());
+    }
+
+    private Station assertStationExists(final InboxEntry inboxEntry) {
         final Station station = repository.findByCountryAndId(inboxEntry.getCountryCode(), inboxEntry.getStationId());
         if (station == null) {
            throw new WebApplicationException("Station not found", Response.Status.BAD_REQUEST);
         }
-        inboxDao.done(inboxEntry.getId());
-        LOG.info("Rejecting problem report {} accepted", inboxEntry.getId());
+        return station;
     }
 
     private void importUpload(final InboxEntry inboxEntry, final String countryCode, final String stationId, final boolean force) {
@@ -348,7 +392,7 @@ public class InboxResource {
 
     private void rejectInboxEntry(final InboxEntry inboxEntry, final String rejectReason) {
         inboxDao.reject(inboxEntry.getId(), rejectReason);
-        if (inboxEntry.isProblemReport()) {
+        if (inboxEntry.getProblemReportType() != null) {
             LOG.info("Rejecting problem report {}, {}", inboxEntry.getId(), rejectReason);
             return;
         }
@@ -394,7 +438,7 @@ public class InboxResource {
         final String inboxUrl;
         final Integer id;
         try {
-            id = inboxDao.insert(new InboxEntry(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment, false));
+            id = inboxDao.insert(new InboxEntry(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment, null));
             file = getUploadFile(InboxEntry.getFilename(id, extension));
             LOG.info("Writing photo to {}", file);
 
@@ -427,7 +471,7 @@ public class InboxResource {
             return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.ERROR));
         }
 
-        return new InboxResponse(duplicate ? InboxResponse.InboxResponseState.CONFLICT : InboxResponse.InboxResponseState.REVIEW, id, file.getName());
+        return new InboxResponse(duplicate ? InboxResponse.InboxResponseState.CONFLICT : InboxResponse.InboxResponseState.REVIEW, id, file.getName(), inboxUrl);
     }
 
     private File getUploadFile(final String filename) {

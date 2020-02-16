@@ -15,6 +15,7 @@ public class InboxStateQuery {
     private InboxState state = InboxState.UNKNOWN;
     private String rejectedReason;
     private String filename;
+    private String inboxUrl;
 
     public InboxStateQuery() {
     }
@@ -79,6 +80,14 @@ public class InboxStateQuery {
 
     public String getFilename() {
         return filename;
+    }
+
+    public void setInboxUrl(final String inboxUrl) {
+        this.inboxUrl = inboxUrl;
+    }
+
+    public String getInboxUrl() {
+        return inboxUrl;
     }
 
     public enum InboxState {

@@ -444,7 +444,7 @@
     <changeSet id="21" author="pstorch" context="prod">
         <update tableName="users">
             <column name="admin" valueBoolean="true"/>
-            <where>id in (40,42,45)</where>
+            <where>id in (40,42,45,365)</where>
         </update>
     </changeSet>
 
@@ -465,7 +465,7 @@
             <column name="comment" type="varchar(1024)"/>
             <column name="rejectReason" type="varchar(1024)"/>
             <column name="done" type="boolean" valueBoolean="false" defaultValueBoolean="false"/>
-            <column name="problemReport" type="boolean" valueBoolean="false" defaultValueBoolean="false"/>
+            <column name="problemReportType" type="varchar(30)"/>
             <column name="createdAt" type="long">
                 <constraints nullable="false"/>
             </column>
@@ -481,7 +481,13 @@
 
     <changeSet id="23" author="pstorch" context="junit or test">
         <update tableName="photos">
-            <column name="url" valueComputed="concat('/fotos/', countryCode, substring(url, 32))"/>
+            <column name="url" valueComputed="concat('/', countryCode, substring(url, 32))"/>
+        </update>
+    </changeSet>
+
+    <changeSet id="24" author="pstorch" context="prod">
+        <update tableName="photos">
+            <column name="url" valueComputed="substring(url, 7)"/>
         </update>
     </changeSet>
 

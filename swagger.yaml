@@ -340,21 +340,12 @@ paths:
           in: header
           description: basic authorization
           type: string
-        - name: Country
-          in: header
-          description: country code
-          required: false
-          type: string
-        - name: Station-Id
-          in: header
-          description: id of the railwaystation
-          required: false
-          type: string
-        - name: Comment
-          in: header
-          description: comment of the photographer to the reviewer (needs to be URL-encoded with UTF-8 charset)
-          required: false
-          type: string
+        - name: problemReport
+          in: body
+          description: The problem report
+          required: true
+          schema:
+            $ref: '#/definitions/ProblemReport'
       responses:
         '202':
           description: report successful
@@ -848,6 +839,9 @@ definitions:
       filename:
         type: string
         description: filename in inbox
+      inboxUrl:
+        type: string
+        description: url of the photo in the inbox
   InboxStateQuery:
     type: object
     description: Upload state query
@@ -870,6 +864,9 @@ definitions:
       filename:
         type: string
         description: filename in inbox
+      inboxUrl:
+        type: string
+        description: url of the photo in the inbox
       state:
         enum:
           - UNKNOWN
@@ -910,15 +907,22 @@ definitions:
       filename:
         type: string
         description: name of the file in inbox
+      inboxUrl:
+        type: string
+        description: url of the photo in the inbox
       hasPhoto:
         type: boolean
         description: this station has already a photo (conflict)
       hasConflict:
         type: boolean
         description: conflict with another upload or existing photo
-      isProblemReport:
-        type: boolean
-        description: this station has a reported problem
+      problemReportType:
+        enum:
+          - WRONG_LOCATION
+          - STATION_INACTIVE
+          - STATION_NONEXISTENT
+          - WRONG_PHOTO
+          - OTHER
       isProcessed:
         type: boolean
         description: was this image process (e.g. pixelated)
@@ -939,6 +943,10 @@ definitions:
         enum:
           - IMPORT
           - FORCE_IMPORT
+          - DEACTIVATE_STATION
+          - DELETE_STATION
+          - DELETE_PHOTO
+          - MARK_SOLVED
           - REJECT
   InboxCountResponse:
     type: object
@@ -947,3 +955,20 @@ definitions:
       pendingInboxEntries:
         type: number
         format: integer
+  ProblemReport:
+    type: object
+    description: Represents a report of a problem with a station
+    properties:
+      countryCode:
+        type: string
+      stationId:
+        type: string
+      comment:
+        type: string
+      type:
+        enum:
+          - WRONG_LOCATION
+          - STATION_INACTIVE
+          - STATION_NONEXISTENT
+          - WRONG_PHOTO
+          - OTHER

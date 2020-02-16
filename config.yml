@@ -27,5 +27,5 @@ mailer:
 #  from: ${SMTP_FROM:-}
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
-photoBaseUrl: ${PHOTO_BASE_URL:-http://localhost:8080}
+photoBaseUrl: ${PHOTO_BASE_URL:-http://localhost:8080/photos}
 inboxBaseUrl: ${INBOX_BASE_URL:-http://localhost:8080/inbox}

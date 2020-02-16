@@ -51,11 +51,14 @@ public class InboxEntry {
     @JsonProperty(value = "hasConflict", access = JsonProperty.Access.READ_ONLY)
     private final boolean conflict;
 
-    @JsonProperty(value = "isProblemReport", access = JsonProperty.Access.READ_ONLY)
-    private final boolean problemReport;
+    @JsonProperty(value = "problemReportType", access = JsonProperty.Access.READ_ONLY)
+    private final ProblemReportType problemReportType;
 
     @JsonProperty(value = "isProcessed", access = JsonProperty.Access.READ_ONLY)
     private boolean processed;
+
+    @JsonProperty(value = "inboxUrl", access = JsonProperty.Access.READ_ONLY)
+    private String inboxUrl;
 
     /**
      * Constructor with all values from database
@@ -64,7 +67,7 @@ public class InboxEntry {
                       final Coordinates coordinates, final int photographerId, final String photographerNickname,
                       final String extension, final String comment, final String rejectReason,
                       final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
-                      final boolean conflict, final boolean problemReport) {
+                      final boolean conflict, final ProblemReportType problemReportType) {
         this.id = id;
         this.countryCode = countryCode;
         this.stationId = stationId;
@@ -80,7 +83,7 @@ public class InboxEntry {
         this.command = command;
         this.hasPhoto = hasPhoto;
         this.conflict = conflict;
-        this.problemReport = problemReport;
+        this.problemReportType = problemReportType;
     }
 
     /**
@@ -88,8 +91,10 @@ public class InboxEntry {
      */
     public InboxEntry(final String countryCode, final String stationId, final String title,
                       final Coordinates coordinates, final int photographerId,
-                      final String extension, final String comment, final boolean problemReport) {
-        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension, comment, null, System.currentTimeMillis(), false, null, false, false, problemReport);
+                      final String extension, final String comment, final ProblemReportType problemReportType) {
+        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension,
+                comment, null, System.currentTimeMillis(), false, null, false,
+                false, problemReportType);
     }
 
     /**
@@ -100,7 +105,9 @@ public class InboxEntry {
                       @JsonProperty("stationId") final String stationId,
                       @JsonProperty("rejectReason") final String rejectReason,
                       @JsonProperty("command") final Command command) {
-        this(id, countryCode, stationId, null, null, 0, null, null, null, rejectReason, null, false, command, false, false, false);
+        this(id, countryCode, stationId, null, null, 0, null,
+                null, null, rejectReason, null, false, command, false,
+                false, null);
     }
 
     public String getCountryCode() {
@@ -163,8 +170,8 @@ public class InboxEntry {
         return conflict;
     }
 
-    public boolean isProblemReport() {
-        return problemReport;
+    public ProblemReportType getProblemReportType() {
+        return problemReportType;
     }
 
     public String getFilename() {
@@ -186,11 +193,23 @@ public class InboxEntry {
         return processed;
     }
 
+    public String getInboxUrl() {
+        return inboxUrl;
+    }
+
+    public void setInboxUrl(final String inboxUrl) {
+        this.inboxUrl = inboxUrl;
+    }
+
     public enum Command {
         /** Import photo */
         IMPORT,
         /** Import photo, even if there is a conflict, create station if not exist */
         FORCE_IMPORT,
+        DEACTIVATE_STATION,
+        DELETE_STATION,
+        DELETE_PHOTO,
+        MARK_SOLVED,
         /** Reject photo */
         REJECT
     }

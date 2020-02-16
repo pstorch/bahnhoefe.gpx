@@ -10,6 +10,7 @@ import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.InboxEntry;
+import org.railwaystations.api.model.ProblemReportType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +20,7 @@ import java.util.Set;
 public interface InboxDao {
 
     String JOIN_QUERY = "select u.id, u.countryCode, u.stationId, u.title u_title, s.title s_title, u.lat u_lat, u.lon u_lon, s.lat s_lat, s.lon s_lon, "
-                    + "     u.photographerId, p.name photographerNickname, u.extension, u.comment, u.rejectReason, u.createdAt, u.done, u.problemReport, f.url, "
+                    + "     u.photographerId, p.name photographerNickname, u.extension, u.comment, u.rejectReason, u.createdAt, u.done, u.problemReportType, f.url, "
                     + "     (select count(*) from inbox u2 where u2.countryCode is not null and u2.countryCode = u.countryCode "
                     + "         and u2.stationId is not null and u2.stationId = u.stationId and u2.done = false and u2.id != u.id) as conflict"
                     + " from inbox u left join stations s on s.countryCode = u.countryCode and s.id = u.stationId "
@@ -38,7 +39,7 @@ public interface InboxDao {
     @RegisterRowMapper(InboxEntryMapper.class)
     Set<InboxEntry> all();
 
-    @SqlUpdate("insert into inbox (countryCode, stationId, title, lat, lon, photographerId, extension, comment, done, createdAt, problemReport) values (:countryCode, :stationId, :title, :coordinates?.lat, :coordinates?.lon, :photographerId, :extension, :comment, :done, :createdAt, :problemReport)")
+    @SqlUpdate("insert into inbox (countryCode, stationId, title, lat, lon, photographerId, extension, comment, done, createdAt, problemReportType) values (:countryCode, :stationId, :title, :coordinates?.lat, :coordinates?.lon, :photographerId, :extension, :comment, :done, :createdAt, :problemReportType)")
     @GetGeneratedKeys("id")
     Integer insert(@BindBean final InboxEntry inboxEntry);
 
@@ -73,13 +74,14 @@ public interface InboxDao {
                 title = rs.getString("u_title");
             }
             final boolean done = rs.getBoolean("done");
-            final boolean problemReport = rs.getBoolean("problemReport");
+            final String problemReportType = rs.getString("problemReportType");
             final String extension = rs.getString("extension");
             return new InboxEntry(id, rs.getString("countryCode"), rs.getString("stationId"), title,
                     coordinates, rs.getInt("photographerId"), rs.getString("photographerNickname"),
                     extension, rs.getString("comment"), rs.getString("rejectReason"),
                     rs.getLong("createdAt"), done, null, rs.getString("url") != null,
-                    rs.getInt("conflict") > 0, problemReport);
+                    rs.getInt("conflict") > 0,
+                    problemReportType != null ? ProblemReportType.valueOf(problemReportType) : null);
         }
 
     }

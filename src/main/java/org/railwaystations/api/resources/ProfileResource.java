@@ -219,7 +219,7 @@ public class ProfileResource {
         if (existing != null) {
             userDao.updateCredentials(existing.getId(), registration.getKey());
             monitor.sendMessage(
-                    String.format("New Password{nickname='%s', email='%s'}%nvia %s",
+                    String.format("Re-registration: sending new password{nickname='%s', email='%s'}%nvia %s",
                             registration.getName(), registration.getEmail(), userAgent));
             return;
         }
@@ -230,7 +230,7 @@ public class ProfileResource {
         }
         final Integer id = userDao.insert(registration);
         monitor.sendMessage(
-                String.format("New Registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s', anonymous=%s}%nvia %s",
+                String.format("New registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s', anonymous=%s}%nvia %s",
                         registration.getName(), registration.getEmail(), registration.getLicense(), registration.isOwnPhotos(),
                         registration.getUrl(), registration.isAnonymous(), userAgent));
 

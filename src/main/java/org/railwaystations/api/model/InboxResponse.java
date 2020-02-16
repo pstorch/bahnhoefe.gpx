@@ -10,24 +10,30 @@ public class InboxResponse {
     private final String message;
     private final Integer id;
     private final String filename;
+    private final String inboxUrl;
 
-    public InboxResponse(final InboxResponseState state, final String message, final Integer id, final String filename) {
+    public InboxResponse(final InboxResponseState state, final String message, final Integer id, final String filename, final String inboxUrl) {
         this.state = state;
         this.message = message;
         this.id = id;
         this.filename = filename;
+        this.inboxUrl = inboxUrl;
+    }
+
+    public InboxResponse(final InboxResponseState state, final Integer id, final String filename, final String inboxUrl) {
+        this(state, state.responseStatus.getReasonPhrase(), id, filename, inboxUrl);
+    }
+
+    public InboxResponse(final InboxResponseState state, final Integer id) {
+        this(state, state.responseStatus.getReasonPhrase(), id, null, null);
     }
 
     public InboxResponse(final InboxResponseState state, final String message) {
-        this(state, message, null, null);
+        this(state, message, null, null, null);
     }
 
     public InboxResponse(final InboxResponseState state) {
         this(state, state.responseStatus.getReasonPhrase());
-    }
-
-    public InboxResponse(final InboxResponseState state, final Integer id, final String filename) {
-        this(state, state.responseStatus.getReasonPhrase(), id, filename);
     }
 
     public InboxResponseState getState() {
@@ -44,6 +50,10 @@ public class InboxResponse {
 
     public String getFilename() {
         return filename;
+    }
+
+    public String getInboxUrl() {
+        return inboxUrl;
     }
 
     public enum InboxResponseState {

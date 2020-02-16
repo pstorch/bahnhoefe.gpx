@@ -56,7 +56,7 @@ public class ProfileResourceTest {
         verify(userDao, never()).updateCredentials(anyInt(), anyString());
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}\nvia UserAgent"));
+        assertThat(monitor.getMessages().get(0), equalTo("New registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}\nvia UserAgent"));
         assertEmail("nickname");
 
         verifyNoMoreInteractions(userDao);
@@ -87,7 +87,7 @@ public class ProfileResourceTest {
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=true}\nvia UserAgent"));
+        assertThat(monitor.getMessages().get(0), equalTo("New registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=true}\nvia UserAgent"));
     }
 
     @Test
@@ -107,7 +107,7 @@ public class ProfileResourceTest {
         final Response response = resource.register("UserAgent", user);
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Password{nickname='existing', email='existing@example.com'}\nvia UserAgent"));
+        assertThat(monitor.getMessages().get(0), equalTo("Re-registration: sending new password{nickname='existing', email='existing@example.com'}\nvia UserAgent"));
     }
 
     @Test
@@ -203,7 +203,7 @@ public class ProfileResourceTest {
         final Response response = resource.newUploadToken("UserAgent", "existing@example.com");
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Password{nickname='existing', email='existing@example.com'}\nvia UserAgent"));
+        assertThat(monitor.getMessages().get(0), equalTo("Re-registration: sending new password{nickname='existing', email='existing@example.com'}\nvia UserAgent"));
     }
 
     @Test
@@ -214,7 +214,7 @@ public class ProfileResourceTest {
         final Response response = resource.newUploadToken("UserAgent", "existing");
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("New Password{nickname='existing', email='existing@example.com'}\nvia UserAgent"));
+        assertThat(monitor.getMessages().get(0), equalTo("Re-registration: sending new password{nickname='existing', email='existing@example.com'}\nvia UserAgent"));
     }
 
     @Test
