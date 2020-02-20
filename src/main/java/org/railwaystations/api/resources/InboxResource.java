@@ -292,6 +292,7 @@ public class InboxResource {
 
     private void deleteStation(final InboxEntry inboxEntry) {
         final Station station = assertStationExists(inboxEntry);
+        photoDao.delete(station.getKey());
         repository.delete(station);
         inboxDao.done(inboxEntry.getId());
         LOG.info("Problem report {} station {} deleted", inboxEntry.getId(), station.getKey());

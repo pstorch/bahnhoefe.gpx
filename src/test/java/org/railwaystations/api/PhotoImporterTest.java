@@ -164,7 +164,7 @@ public class PhotoImporterTest {
         assertThat(photo.getPhotographer().getId(), is(photographerId));
         assertThat(photo.getStationKey().getCountry(), is(countryCode));
         assertThat(photo.getLicense(), is(license));
-        assertThat(photo.getUrl(), is("/fotos/" + countryCode + "/" + stationId + ".jpg"));
+        assertThat(photo.getUrl(), is("/" + countryCode + "/" + stationId + ".jpg"));
         assertThat(photo.getStationKey().getId(), is(stationId));
         assertThat(photo.getCreatedAt() / 10000, is(System.currentTimeMillis() / 10000));
     }

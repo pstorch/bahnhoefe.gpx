@@ -180,7 +180,7 @@ public class PhotoImporter {
     }
 
     public static Photo createPhoto(final String countryCode, final Optional<Country> country, final String stationId, final User user, final String extension) {
-        return new Photo(new Station.Key(countryCode, stationId), "/fotos/" + countryCode + "/" + stationId + "." + extension, user, System.currentTimeMillis(), getLicense(user.getLicense(), country));
+        return new Photo(new Station.Key(countryCode, stationId), "/" + countryCode + "/" + stationId + "." + extension, user, System.currentTimeMillis(), getLicense(user.getLicense(), country));
     }
 
     /**

@@ -13,7 +13,7 @@ public interface PhotoDao {
     @SqlUpdate("update photos set url = :url, license = :license, photographerId = :photographer.id, createdAt = :createdAt where countryCode = :stationKey.country and id = :stationKey.id")
     void update(@BindBean final Photo photo);
 
-    @SqlUpdate("delete photos where countryCode = :country and id = :id")
+    @SqlUpdate("delete from photos where countryCode = :country and id = :id")
     void delete(@BindBean final Station.Key key);
 
 }
