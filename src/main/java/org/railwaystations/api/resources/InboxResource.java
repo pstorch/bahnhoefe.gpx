@@ -165,11 +165,18 @@ public class InboxResource {
         return new InboxResponse(InboxResponse.InboxResponseState.REVIEW, inboxDao.insert(inboxEntry));
     }
 
+    @GET
+    @Path("publicInbox")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<PublicInboxEntry> publicInbox() {
+        return inboxDao.findPublicInboxEntries();
+    }
+
     @POST
     @Path("userInbox")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<InboxStateQuery> userInbox(@NotNull final List<InboxStateQuery> queries, @Auth final AuthUser user) {
+    public List<InboxStateQuery> userInbox(@Auth final AuthUser user, @NotNull final List<InboxStateQuery> queries) {
         LOG.info("Query uploadStatus for Nickname: {}", user.getName());
 
         for (final InboxStateQuery query : queries) {

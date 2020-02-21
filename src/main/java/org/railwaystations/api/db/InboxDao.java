@@ -11,6 +11,7 @@ import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.InboxEntry;
 import org.railwaystations.api.model.ProblemReportType;
+import org.railwaystations.api.model.PublicInboxEntry;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,6 +35,12 @@ public interface InboxDao {
     @SqlQuery(JOIN_QUERY + " where u.done = false order by id")
     @RegisterRowMapper(InboxEntryMapper.class)
     List<InboxEntry> findPendingInboxEntries();
+
+    @SqlQuery("select u.countryCode, u.stationId, u.title u_title, s.title s_title, u.lat u_lat, u.lon u_lon, s.lat s_lat, s.lon s_lon" +
+              " from inbox u left join stations s on s.countryCode = u.countryCode and s.id = u.stationId" +
+              " where u.done = false and (u.problemReportType is null or u.problemReportType = '')")
+    @RegisterRowMapper(PublicInboxEntryMapper.class)
+    List<PublicInboxEntry> findPublicInboxEntries();
 
     @SqlQuery(JOIN_QUERY)
     @RegisterRowMapper(InboxEntryMapper.class)
@@ -82,6 +89,25 @@ public interface InboxDao {
                     rs.getLong("createdAt"), done, null, rs.getString("url") != null,
                     rs.getInt("conflict") > 0,
                     problemReportType != null ? ProblemReportType.valueOf(problemReportType) : null);
+        }
+
+    }
+
+    class PublicInboxEntryMapper implements RowMapper<PublicInboxEntry> {
+
+        public PublicInboxEntry map(final ResultSet rs, final StatementContext ctx) throws SQLException {
+            final String countryCode = rs.getString("countryCode");
+            final String stationId = rs.getString("stationId");
+            final Coordinates coordinates;
+            final String title;
+            if (countryCode != null && stationId != null) {
+                coordinates = new Coordinates(rs.getDouble("s_lat"), rs.getDouble("s_lon"));
+                title = rs.getString("s_title");
+            } else {
+                coordinates = new Coordinates(rs.getDouble("u_lat"), rs.getDouble("u_lon"));
+                title = rs.getString("u_title");
+            }
+            return new PublicInboxEntry(rs.getString("countryCode"), rs.getString("stationId"), title, coordinates);
         }
 
     }

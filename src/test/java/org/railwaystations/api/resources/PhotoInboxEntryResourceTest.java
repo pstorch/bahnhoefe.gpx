@@ -194,7 +194,7 @@ public class PhotoInboxEntryResourceTest {
         inboxStateQueries.add(new InboxStateQuery(null,"de", "9876", null, null, null));
         inboxStateQueries.add(new InboxStateQuery(4,"ch", "0815", null, null, null));
 
-        final List<InboxStateQuery> uploadStateQueriesResult = resource.userInbox(inboxStateQueries, new AuthUser(user));
+        final List<InboxStateQuery> uploadStateQueriesResult = resource.userInbox(new AuthUser(user), inboxStateQueries);
 
         assertThat(uploadStateQueriesResult.get(0).getState(), is(InboxStateQuery.InboxState.REVIEW));
         assertThat(uploadStateQueriesResult.get(0).getFilename(), is("1.jpg"));

@@ -4,22 +4,10 @@ import com.fasterxml.jackson.annotation.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class InboxEntry {
+public class InboxEntry extends PublicInboxEntry {
 
     @JsonProperty
     private final int id;
-
-    @JsonProperty
-    private final String countryCode;
-
-    @JsonProperty
-    private final String stationId;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final String title;
-
-    @JsonUnwrapped
-    private final Coordinates coordinates;
 
     @JsonIgnore
     private final int photographerId;
@@ -68,11 +56,8 @@ public class InboxEntry {
                       final String extension, final String comment, final String rejectReason,
                       final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
                       final boolean conflict, final ProblemReportType problemReportType) {
+        super(countryCode, stationId, title, coordinates);
         this.id = id;
-        this.countryCode = countryCode;
-        this.stationId = stationId;
-        this.title = title;
-        this.coordinates = coordinates;
         this.photographerId = photographerId;
         this.photographerNickname = photographerNickname;
         this.extension = extension;
@@ -110,24 +95,8 @@ public class InboxEntry {
                 false, null);
     }
 
-    public String getCountryCode() {
-        return countryCode;
-    }
-
     public int getId() {
         return id;
-    }
-
-    public String getStationId() {
-        return stationId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public Coordinates getCoordinates() {
-        return coordinates;
     }
 
     public int getPhotographerId() {
