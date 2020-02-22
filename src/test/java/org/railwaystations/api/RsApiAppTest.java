@@ -656,14 +656,12 @@ public class RsApiAppTest {
     public static final class MySuite {
         private static final String TMP_FILE = createTempFile();
         private static final String TMP_WORK_DIR = createTempDir("workDir");
-        private static final String TMP_PHOTO_DIR = createTempDir("photoDir");
         private static final String CONFIG_PATH = ResourceHelpers.resourceFilePath("test-config.yml");
 
         public static final DropwizardAppExtension<RsApiConfiguration> DROPWIZARD
                 = new DropwizardAppExtension<>(RsApiApp.class, CONFIG_PATH,
                                                 ConfigOverride.config("database.url", "jdbc:h2:" + TMP_FILE),
-                                                ConfigOverride.config("workDir", TMP_WORK_DIR),
-                                                ConfigOverride.config("photoDir", TMP_PHOTO_DIR));
+                                                ConfigOverride.config("workDir", TMP_WORK_DIR));
 
         static {
             DROPWIZARD.addListener(new DropwizardAppExtension.ServiceListener<RsApiConfiguration>() {

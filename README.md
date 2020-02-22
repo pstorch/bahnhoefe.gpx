@@ -19,6 +19,20 @@ Release:
 - `mvn release:prepare`
 - `mvn release:perform -Darguments=-DaltDeploymentRepository=local::default::file:///tmp/maven`
 
+## Working Directory
+
+The API uses `/var/rsapi` as working directory. This can be changed in the `config.yml` or via Docker volume, see below.
+
+The following subdirectories are being used:
+
+- `photos`
+  - `<countryCode>`: photos for the country identified by the country code
+- `inbox`: all uploads are collected here
+  - `toprocess`: uploaded photos are sent to VsionAI for image processing
+  - `processed`: processed photos from VsionAI
+  - `done`: imported (unprocessed) photos
+  - `<countryCode>/import`: old import directories for batch imports
+
 ## Docker
 This project can be run as a Docker container. The docker image is automatically built via the above maven build command.
 
@@ -32,7 +46,7 @@ This project can be run as a Docker container. The docker image is automatically
   - Configure the ```config.yml``` file from current directory and put it into the rsapi work directory.
   
   - Run as background service:
-  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -v <photo-main-dir>:/tmp/railway-station-photos -e RSAPI_LB_CONTEXT=test railwaystations/rsapi:<version>```
+  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -e RSAPI_LB_CONTEXT=test railwaystations/rsapi:<version>```
 
   - Remove the (running) container:
   ```docker rm -f rsapi```

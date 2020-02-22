@@ -94,13 +94,13 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new PhotographersResource(repository));
         environment.jersey().register(new CountriesResource(countryDao));
         environment.jersey().register(new StatisticResource(repository));
-        environment.jersey().register(new PhotoDownloadResource(config.getPhotoDir(), config.getInboxDir(), config.getInboxProcessedDir()));
+        environment.jersey().register(new PhotoDownloadResource(config.getPhotosDir(), config.getInboxDir(), config.getInboxProcessedDir()));
         environment.jersey().register(new InboxResource(repository, config.getInboxDir(), config.getInboxToProcessDir(),
-                config.getInboxProcessedDir(), config.getPhotoDir(), config.getMonitor(), authenticator,
+                config.getInboxProcessedDir(), config.getPhotosDir(), config.getMonitor(), authenticator,
                 inboxDao, userDao, countryDao, photoDao, config.getInboxBaseUrl()));
         environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
-                new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotoDir(), inboxDao)));
+                new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotosDir(), inboxDao)));
         environment.jersey().register(new StationsGpxWriter());
         environment.jersey().register(new StationsTxtWriter());
         environment.jersey().register(new StatisticTxtWriter());

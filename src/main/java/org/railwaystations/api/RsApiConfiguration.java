@@ -33,12 +33,6 @@ public class RsApiConfiguration extends Configuration {
 
     private String inboxBaseUrl;
 
-    private String inboxToProcessDir;
-
-    private String inboxProcessedDir;
-
-    private String photoDir;
-
     @Valid
     @NotNull
     private DataSourceFactory database = new DataSourceFactory();
@@ -104,14 +98,6 @@ public class RsApiConfiguration extends Configuration {
         this.photoBaseUrl = photoBaseUrl;
     }
 
-    public String getPhotoDir() {
-        return photoDir;
-    }
-
-    public void setPhotoDir(final String photoDir) {
-        this.photoDir = photoDir;
-    }
-
     public String getInboxBaseUrl() {
         return inboxBaseUrl;
     }
@@ -120,30 +106,20 @@ public class RsApiConfiguration extends Configuration {
         this.inboxBaseUrl = inboxBaseUrl;
     }
 
+    public String getPhotosDir() {
+        return getWorkDir() + File.separator + "photos";
+    }
+
     public String getInboxDir() {
         return getWorkDir() + File.separator + "inbox";
     }
 
     public String getInboxProcessedDir() {
-        if (inboxProcessedDir == null) {
-            return getInboxDir() + File.separator + "processed";
-        }
-        return this.inboxProcessedDir;
-    }
-
-    public void setInboxProcessedDir(final String inboxProcessedDir) {
-        this.inboxProcessedDir = inboxProcessedDir;
+        return getInboxDir() + File.separator + "processed";
     }
 
     public String getInboxToProcessDir() {
-        if (inboxToProcessDir == null) {
-            return getInboxDir() + File.separator + "toprocess";
-        }
-        return inboxToProcessDir;
-    }
-
-    public void setInboxToProcessDir(final String inboxToProcessDir) {
-        this.inboxToProcessDir = inboxToProcessDir;
+        return getInboxDir() + File.separator + "toprocess";
     }
 
 }
