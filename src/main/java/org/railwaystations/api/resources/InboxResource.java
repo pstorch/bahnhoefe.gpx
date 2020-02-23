@@ -411,6 +411,8 @@ public class InboxResource {
         try {
             final File rejectDir = new File(inboxDir, "rejected");
             FileUtils.moveFileToDirectory(file, rejectDir, true);
+            FileUtils.deleteQuietly(new File(inboxToProcessDir, inboxEntry.getFilename()));
+            FileUtils.deleteQuietly(new File(inboxProcessedDir, inboxEntry.getFilename()));
         } catch (final IOException e) {
             LOG.warn("Unable to move rejected file {}", file, e);
         }
