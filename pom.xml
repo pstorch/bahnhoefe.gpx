@@ -3,17 +3,11 @@
 
 	<groupId>org.railwaystations</groupId>
 	<artifactId>rsapi</artifactId>
-	<version>20200223.1231-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Railway Stations API</name>
 	<url>http://maven.apache.org</url>
-
-    <scm>
-        <connection>scm:git:git@github.com:RailwayStations/RSAPI.git</connection>
-        <url>scm:git:git@github.com:RailwayStations/RSAPI.git</url>
-      <tag>HEAD</tag>
-  </scm>
 
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -367,31 +361,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>dockerfile-maven-plugin</artifactId>
-                <version>1.4.13</version>
-                <executions>
-                    <execution>
-                        <id>default</id>
-                        <goals>
-                            <goal>build</goal>
-                            <goal>push</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <repository>railwaystations/rsapi</repository>
-                    <tag>${project.version}</tag>
-                    <buildArgs>
-                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
-                    </buildArgs>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
             </plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
