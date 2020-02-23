@@ -1,15 +1,17 @@
+FROM maven:3-jdk-11-openj9 AS build
+COPY src /usr/src/app/src
+COPY pom.xml /usr/src/app
+RUN mvn -f /usr/src/app/pom.xml clean package
+
 FROM openjdk:12
 
-ENV JAVA_CONF_DIR=$JAVA_HOME/conf
 ENV RSAPI_HOME=/opt/services
 ENV RSAPI_WORK=/var/rsapi
 
-ADD config.yml $RSAPI_WORK/
+COPY --from=build /usr/src/app/target/rsapi-1.0.0-SNAPSHOT.jar $RSAPI_HOME/rsapi.jar
+COPY config.yml $RSAPI_WORK/
 # Add Maven dependencies (not shaded into the artifact; Docker-cached)
-ADD target/lib           $RSAPI_HOME/lib
-# Add the service itself
-ARG JAR_FILE
-ADD target/${JAR_FILE} $RSAPI_HOME/rsapi.jar
+COPY --from=build /usr/src/app/target/lib           $RSAPI_HOME/lib
 
 EXPOSE 8080
 EXPOSE 8081

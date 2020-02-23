@@ -15,10 +15,6 @@ To build the project, you need Maven and Java 8.
 Run:
 ```mvn clean install```
 
-Release:
-- `mvn release:prepare`
-- `mvn release:perform -Darguments=-DaltDeploymentRepository=local::default::file:///tmp/maven`
-
 ## Working Directory
 
 The API uses `/var/rsapi` as working directory. This can be changed in the `config.yml` or via Docker volume, see below.
@@ -36,31 +32,30 @@ The following subdirectories are being used:
 ## Docker
 This project can be run as a Docker container. The docker image is automatically built via the above maven build command.
 
-- run locally:
-  ```docker run -it --net=host --rm -p 8080:8080 -e RSAPI_LB_CONTEXT=test railwaystations/rsapi```
+- build:
+  ```docker build . -t railwaystations/rsapi:latest```
 
-- run on server:
-  - Download the image from docker hub:
-  ```docker pull railwaystations/rsapi:<version>```
-  
-  - Configure the ```config.yml``` file from current directory and put it into the rsapi work directory.
-  
-  - Run as background service:
-  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -e RSAPI_LB_CONTEXT=test railwaystations/rsapi:<version>```
+- Configure the ```config.yml``` file from current directory and put it into the rsapi work directory.
+    
+- Run interactively:
+  ```docker run -it --net=host --rm -p 8080:8080 -v <work-dir>:/var/rsapi -e RSAPI_LB_CONTEXT=test --name rsapi railwaystations/rsapi```
 
-  - Remove the (running) container:
+- Run as background service:
+  ```docker run -d -p 8080:8080 --net=host --restart always --name rsapi -v <work-dir>:/var/rsapi -e RSAPI_LB_CONTEXT=test railwaystations/rsapi:latest```
+
+- Remove the (running) container:
   ```docker rm -f rsapi```
   
-  - Check if it is running:
+- Check if it is running:
   ```docker ps```
   
-  - Read the logs:
-  ```docker logs rsapi```
+- Read the logs:
+  ```docker logs -f rsapi```
   
-  - Attach to container:
+- Attach to container:
   ```docker attach --sig-proxy=false rsapi```
 
-  - Restart (e.g. after config change):
+- Restart (e.g. after config change):
   ```docker restart rsapi```
   
 Ready to use images are published at https://hub.docker.com/repository/docker/railwaystations/rsapi
