@@ -449,7 +449,15 @@ public class InboxResource {
         final String inboxUrl;
         final Integer id;
         try {
-            id = inboxDao.insert(new InboxEntry(country, stationId, stationTitle, coordinates, user.getUser().getId(), extension, comment, null));
+            if (station != null) {
+                // existing station
+                id = inboxDao.insert(new InboxEntry(station.getKey().getCountry(), station.getKey().getId(), stationTitle,
+                        coordinates, user.getUser().getId(), extension, comment, null));
+            } else {
+                // missing station
+                id = inboxDao.insert(new InboxEntry(null, null, stationTitle,
+                        coordinates, user.getUser().getId(), extension, comment, null));
+            }
             file = getUploadFile(InboxEntry.getFilename(id, extension));
             LOG.info("Writing photo to {}", file);
 
