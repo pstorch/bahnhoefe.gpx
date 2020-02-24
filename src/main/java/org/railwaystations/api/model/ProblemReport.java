@@ -16,6 +16,17 @@ public class ProblemReport {
     @JsonProperty
     private String comment;
 
+    public ProblemReport() {
+    }
+
+    public ProblemReport(final String countryCode, final String stationId, final ProblemReportType type, final String comment) {
+        super();
+        this.countryCode = countryCode;
+        this.stationId = stationId;
+        this.type = type;
+        this.comment = comment;
+    }
+
     public String getCountryCode() {
         return countryCode;
     }

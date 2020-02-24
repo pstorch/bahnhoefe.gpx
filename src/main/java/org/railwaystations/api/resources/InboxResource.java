@@ -160,8 +160,9 @@ public class InboxResource {
         final InboxEntry inboxEntry = new InboxEntry(problemReport.getCountryCode(), problemReport.getStationId(),
                 null, null, user.getUser().getId(), null, problemReport.getComment(),
                 problemReport.getType());
-        monitor.sendMessage(String.format("New problem report for %s%n%s: %s%nvia %s",
-                station.getTitle(), problemReport.getType(), StringUtils.trimToEmpty(problemReport.getComment()), userAgent));
+        monitor.sendMessage(String.format("New problem report for %s - %s:%s%n%s: %s%nby %s%nvia %s",
+                station.getTitle(), station.getKey().getCountry(), station.getKey().getId(), problemReport.getType(),
+                StringUtils.trimToEmpty(problemReport.getComment()), user.getName(), userAgent));
         return new InboxResponse(InboxResponse.InboxResponseState.REVIEW, inboxDao.insert(inboxEntry));
     }
 
@@ -469,12 +470,13 @@ public class InboxResource {
             }
             inboxUrl = inboxBaseUrl + "/" + URIUtil.encodePath(file.getName());
             if (station != null) {
-                monitor.sendMessage(String.format("New photo upload for %s%n%s%n%s%s%nvia %s",
-                        station.getTitle(), StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, userAgent));
+                monitor.sendMessage(String.format("New photo upload for %s - %s:%s%n%s%n%s%s%nby %s%nvia %s",
+                        station.getTitle(), station.getKey().getCountry(), station.getKey().getId(),
+                        StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getName(), userAgent));
             } else {
-                monitor.sendMessage(String.format("Photo upload for missing station %s at http://www.openstreetmap.org/?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%n%s%s%nvia %s",
+                monitor.sendMessage(String.format("Photo upload for missing station %s at http://www.openstreetmap.org/?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%n%s%s%nby %s%nvia %s",
                         stationTitle, latitude, longitude,
-                        StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, userAgent));
+                        StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getName(), userAgent));
             }
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
