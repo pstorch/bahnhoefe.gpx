@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200221.2230'
+  version: '20200224.1840'
   title: RSAPI
   license:
     name: MIT
@@ -160,6 +160,16 @@ paths:
             $ref: '#/definitions/Station'
         '404':
           description: Country not found
+  '/recentPhotoImports':
+    get:
+      summary: List stations with photo uploads in the las 24h
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Station'
   '/{country}/photographers':
     get:
       summary: >-

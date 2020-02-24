@@ -1,16 +1,15 @@
 package org.railwaystations.api.resources;
 
+import io.dropwizard.auth.Auth;
 import org.railwaystations.api.StationsRepository;
+import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.writer.StationsGpxWriter;
 import org.railwaystations.api.writer.StationsTxtWriter;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Path("/")
@@ -24,6 +23,8 @@ public class StationsResource {
     private static final String LON = "lon";
     private static final String ID = "id";
     private static final String ACTIVE = "active";
+
+    private static final int DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
 
     private final StationsRepository repository;
 
@@ -67,6 +68,13 @@ public class StationsResource {
     public Station getById(@PathParam(StationsResource.COUNTRY) final String country,
                            @PathParam(StationsResource.ID) final String id) {
         return getStationsMap(Collections.singleton(country)).get(new Station.Key(country, id));
+    }
+
+    @GET
+    @Path("recentPhotoImports")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Station> recentPhotoImports(@Auth final Optional<AuthUser> user) {
+        return repository.findRecentImports(System.currentTimeMillis() - DAY_IN_MILLIS);
     }
 
     private Map<Station.Key, Station> getStationsMap(final Set<String> countries) {

@@ -16,6 +16,7 @@ import org.railwaystations.api.model.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,6 +63,10 @@ public interface StationDao {
 
     @SqlUpdate("update stations set active = false where countryCode = :key.country and id = :key.id")
     void deactivate(@BindBean final Station station);
+
+    @SqlQuery(JOIN_QUERY + " where createdAt > :fromTimestampMillis order by createdAt desc")
+    @RegisterRowMapper(StationMapper.class)
+    List<Station> findRecentImports(@Bind("fromTimestampMillis") final long fromTimestampMillis);
 
     class StationMapper implements RowMapper<Station> {
 

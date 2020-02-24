@@ -92,4 +92,9 @@ public class StationsRepository {
     public void deactivate(final Station station) {
         stationDao.deactivate(station);
     }
+
+    public List<Station> findRecentImports(final long fromTimestampMillis) {
+        return stationDao.findRecentImports(fromTimestampMillis);
+    }
+
 }
