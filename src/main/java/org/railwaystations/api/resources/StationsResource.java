@@ -1,8 +1,6 @@
 package org.railwaystations.api.resources;
 
-import io.dropwizard.auth.Auth;
 import org.railwaystations.api.StationsRepository;
-import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.writer.StationsGpxWriter;
 import org.railwaystations.api.writer.StationsTxtWriter;
@@ -23,8 +21,9 @@ public class StationsResource {
     private static final String LON = "lon";
     private static final String ID = "id";
     private static final String ACTIVE = "active";
+    private static final String SINCE_HOURS = "sinceHours";
 
-    private static final int DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
+    private static final int HOURS_IN_MILLIS = 1000 * 60 * 60;
 
     private final StationsRepository repository;
 
@@ -73,8 +72,8 @@ public class StationsResource {
     @GET
     @Path("recentPhotoImports")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Station> recentPhotoImports(@Auth final Optional<AuthUser> user) {
-        return repository.findRecentImports(System.currentTimeMillis() - DAY_IN_MILLIS);
+    public List<Station> recentPhotoImports(@QueryParam(StationsResource.SINCE_HOURS)  @DefaultValue("20") final OptionalLong sinceHours) {
+        return repository.findRecentImports(System.currentTimeMillis() - (HOURS_IN_MILLIS * sinceHours.getAsLong()));
     }
 
     private Map<Station.Key, Station> getStationsMap(final Set<String> countries) {
