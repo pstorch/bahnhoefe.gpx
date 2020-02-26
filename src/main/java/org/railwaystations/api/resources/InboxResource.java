@@ -200,7 +200,8 @@ public class InboxResource {
                             query.setState(InboxStateQuery.InboxState.REJECTED);
                         }
                     } else {
-                        if (hasConflict(repository.findByCountryAndId(query.getCountryCode(), query.getStationId()), user.getUser().getId())) {
+                        if (hasConflict(inboxEntry.getId(),
+                                repository.findByCountryAndId(query.getCountryCode(), query.getStationId()))) {
                             query.setState(InboxStateQuery.InboxState.CONFLICT);
                         } else {
                             query.setState(InboxStateQuery.InboxState.REVIEW);
@@ -232,7 +233,9 @@ public class InboxResource {
         for (final InboxEntry inboxEntry : pendingInboxEntries) {
             final String filename = inboxEntry.getFilename();
             inboxEntry.isProcessed(isProcessed(filename));
-            inboxEntry.setInboxUrl(getInboxUrl(filename, inboxEntry.isProcessed()));
+            if (!inboxEntry.isProblemReport()) {
+                inboxEntry.setInboxUrl(getInboxUrl(filename, inboxEntry.isProcessed()));
+            }
         }
         return pendingInboxEntries;
     }
@@ -360,7 +363,7 @@ public class InboxResource {
         if (station.hasPhoto() && !force) {
             throw new WebApplicationException("Station already has a photo", Response.Status.BAD_REQUEST);
         }
-        if (hasConflict(station, inboxEntry.getPhotographerId()) && !force) {
+        if (hasConflict(inboxEntry.getId(), station) && !force) {
             throw new WebApplicationException("There is a conflict with another upload", Response.Status.BAD_REQUEST);
         }
 
@@ -401,7 +404,7 @@ public class InboxResource {
 
     private void rejectInboxEntry(final InboxEntry inboxEntry, final String rejectReason) {
         inboxDao.reject(inboxEntry.getId(), rejectReason);
-        if (inboxEntry.getProblemReportType() != null) {
+        if (inboxEntry.isProblemReport()) {
             LOG.info("Rejecting problem report {}, {}", inboxEntry.getId(), rejectReason);
             return;
         }
@@ -444,7 +447,7 @@ public class InboxResource {
             return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNSUPPORTED_CONTENT_TYPE, "unsupported content type (only jpg and png are supported)"));
         }
 
-        final boolean duplicate = hasConflict(station, user.getUser().getId());
+        final boolean duplicate = hasConflict(null, station);
         File file = null;
         final String inboxUrl;
         final Integer id;
@@ -504,14 +507,14 @@ public class InboxResource {
                 "</script>";
     }
 
-    private boolean hasConflict(final Station station, final int userId) {
+    private boolean hasConflict(final Integer id, final Station station) {
         if (station == null) {
             return false;
         }
-        if (station.hasPhoto() && station.getPhotographerId() != userId) {
+        if (station.hasPhoto()) {
             return true;
         }
-        return inboxDao.countPendingInboxEntriesForStationOfOtherUser(station.getKey().getCountry(), station.getKey().getId(), userId) > 0;
+        return inboxDao.countPendingInboxEntriesForStation(id, station.getKey().getCountry(), station.getKey().getId()) > 0;
     }
 
     private InboxResponse consumeBodyAndReturn(final InputStream body, final InboxResponse response) {

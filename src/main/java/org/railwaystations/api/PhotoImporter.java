@@ -157,7 +157,7 @@ public class PhotoImporter {
                 }
 
                 if (photosToImport.entrySet().stream().anyMatch(e -> e.getKey() != importFile && e.getValue().getStationKey().equals(photo.getStationKey()))
-                    || inboxDao.countPendingInboxEntriesForStationOfOtherUser(photo.getStationKey().getCountry(), photo.getStationKey().getId(), photo.getPhotographer().getId()) > 0) {
+                    || inboxDao.countPendingInboxEntriesForStation(null, photo.getStationKey().getCountry(), photo.getStationKey().getId()) > 0) {
                     report.add(new ReportEntry(true, countryCode, importFile.getAbsolutePath(), "conflict with another photo in inbox"));
                     continue;
                 }

@@ -165,7 +165,7 @@ public class PhotoInboxEntryResourceTest {
     @Test
     public void testPostDuplicateInbox() throws IOException {
         when(inboxDao.insert(any())).thenReturn(2);
-        when(inboxDao.countPendingInboxEntriesForStationOfOtherUser("de", "4711", 42)).thenReturn(1);
+        when(inboxDao.countPendingInboxEntriesForStation(null, "de", "4711")).thenReturn(1);
 
         final InboxResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","4711", "de", null, null, null, null);
 

@@ -59,8 +59,8 @@ public interface InboxDao {
     @SqlUpdate("update inbox set done = true where id = :id")
     void done(@Bind("id") int id);
 
-    @SqlQuery("select count(*) from inbox where countryCode = :countryCode and stationId = :stationId and done = false and photographerId != :photographerId")
-    int countPendingInboxEntriesForStationOfOtherUser(@Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId, @Bind("photographerId") final int photographerId);
+    @SqlQuery("select count(*) from inbox where countryCode = :countryCode and stationId = :stationId and done = false and (:id is null or id <> :id)")
+    int countPendingInboxEntriesForStation(@Bind("id") final Integer id, @Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId);
 
     @SqlQuery("select count(*) from inbox where done = false")
     int countPendingInboxEntries();

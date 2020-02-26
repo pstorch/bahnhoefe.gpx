@@ -170,6 +170,10 @@ public class InboxEntry extends PublicInboxEntry {
         this.inboxUrl = inboxUrl;
     }
 
+    public boolean isProblemReport() {
+        return problemReportType != null;
+    }
+
     public enum Command {
         /** Import photo */
         IMPORT,
