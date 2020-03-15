@@ -65,6 +65,12 @@ public interface InboxDao {
     @SqlQuery("select count(*) from inbox where done = false")
     int countPendingInboxEntries();
 
+    /**
+     * Count nearby pending uploads using simple pythagoras (only valid for a few km)
+     */
+    @SqlQuery("select count(*) from inbox where sqrt(power(71.5 * (lon - :coords.lon),2) + power(111.3 * (lat - :coords.lat),2)) < 0.5 and done = false and (:id is null or id <> :id)")
+    int countPendingInboxEntriesForNearbyCoordinates(@Bind("id") final Integer id, @BindBean("coords") final Coordinates coordinates);
+
     class InboxEntryMapper implements RowMapper<InboxEntry> {
 
         public InboxEntry map(final ResultSet rs, final StatementContext ctx) throws SQLException {

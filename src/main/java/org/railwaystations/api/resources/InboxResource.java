@@ -201,7 +201,8 @@ public class InboxResource {
                         }
                     } else {
                         if (hasConflict(inboxEntry.getId(),
-                                repository.findByCountryAndId(query.getCountryCode(), query.getStationId()))) {
+                                repository.findByCountryAndId(query.getCountryCode(), query.getStationId()))
+                            || hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates())) {
                             query.setState(InboxStateQuery.InboxState.CONFLICT);
                         } else {
                             query.setState(InboxStateQuery.InboxState.REVIEW);
@@ -225,6 +226,9 @@ public class InboxResource {
             inboxEntry.isProcessed(isProcessed(filename));
             if (!inboxEntry.isProblemReport()) {
                 inboxEntry.setInboxUrl(getInboxUrl(filename, inboxEntry.isProcessed()));
+            }
+            if (!inboxEntry.getCoordinates().hasNullCoords()) {
+                inboxEntry.setConflict(hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates()));
             }
         }
         return pendingInboxEntries;
@@ -252,7 +256,6 @@ public class InboxResource {
                 rejectInboxEntry(inboxEntry, command.getRejectReason());
                 break;
             case IMPORT :
-            case FORCE_IMPORT :
                 importUpload(inboxEntry, command);
                 break;
             case DEACTIVATE_STATION:
@@ -332,7 +335,7 @@ public class InboxResource {
             updateStationKey = true;
         }
         if (station == null) {
-            if (command.getCommand() != InboxEntry.Command.FORCE_IMPORT
+            if (!command.createStation()
                     || StringUtils.isNotBlank(inboxEntry.getCountryCode())
                     || StringUtils.isNotBlank(inboxEntry.getStationId())) {
                 throw new WebApplicationException("Station not found", Response.Status.BAD_REQUEST);
@@ -346,14 +349,18 @@ public class InboxResource {
             if (StringUtils.isBlank(command.getStationId())) {
                 throw new WebApplicationException("Station ID can't be empty", Response.Status.BAD_REQUEST);
             }
+            if (hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates()) && !command.ignoreConflict()) {
+                throw new WebApplicationException("There is a conflict with a nearby station", Response.Status.BAD_REQUEST);
+            }
+
             station = new Station(new Station.Key(command.getCountryCode(), command.getStationId()), inboxEntry.getTitle(), inboxEntry.getCoordinates(), command.getDS100(), null, command.isActive());
             repository.insert(station);
         }
 
-        if (station.hasPhoto() && command.getCommand() != InboxEntry.Command.FORCE_IMPORT ) {
+        if (station.hasPhoto() && !command.ignoreConflict()) {
             throw new WebApplicationException("Station already has a photo", Response.Status.BAD_REQUEST);
         }
-        if (hasConflict(inboxEntry.getId(), station) && command.getCommand() != InboxEntry.Command.FORCE_IMPORT ) {
+        if (hasConflict(inboxEntry.getId(), station) && !command.ignoreConflict()) {
             throw new WebApplicationException("There is a conflict with another upload", Response.Status.BAD_REQUEST);
         }
 
@@ -437,7 +444,7 @@ public class InboxResource {
             return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNSUPPORTED_CONTENT_TYPE, "unsupported content type (only jpg and png are supported)"));
         }
 
-        final boolean duplicate = hasConflict(null, station);
+        final boolean conflict = hasConflict(null, station) || hasConflict(null, new Coordinates(latitude, longitude));
         File file = null;
         final String inboxUrl;
         final Integer id;
@@ -466,7 +473,7 @@ public class InboxResource {
             FileUtils.copyFileToDirectory(file, inboxToProcessDir, true);
 
             String duplicateInfo = "";
-            if (duplicate) {
+            if (conflict) {
                 duplicateInfo = " (possible duplicate!)";
             }
             inboxUrl = inboxBaseUrl + "/" + URIUtil.encodePath(file.getName());
@@ -484,7 +491,7 @@ public class InboxResource {
             return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.ERROR));
         }
 
-        return new InboxResponse(duplicate ? InboxResponse.InboxResponseState.CONFLICT : InboxResponse.InboxResponseState.REVIEW, id, file.getName(), inboxUrl);
+        return new InboxResponse(conflict ? InboxResponse.InboxResponseState.CONFLICT : InboxResponse.InboxResponseState.REVIEW, id, file.getName(), inboxUrl);
     }
 
     private File getUploadFile(final String filename) {
@@ -505,6 +512,13 @@ public class InboxResource {
             return true;
         }
         return inboxDao.countPendingInboxEntriesForStation(id, station.getKey().getCountry(), station.getKey().getId()) > 0;
+    }
+
+    private boolean hasConflict(final Integer id, final Coordinates coordinates) {
+        if (coordinates == null || coordinates.hasNullCoords()) {
+            return false;
+        }
+        return inboxDao.countPendingInboxEntriesForNearbyCoordinates(id, coordinates) > 0 || repository.countNearbyCoordinates(coordinates) > 0;
     }
 
     private InboxResponse consumeBodyAndReturn(final InputStream body, final InboxResponse response) {

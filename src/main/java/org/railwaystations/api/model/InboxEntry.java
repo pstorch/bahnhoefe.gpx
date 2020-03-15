@@ -37,7 +37,7 @@ public class InboxEntry extends PublicInboxEntry {
     private final boolean hasPhoto;
 
     @JsonProperty(value = "hasConflict", access = JsonProperty.Access.READ_ONLY)
-    private final boolean conflict;
+    private boolean conflict;
 
     @JsonProperty(value = "problemReportType", access = JsonProperty.Access.READ_ONLY)
     private final ProblemReportType problemReportType;
@@ -54,6 +54,11 @@ public class InboxEntry extends PublicInboxEntry {
     @JsonProperty(value = "active")
     private Boolean active;
 
+    @JsonProperty(value = "ignoreConflict")
+    private Boolean ignoreConflict;
+
+    @JsonProperty(value = "createStation")
+    private Boolean createStation;
 
     /**
      * Constructor with all values from database
@@ -99,12 +104,16 @@ public class InboxEntry extends PublicInboxEntry {
                       @JsonProperty("rejectReason") final String rejectReason,
                       @JsonProperty("command") final Command command,
                       @JsonProperty("DS100") final String ds100,
-                      @JsonProperty("active") final Boolean active) {
+                      @JsonProperty("active") final Boolean active,
+                      @JsonProperty("ignoreConflict") final Boolean ignoreConflict,
+                      @JsonProperty(value = "createStation") final Boolean createStation) {
         this(id, countryCode, stationId, null, null, 0, null,
                 null, null, rejectReason, null, false, command, false,
                 false, null);
         this.ds100 = ds100;
         this.active = active != null ? active : true;
+        this.ignoreConflict = ignoreConflict;
+        this.createStation = createStation;
     }
 
     public int getId() {
@@ -194,16 +203,24 @@ public class InboxEntry extends PublicInboxEntry {
         return active;
     }
 
+    public Boolean ignoreConflict() {
+        return ignoreConflict;
+    }
+
+    public Boolean createStation() {
+        return createStation;
+    }
+
+    public void setConflict(final boolean conflict) {
+        this.conflict = conflict;
+    }
+
     public enum Command {
-        /** Import photo */
         IMPORT,
-        /** Import photo, even if there is a conflict, create station if not exist */
-        FORCE_IMPORT,
         DEACTIVATE_STATION,
         DELETE_STATION,
         DELETE_PHOTO,
         MARK_SOLVED,
-        /** Reject photo */
         REJECT
     }
 

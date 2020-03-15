@@ -3,6 +3,7 @@ package org.railwaystations.api;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.db.CountryDao;
 import org.railwaystations.api.db.StationDao;
+import org.railwaystations.api.model.Coordinates;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.model.Statistic;
@@ -97,4 +98,7 @@ public class StationsRepository {
         return stationDao.findRecentImports(fromTimestampMillis);
     }
 
+    public int countNearbyCoordinates(final Coordinates coordinates) {
+        return stationDao.countNearbyCoordinates(coordinates);
+    }
 }

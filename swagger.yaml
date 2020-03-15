@@ -994,10 +994,15 @@ definitions:
       active:
         type: boolean
         description: active flag of a new station (default true)
+      ignoreConflict:
+        type: boolean
+        description: ignore a conflict
+      createStation:
+        type: boolean
+        description: create the station if it doesn't exist
       command:
         enum:
           - IMPORT
-          - FORCE_IMPORT
           - DEACTIVATE_STATION
           - DELETE_STATION
           - DELETE_PHOTO

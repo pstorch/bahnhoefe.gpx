@@ -68,6 +68,12 @@ public interface StationDao {
     @RegisterRowMapper(StationMapper.class)
     List<Station> findRecentImports(@Bind("fromTimestampMillis") final long fromTimestampMillis);
 
+    /**
+     * Count nearby stations using simple pythagoras (only valid for a few km)
+     */
+    @SqlQuery("select count(*) from stations where sqrt(power(71.5 * (lon - :coords.lon),2) + power(111.3 * (lat - :coords.lat),2)) < 0.5")
+    int countNearbyCoordinates(@BindBean("coords") final Coordinates coordinates);
+
     class StationMapper implements RowMapper<Station> {
 
         private static String photoBaseUrl = "";
