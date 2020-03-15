@@ -905,7 +905,6 @@ definitions:
           - CONFLICT
           - ACCEPTED
           - REJECTED
-          - OTHER_USER
   PublicInboxEntry:
     type: object
     description: Represents an uploaded photo under review

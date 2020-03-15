@@ -208,16 +208,6 @@ public class InboxResource {
                         }
                     }
                 }
-            } else {
-                // legacy upload, try to find station
-                final Station station = repository.findByCountryAndId(query.getCountryCode(), query.getStationId());
-                if (station != null && station.hasPhoto()) {
-                    if (station.getPhotographerId() == user.getUser().getId()) {
-                        query.setState(InboxStateQuery.InboxState.ACCEPTED);
-                    } else {
-                        query.setState(InboxStateQuery.InboxState.OTHER_USER);
-                    }
-                }
             }
         }
 

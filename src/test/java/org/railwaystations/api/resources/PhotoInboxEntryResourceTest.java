@@ -187,23 +187,17 @@ public class PhotoInboxEntryResourceTest {
 
         final List<InboxStateQuery> inboxStateQueries = new ArrayList<>();
         inboxStateQueries.add(new InboxStateQuery(1, "de", "4711", null, null, null));
-        inboxStateQueries.add(new InboxStateQuery(null,"ch", "0815", null, null, null));
         inboxStateQueries.add(new InboxStateQuery(2, "de", "1234", null, null, null));
         inboxStateQueries.add(new InboxStateQuery(3, "de", "5678", null, null, null));
-        inboxStateQueries.add(new InboxStateQuery(null,null, null, new Coordinates(50.9876, 9.1234), null, null));
-        inboxStateQueries.add(new InboxStateQuery(null,"de", "9876", null, null, null));
         inboxStateQueries.add(new InboxStateQuery(4,"ch", "0815", null, null, null));
 
         final List<InboxStateQuery> uploadStateQueriesResult = resource.userInbox(new AuthUser(user), inboxStateQueries);
 
         assertThat(uploadStateQueriesResult.get(0).getState(), is(InboxStateQuery.InboxState.REVIEW));
         assertThat(uploadStateQueriesResult.get(0).getFilename(), is("1.jpg"));
-        assertThat(uploadStateQueriesResult.get(1).getState(), is(InboxStateQuery.InboxState.OTHER_USER));
-        assertThat(uploadStateQueriesResult.get(2).getState(), is(InboxStateQuery.InboxState.ACCEPTED));
-        assertThat(uploadStateQueriesResult.get(3).getState(), is(InboxStateQuery.InboxState.REJECTED));
-        assertThat(uploadStateQueriesResult.get(4).getState(), is(InboxStateQuery.InboxState.UNKNOWN));
-        assertThat(uploadStateQueriesResult.get(5).getState(), is(InboxStateQuery.InboxState.ACCEPTED));
-        assertThat(uploadStateQueriesResult.get(6).getState(), is(InboxStateQuery.InboxState.CONFLICT));
+        assertThat(uploadStateQueriesResult.get(1).getState(), is(InboxStateQuery.InboxState.ACCEPTED));
+        assertThat(uploadStateQueriesResult.get(2).getState(), is(InboxStateQuery.InboxState.REJECTED));
+        assertThat(uploadStateQueriesResult.get(3).getState(), is(InboxStateQuery.InboxState.CONFLICT));
     }
 
     private void assertFileWithContentExistsInInbox(final String content, final String filename) throws IOException {
