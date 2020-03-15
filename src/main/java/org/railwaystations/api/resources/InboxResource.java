@@ -444,7 +444,7 @@ public class InboxResource {
             return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNSUPPORTED_CONTENT_TYPE, "unsupported content type (only jpg and png are supported)"));
         }
 
-        final boolean conflict = hasConflict(null, station) || hasConflict(null, new Coordinates(latitude, longitude));
+        final boolean conflict = hasConflict(null, station) || hasConflict(null, coordinates);
         File file = null;
         final String inboxUrl;
         final Integer id;
