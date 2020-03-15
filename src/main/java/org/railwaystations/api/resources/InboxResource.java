@@ -252,10 +252,8 @@ public class InboxResource {
                 rejectInboxEntry(inboxEntry, command.getRejectReason());
                 break;
             case IMPORT :
-                importUpload(inboxEntry, command.getCountryCode(), command.getStationId(), false);
-                break;
             case FORCE_IMPORT :
-                importUpload(inboxEntry, command.getCountryCode(), command.getStationId(), true);
+                importUpload(inboxEntry, command);
                 break;
             case DEACTIVATE_STATION:
                 deactivateStation(inboxEntry);
@@ -320,7 +318,7 @@ public class InboxResource {
         return station;
     }
 
-    private void importUpload(final InboxEntry inboxEntry, final String countryCode, final String stationId, final boolean force) {
+    private void importUpload(final InboxEntry inboxEntry, final InboxEntry command) {
         final File originalFile = getUploadFile(inboxEntry.getFilename());
         final File processedFile = new File(inboxProcessedDir, inboxEntry.getFilename());
         final File fileToImport = processedFile.exists() ? processedFile : originalFile;
@@ -330,30 +328,32 @@ public class InboxResource {
 
         Station station = repository.findByCountryAndId(inboxEntry.getCountryCode(), inboxEntry.getStationId());
         if (station == null) {
-            station = repository.findByCountryAndId(countryCode, stationId);
+            station = repository.findByCountryAndId(command.getCountryCode(), command.getStationId());
             updateStationKey = true;
         }
         if (station == null) {
-            if (!force || StringUtils.isNotBlank(inboxEntry.getCountryCode()) || StringUtils.isNotBlank(inboxEntry.getStationId())) {
+            if (command.getCommand() != InboxEntry.Command.FORCE_IMPORT
+                    || StringUtils.isNotBlank(inboxEntry.getCountryCode())
+                    || StringUtils.isNotBlank(inboxEntry.getStationId())) {
                 throw new WebApplicationException("Station not found", Response.Status.BAD_REQUEST);
             }
 
             // create station
-            final Optional<Country> country = countryDao.findById(StringUtils.lowerCase(countryCode));
+            final Optional<Country> country = countryDao.findById(StringUtils.lowerCase(command.getCountryCode()));
             if (!country.isPresent()) {
                 throw new WebApplicationException("Country not found", Response.Status.BAD_REQUEST);
             }
-            if (StringUtils.isBlank(stationId)) {
+            if (StringUtils.isBlank(command.getStationId())) {
                 throw new WebApplicationException("Station ID can't be empty", Response.Status.BAD_REQUEST);
             }
-            station = new Station(new Station.Key(countryCode, stationId), inboxEntry.getTitle(), inboxEntry.getCoordinates(), null, true);
+            station = new Station(new Station.Key(command.getCountryCode(), command.getStationId()), inboxEntry.getTitle(), inboxEntry.getCoordinates(), command.getDS100(), null, command.isActive());
             repository.insert(station);
         }
 
-        if (station.hasPhoto() && !force) {
+        if (station.hasPhoto() && command.getCommand() != InboxEntry.Command.FORCE_IMPORT ) {
             throw new WebApplicationException("Station already has a photo", Response.Status.BAD_REQUEST);
         }
-        if (hasConflict(inboxEntry.getId(), station) && !force) {
+        if (hasConflict(inboxEntry.getId(), station) && command.getCommand() != InboxEntry.Command.FORCE_IMPORT ) {
             throw new WebApplicationException("There is a conflict with another upload", Response.Status.BAD_REQUEST);
         }
 
@@ -381,7 +381,7 @@ public class InboxResource {
             FileUtils.moveFileToDirectory(originalFile, new File(inboxDir, "done"), true);
 
             if (updateStationKey) {
-                inboxDao.done(inboxEntry.getId(), countryCode, stationId);
+                inboxDao.done(inboxEntry.getId(), command.getCountryCode(), command.getStationId());
             } else {
                 inboxDao.done(inboxEntry.getId());
             }

@@ -48,6 +48,13 @@ public class InboxEntry extends PublicInboxEntry {
     @JsonProperty(value = "inboxUrl", access = JsonProperty.Access.READ_ONLY)
     private String inboxUrl;
 
+    @JsonProperty(value = "DS100")
+    private String ds100;
+
+    @JsonProperty(value = "active")
+    private Boolean active;
+
+
     /**
      * Constructor with all values from database
      */
@@ -85,14 +92,19 @@ public class InboxEntry extends PublicInboxEntry {
     /**
      * Constructor to deserialize json for updating the records
      */
+    @SuppressWarnings("PMD.SimplifiedTernary")
     public InboxEntry(@JsonProperty("id") final int id,
                       @JsonProperty("countryCode") final String countryCode,
                       @JsonProperty("stationId") final String stationId,
                       @JsonProperty("rejectReason") final String rejectReason,
-                      @JsonProperty("command") final Command command) {
+                      @JsonProperty("command") final Command command,
+                      @JsonProperty("DS100") final String ds100,
+                      @JsonProperty("active") final Boolean active) {
         this(id, countryCode, stationId, null, null, 0, null,
                 null, null, rejectReason, null, false, command, false,
                 false, null);
+        this.ds100 = ds100;
+        this.active = active != null ? active : true;
     }
 
     public int getId() {
@@ -172,6 +184,14 @@ public class InboxEntry extends PublicInboxEntry {
 
     public boolean isProblemReport() {
         return problemReportType != null;
+    }
+
+    public String getDS100() {
+        return ds100;
+    }
+
+    public Boolean isActive() {
+        return active;
     }
 
     public enum Command {

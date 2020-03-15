@@ -55,7 +55,7 @@ public interface StationDao {
     @ValueColumn("title")
     Map<Station.Key, String> findByName(@Bind("name") final String name);
 
-    @SqlUpdate("insert into stations (countryCode, id, title, lat, lon, active) values (:key.country, :key.id, :title, :coordinates?.lat, :coordinates?.lon, :active)")
+    @SqlUpdate("insert into stations (countryCode, id, title, lat, lon, ds100, active) values (:key.country, :key.id, :title, :coordinates?.lat, :coordinates?.lon, :DS100, :active)")
     void insert(@BindBean final Station station);
 
     @SqlUpdate("delete from stations where countryCode = :key.country and id = :key.id")

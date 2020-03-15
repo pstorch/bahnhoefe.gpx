@@ -981,10 +981,19 @@ definitions:
         format: integer
       countryCode:
         type: string
+        description: country of a new station
       stationId:
         type: string
+        description: ID of a new station
       rejectReason:
         type: string
+        description: explanation of a rejection
+      DS100:
+        type: string
+        description: DS100 attribute of a new station
+      active:
+        type: boolean
+        description: active flag of a new station (default true)
       command:
         enum:
           - IMPORT
