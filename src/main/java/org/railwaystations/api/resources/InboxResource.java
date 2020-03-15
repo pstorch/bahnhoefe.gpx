@@ -177,6 +177,7 @@ public class InboxResource {
     @Path("userInbox")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @SuppressWarnings("PMD.UselessParentheses")
     public List<InboxStateQuery> userInbox(@Auth final AuthUser user, @NotNull final List<InboxStateQuery> queries) {
         LOG.info("Query uploadStatus for Nickname: {}", user.getName());
 
@@ -202,7 +203,7 @@ public class InboxResource {
                     } else {
                         if (hasConflict(inboxEntry.getId(),
                                 repository.findByCountryAndId(query.getCountryCode(), query.getStationId()))
-                            || hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates())) {
+                            || (inboxEntry.getStationId() == null && hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates()))) {
                             query.setState(InboxStateQuery.InboxState.CONFLICT);
                         } else {
                             query.setState(InboxStateQuery.InboxState.REVIEW);
@@ -227,7 +228,7 @@ public class InboxResource {
             if (!inboxEntry.isProblemReport()) {
                 inboxEntry.setInboxUrl(getInboxUrl(filename, inboxEntry.isProcessed()));
             }
-            if (!inboxEntry.getCoordinates().hasNullCoords()) {
+            if (inboxEntry.getStationId() == null && !inboxEntry.getCoordinates().hasNullCoords()) {
                 inboxEntry.setConflict(hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates()));
             }
         }
