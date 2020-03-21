@@ -483,7 +483,7 @@ public class InboxResource {
                         station.getTitle(), station.getKey().getCountry(), station.getKey().getId(),
                         StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getName(), userAgent));
             } else {
-                monitor.sendMessage(String.format("Photo upload for missing station %s at http://www.openstreetmap.org/?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%n%s%s%nby %s%nvia %s",
+                monitor.sendMessage(String.format("Photo upload for missing station %s at https://map.railway-stations.org/index.php?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%n%s%s%nby %s%nvia %s",
                         stationTitle, latitude, longitude,
                         StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getName(), userAgent));
             }
