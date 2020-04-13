@@ -74,6 +74,9 @@ public interface StationDao {
     @SqlQuery("select count(*) from stations where sqrt(power(71.5 * (lon - :coords.lon),2) + power(111.3 * (lat - :coords.lat),2)) < 0.5")
     int countNearbyCoordinates(@BindBean("coords") final Coordinates coordinates);
 
+    @SqlQuery("SELECT max(cast(substring(id,2) as int)) FROM stations WHERE id like 'Z%'")
+    int getMaxZ();
+
     class StationMapper implements RowMapper<Station> {
 
         private static String photoBaseUrl = "";

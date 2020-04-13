@@ -67,7 +67,7 @@ public class StationsRepository {
         if (StringUtils.isNotBlank(country)) {
             return findByKey(new Station.Key(country, stationId));
         }
-        Set<Station> stations = stationDao.findById(stationId);
+        final Set<Station> stations = stationDao.findById(stationId);
         if (stations.size() > 1) {
             return null; // id is not unique
         }
@@ -100,5 +100,9 @@ public class StationsRepository {
 
     public int countNearbyCoordinates(final Coordinates coordinates) {
         return stationDao.countNearbyCoordinates(coordinates);
+    }
+
+    public String getNextZ() {
+        return "Z" + (stationDao.getMaxZ() + 1);
     }
 }

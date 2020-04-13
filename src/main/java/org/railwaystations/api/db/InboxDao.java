@@ -50,9 +50,6 @@ public interface InboxDao {
     @GetGeneratedKeys("id")
     Integer insert(@BindBean final InboxEntry inboxEntry);
 
-    @SqlUpdate("update inbox set countryCode = :countryCode, stationId = :stationId, done = true where id = :id")
-    void done(@Bind("id") final int id, @Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId);
-
     @SqlUpdate("update inbox set rejectReason = :rejectReason, done = true where id = :id")
     void reject(@Bind("id") final int id, @Bind("rejectReason") final String rejectReason);
 

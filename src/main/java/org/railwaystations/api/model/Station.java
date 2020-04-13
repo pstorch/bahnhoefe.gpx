@@ -16,10 +16,10 @@ public class Station {
     private final Key key;
 
     @JsonProperty
-    private final String title;
+    private String title;
 
     @JsonUnwrapped
-    private final Coordinates coordinates;
+    private Coordinates coordinates;
 
     @JsonIgnore
     private int photographerId;
@@ -176,6 +176,18 @@ public class Station {
 
     public int getPhotographerId() {
         return photographerId;
+    }
+
+    public void setTitle(final String title) {
+        this.title = title;
+    }
+
+    public void setActive(final Boolean active) {
+        this.active = active;
+    }
+
+    public void setCoordinates(final Coordinates coordinates) {
+        this.coordinates = coordinates;
     }
 
     @SuppressWarnings("PMD.ShortClassName")

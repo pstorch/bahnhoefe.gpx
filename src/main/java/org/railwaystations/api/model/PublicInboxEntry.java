@@ -15,7 +15,7 @@ public class PublicInboxEntry {
     @JsonProperty
     protected final String stationId;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonProperty
     protected final String title;
 
     @JsonUnwrapped

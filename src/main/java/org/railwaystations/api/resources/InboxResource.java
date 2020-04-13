@@ -228,7 +228,7 @@ public class InboxResource {
             if (!inboxEntry.isProblemReport()) {
                 inboxEntry.setInboxUrl(getInboxUrl(filename, inboxEntry.isProcessed()));
             }
-            if (inboxEntry.getStationId() == null && !inboxEntry.getCoordinates().hasNullCoords()) {
+            if (inboxEntry.getStationId() == null && !inboxEntry.getCoordinates().hasZeroCoords()) {
                 inboxEntry.setConflict(hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates()));
             }
         }
@@ -286,6 +286,13 @@ public class InboxResource {
         return new InboxCountResponse(inboxDao.countPendingInboxEntries());
     }
 
+    @GET
+    @Path("nextZ")
+    @Produces(MediaType.APPLICATION_JSON)
+    public NextZResponse nextZ() {
+        return new NextZResponse(repository.getNextZ());
+    }
+
     private void deactivateStation(final InboxEntry inboxEntry) {
         final Station station = assertStationExists(inboxEntry);
         repository.deactivate(station);
@@ -328,12 +335,13 @@ public class InboxResource {
         final File fileToImport = processedFile.exists() ? processedFile : originalFile;
 
         LOG.info("Importing upload {}, {}", inboxEntry.getId(), fileToImport);
-        boolean updateStationKey = false;
 
         Station station = repository.findByCountryAndId(inboxEntry.getCountryCode(), inboxEntry.getStationId());
-        if (station == null) {
+        if (station == null && command.createStation()) {
             station = repository.findByCountryAndId(command.getCountryCode(), command.getStationId());
-            updateStationKey = true;
+            if (station != null) {
+                throw new WebApplicationException("Station already exists", Response.Status.BAD_REQUEST);
+            }
         }
         if (station == null) {
             if (!command.createStation()
@@ -353,8 +361,18 @@ public class InboxResource {
             if (hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates()) && !command.ignoreConflict()) {
                 throw new WebApplicationException("There is a conflict with a nearby station", Response.Status.BAD_REQUEST);
             }
+            if (command.hasCoords() && !command.getCoordinates().isValid()) {
+                throw new WebApplicationException("Lat/Lon out of range", Response.Status.BAD_REQUEST);
+            }
 
-            station = new Station(new Station.Key(command.getCountryCode(), command.getStationId()), inboxEntry.getTitle(), inboxEntry.getCoordinates(), command.getDS100(), null, command.isActive());
+            Coordinates coordinates = inboxEntry.getCoordinates();
+            if (command.hasCoords()) {
+                coordinates = command.getCoordinates();
+            }
+
+            final String title = command.getTitle() != null ? command.getTitle() : inboxEntry.getTitle();
+
+            station = new Station(new Station.Key(command.getCountryCode(), command.getStationId()), title, coordinates, command.getDS100(), null, command.isActive());
             repository.insert(station);
         }
 
@@ -387,12 +405,7 @@ public class InboxResource {
                 PhotoImporter.copyFile(originalFile, countryDir, station.getKey().getId(), inboxEntry.getExtension());
             }
             FileUtils.moveFileToDirectory(originalFile, new File(inboxDir, "done"), true);
-
-            if (updateStationKey) {
-                inboxDao.done(inboxEntry.getId(), command.getCountryCode(), command.getStationId());
-            } else {
-                inboxDao.done(inboxEntry.getId());
-            }
+            inboxDao.done(inboxEntry.getId());
             LOG.info("Upload {} accepted: {}", inboxEntry.getId(), fileToImport);
         } catch (final Exception e) {
             LOG.error("Error importing upload {} photo {}", inboxEntry.getId(), fileToImport);
@@ -432,11 +445,11 @@ public class InboxResource {
                 LOG.warn("Not enough data for missing station: title={}, latitude={}, longitude={}", stationTitle, latitude, longitude);
                 return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA, "Not enough data: either 'country' and 'stationId' or 'title', 'latitude' and 'longitude' have to be provided"));
             }
-            if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+            coordinates = new Coordinates(latitude, longitude);
+            if (!coordinates.isValid()) {
                 LOG.warn("Lat/Lon out of range: latitude={}, longitude={}", latitude, longitude);
                 return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.LAT_LON_OUT_OF_RANGE, "'latitude' and/or 'longitude' out of range"));
             }
-            coordinates = new Coordinates(latitude, longitude);
         }
 
         final String extension = mimeToExtension(contentType);
@@ -453,7 +466,7 @@ public class InboxResource {
             if (station != null) {
                 // existing station
                 id = inboxDao.insert(new InboxEntry(station.getKey().getCountry(), station.getKey().getId(), stationTitle,
-                        coordinates, user.getUser().getId(), extension, comment, null));
+                        null, user.getUser().getId(), extension, comment, null));
             } else {
                 // missing station
                 id = inboxDao.insert(new InboxEntry(null, null, stationTitle,
@@ -516,7 +529,7 @@ public class InboxResource {
     }
 
     private boolean hasConflict(final Integer id, final Coordinates coordinates) {
-        if (coordinates == null || coordinates.hasNullCoords()) {
+        if (coordinates == null || coordinates.hasZeroCoords()) {
             return false;
         }
         return inboxDao.countPendingInboxEntriesForNearbyCoordinates(id, coordinates) > 0 || repository.countNearbyCoordinates(coordinates) > 0;
@@ -555,6 +568,19 @@ public class InboxResource {
         public int getPendingInboxEntries() {
             return pendingInboxEntries;
         }
+    }
+
+    private static class NextZResponse {
+        private final String nextZ;
+
+        public NextZResponse(final String nextZ) {
+            this.nextZ = nextZ;
+        }
+
+        public String getNextZ() {
+            return nextZ;
+        }
+
     }
 
 }

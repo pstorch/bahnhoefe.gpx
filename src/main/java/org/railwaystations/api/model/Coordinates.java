@@ -3,8 +3,8 @@ package org.railwaystations.api.model;
 public class Coordinates {
 
     public static final double ZERO = 0.0;
-    private final double lat;
 
+    private final double lat;
     private final double lon;
 
     public Coordinates() {
@@ -24,7 +24,12 @@ public class Coordinates {
         return lon;
     }
 
-    public boolean hasNullCoords() {
+    public boolean hasZeroCoords() {
         return lat == ZERO && lon == ZERO;
     }
+
+    public boolean isValid() {
+        return Math.abs(lat) < 90 && Math.abs(lon) < 180 && !hasZeroCoords();
+    }
+
 }

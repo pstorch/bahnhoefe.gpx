@@ -215,6 +215,10 @@ public class InboxEntry extends PublicInboxEntry {
         this.conflict = conflict;
     }
 
+    public boolean hasCoords() {
+        return coordinates != null && !coordinates.hasZeroCoords();
+    }
+
     public enum Command {
         IMPORT,
         DEACTIVATE_STATION,
