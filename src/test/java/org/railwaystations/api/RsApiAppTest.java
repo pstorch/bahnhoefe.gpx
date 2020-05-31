@@ -86,6 +86,11 @@ public class RsApiAppTest {
     }
 
     @Test
+    public void stationByIdNotFound() {
+        loadRaw("/de/stations/11111111111", 404);
+    }
+
+    @Test
     public void stationsDe() {
         final Station[] stations = assertLoadStations(String.format("/de/%s", "stations"), 200);
         assertThat(findByKey(stations, new Station.Key("de", "6721")), notNullValue());
@@ -188,7 +193,7 @@ public class RsApiAppTest {
     private Station[] assertLoadStations(final String path, final int expectedStatus) {
         final Response response = loadRaw(path, expectedStatus);
 
-        if (response == null) {
+        if (response.getStatus() != 200) {
             return new Station[0];
         }
         return response.readEntity(Station[].class);
@@ -201,10 +206,7 @@ public class RsApiAppTest {
                 .get();
 
         assertThat(response.getStatus(), is(expectedStatus));
-        if (expectedStatus == 200) {
-            return response;
-        }
-        return null;
+        return response;
     }
 
     private Station findByKey(final Station[] stations, final Station.Key key) {

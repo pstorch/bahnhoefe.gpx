@@ -66,7 +66,11 @@ public class StationsResource {
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
     public Station getById(@PathParam(StationsResource.COUNTRY) final String country,
                            @PathParam(StationsResource.ID) final String id) {
-        return getStationsMap(Collections.singleton(country)).get(new Station.Key(country, id));
+        final Station station = getStationsMap(Collections.singleton(country)).get(new Station.Key(country, id));
+        if (station == null) {
+            throw new WebApplicationException(404);
+        }
+        return station;
     }
 
     @GET
