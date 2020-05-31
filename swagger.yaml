@@ -1008,6 +1008,7 @@ definitions:
           - DELETE_PHOTO
           - MARK_SOLVED
           - REJECT
+          - CHANGE_NAME
   InboxCountResponse:
     type: object
     description: counts the pending inbox entries
@@ -1032,3 +1033,4 @@ definitions:
           - STATION_NONEXISTENT
           - WRONG_PHOTO
           - OTHER
+          - WRONG_NAME

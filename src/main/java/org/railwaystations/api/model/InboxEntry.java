@@ -225,7 +225,8 @@ public class InboxEntry extends PublicInboxEntry {
         DELETE_STATION,
         DELETE_PHOTO,
         MARK_SOLVED,
-        REJECT
+        REJECT,
+        CHANGE_NAME
     }
 
 }

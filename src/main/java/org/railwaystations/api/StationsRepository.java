@@ -105,4 +105,9 @@ public class StationsRepository {
     public String getNextZ() {
         return "Z" + (stationDao.getMaxZ() + 1);
     }
+
+    public void changeStationTitle(final Station station, final String newTitle) {
+        stationDao.changeStationTitle(station, newTitle);
+    }
+
 }

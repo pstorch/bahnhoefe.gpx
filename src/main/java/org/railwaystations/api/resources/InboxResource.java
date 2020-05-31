@@ -271,6 +271,12 @@ public class InboxResource {
             case MARK_SOLVED:
                 markProblemReportSolved(inboxEntry);
                 break;
+            case CHANGE_NAME:
+                if (StringUtils.isBlank(command.getTitle())) {
+                    throw new WebApplicationException("Empty new title: " + command.getCommand(), Response.Status.BAD_REQUEST);
+                }
+                changeStationTitle(inboxEntry, command.getTitle());
+                break;
             default:
                 throw new WebApplicationException("Unexpected command value: " + command.getCommand(), Response.Status.BAD_REQUEST);
         }
@@ -298,6 +304,13 @@ public class InboxResource {
         repository.deactivate(station);
         inboxDao.done(inboxEntry.getId());
         LOG.info("Problem report {} station {} deactivated", inboxEntry.getId(), station.getKey());
+    }
+
+    private void changeStationTitle(final InboxEntry inboxEntry, final String newTitle) {
+        final Station station = assertStationExists(inboxEntry);
+        repository.changeStationTitle(station, newTitle);
+        inboxDao.done(inboxEntry.getId());
+        LOG.info("Problem report {} station {} change name to {}", inboxEntry.getId(), station.getKey(), newTitle);
     }
 
     private void deleteStation(final InboxEntry inboxEntry) {

@@ -77,6 +77,9 @@ public interface StationDao {
     @SqlQuery("SELECT max(cast(substring(id,2) as int)) FROM stations WHERE id like 'Z%'")
     int getMaxZ();
 
+    @SqlUpdate("update stations set title = :new_title where countryCode = :key.country and id = :key.id")
+    void changeStationTitle(@BindBean final Station station, @Bind("new_title") final String newTitle);
+
     class StationMapper implements RowMapper<Station> {
 
         private static String photoBaseUrl = "";
