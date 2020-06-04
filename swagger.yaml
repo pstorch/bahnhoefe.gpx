@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200531.1300'
+  version: '20200604.2015'
   title: RSAPI
   license:
     name: MIT
@@ -941,6 +941,8 @@ definitions:
         type: number
         format: double
       photographerNickname:
+        type: string
+      photographerEmail:
         type: string
       comment:
         type: string

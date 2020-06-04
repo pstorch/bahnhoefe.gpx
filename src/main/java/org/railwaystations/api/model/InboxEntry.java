@@ -15,6 +15,9 @@ public class InboxEntry extends PublicInboxEntry {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private final String photographerNickname;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private final String photographerEmail;
+
     @JsonIgnore
     private final String extension;
 
@@ -64,7 +67,7 @@ public class InboxEntry extends PublicInboxEntry {
      * Constructor with all values from database
      */
     public InboxEntry(final int id, final String countryCode, final String stationId, final String title,
-                      final Coordinates coordinates, final int photographerId, final String photographerNickname,
+                      final Coordinates coordinates, final int photographerId, final String photographerNickname, final String photographerEmail,
                       final String extension, final String comment, final String rejectReason,
                       final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
                       final boolean conflict, final ProblemReportType problemReportType) {
@@ -72,6 +75,7 @@ public class InboxEntry extends PublicInboxEntry {
         this.id = id;
         this.photographerId = photographerId;
         this.photographerNickname = photographerNickname;
+        this.photographerEmail = photographerEmail;
         this.extension = extension;
         this.comment = comment;
         this.rejectReason = rejectReason;
@@ -89,7 +93,7 @@ public class InboxEntry extends PublicInboxEntry {
     public InboxEntry(final String countryCode, final String stationId, final String title,
                       final Coordinates coordinates, final int photographerId,
                       final String extension, final String comment, final ProblemReportType problemReportType) {
-        this(0, countryCode, stationId, title, coordinates, photographerId, null, extension,
+        this(0, countryCode, stationId, title, coordinates, photographerId, null, null, extension,
                 comment, null, System.currentTimeMillis(), false, null, false,
                 false, problemReportType);
     }
@@ -107,7 +111,7 @@ public class InboxEntry extends PublicInboxEntry {
                       @JsonProperty("active") final Boolean active,
                       @JsonProperty("ignoreConflict") final Boolean ignoreConflict,
                       @JsonProperty(value = "createStation") final Boolean createStation) {
-        this(id, countryCode, stationId, null, null, 0, null,
+        this(id, countryCode, stationId, null, null, 0, null, null,
                 null, null, rejectReason, null, false, command, false,
                 false, null);
         this.ds100 = ds100;
@@ -126,6 +130,10 @@ public class InboxEntry extends PublicInboxEntry {
 
     public String getPhotographerNickname() {
         return photographerNickname;
+    }
+
+    public String getPhotographerEmail() {
+        return photographerEmail;
     }
 
     public String getComment() {

@@ -21,7 +21,7 @@ import java.util.Set;
 public interface InboxDao {
 
     String JOIN_QUERY = "select u.id, u.countryCode, u.stationId, u.title u_title, s.title s_title, u.lat u_lat, u.lon u_lon, s.lat s_lat, s.lon s_lon, "
-                    + "     u.photographerId, p.name photographerNickname, u.extension, u.comment, u.rejectReason, u.createdAt, u.done, u.problemReportType, f.url, "
+                    + "     u.photographerId, p.name photographerNickname, p.email photographerEmail, u.extension, u.comment, u.rejectReason, u.createdAt, u.done, u.problemReportType, f.url, "
                     + "     (select count(*) from inbox u2 where u2.countryCode is not null and u2.countryCode = u.countryCode "
                     + "         and u2.stationId is not null and u2.stationId = u.stationId and u2.done = false and u2.id != u.id) as conflict"
                     + " from inbox u left join stations s on s.countryCode = u.countryCode and s.id = u.stationId "
@@ -87,7 +87,7 @@ public interface InboxDao {
             final String problemReportType = rs.getString("problemReportType");
             final String extension = rs.getString("extension");
             return new InboxEntry(id, rs.getString("countryCode"), rs.getString("stationId"), title,
-                    coordinates, rs.getInt("photographerId"), rs.getString("photographerNickname"),
+                    coordinates, rs.getInt("photographerId"), rs.getString("photographerNickname"), rs.getString("photographerEmail"),
                     extension, rs.getString("comment"), rs.getString("rejectReason"),
                     rs.getLong("createdAt"), done, null, rs.getString("url") != null,
                     rs.getInt("conflict") > 0,
