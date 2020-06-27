@@ -95,6 +95,7 @@ public class InboxResource {
                        @FormDataParam("latitude") final Double latitude,
                        @FormDataParam("longitude") final Double longitude,
                        @FormDataParam("comment") final String comment,
+                       @FormDataParam("active") final Boolean active,
                        @FormDataParam("file") final InputStream file,
                        @FormDataParam("file") final FormDataContentDisposition fd,
                        @HeaderParam("Referer") final String referer) throws JsonProcessingException {
@@ -108,7 +109,8 @@ public class InboxResource {
             }
 
             final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
-            final InboxResponse response = uploadPhoto(userAgent, file, StringUtils.trimToNull(stationId), StringUtils.trimToNull(countryCode), contentType, stationTitle, latitude, longitude, comment, authUser.get());
+            final InboxResponse response = uploadPhoto(userAgent, file, StringUtils.trimToNull(stationId),
+                    StringUtils.trimToNull(countryCode), contentType, stationTitle, latitude, longitude, comment, active, authUser.get());
             return createIFrameAnswer(response, referer);
         } catch (final Exception e) {
             LOG.error("FormUpload error", e);
@@ -129,12 +131,14 @@ public class InboxResource {
                          @HeaderParam("Latitude") final Double latitude,
                          @HeaderParam("Longitude") final Double longitude,
                          @HeaderParam("Comment") final String encComment,
+                         @HeaderParam("Active") final Boolean active,
                          @Auth final AuthUser user) throws UnsupportedEncodingException {
         final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, "UTF-8") : null;
         final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
         LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
-        final InboxResponse inboxResponse = uploadPhoto(userAgent, body, StringUtils.trimToNull(stationId), StringUtils.trimToNull(country), contentType, stationTitle, latitude, longitude, comment, user);
+        final InboxResponse inboxResponse = uploadPhoto(userAgent, body, StringUtils.trimToNull(stationId),
+                StringUtils.trimToNull(country), contentType, stationTitle, latitude, longitude, comment, active, user);
         return Response.status(inboxResponse.getState().getResponseStatus()).entity(inboxResponse).build();
     }
 
@@ -159,7 +163,7 @@ public class InboxResource {
         }
         final InboxEntry inboxEntry = new InboxEntry(problemReport.getCountryCode(), problemReport.getStationId(),
                 null, null, user.getUser().getId(), null, problemReport.getComment(),
-                problemReport.getType());
+                problemReport.getType(), null);
         monitor.sendMessage(String.format("New problem report for %s - %s:%s%n%s: %s%nby %s%nvia %s",
                 station.getTitle(), station.getKey().getCountry(), station.getKey().getId(), problemReport.getType(),
                 StringUtils.trimToEmpty(problemReport.getComment()), user.getUser().getName(), userAgent));
@@ -385,7 +389,7 @@ public class InboxResource {
 
             final String title = command.getTitle() != null ? command.getTitle() : inboxEntry.getTitle();
 
-            station = new Station(new Station.Key(command.getCountryCode(), command.getStationId()), title, coordinates, command.getDS100(), null, command.isActive());
+            station = new Station(new Station.Key(command.getCountryCode(), command.getStationId()), title, coordinates, command.getDS100(), null, command.getActive());
             repository.insert(station);
         }
 
@@ -449,7 +453,7 @@ public class InboxResource {
     private InboxResponse uploadPhoto(final String userAgent, final InputStream body, final String stationId,
                                       final String country, final String contentType, final String stationTitle,
                                       final Double latitude, final Double longitude, final String comment,
-                                      final AuthUser user) {
+                                      final Boolean active, final AuthUser user) {
         final Station station = repository.findByCountryAndId(country, stationId);
         Coordinates coordinates = null;
         if (station == null) {
@@ -479,11 +483,11 @@ public class InboxResource {
             if (station != null) {
                 // existing station
                 id = inboxDao.insert(new InboxEntry(station.getKey().getCountry(), station.getKey().getId(), stationTitle,
-                        null, user.getUser().getId(), extension, comment, null));
+                        null, user.getUser().getId(), extension, comment, null, active));
             } else {
                 // missing station
                 id = inboxDao.insert(new InboxEntry(null, null, stationTitle,
-                        coordinates, user.getUser().getId(), extension, comment, null));
+                        coordinates, user.getUser().getId(), extension, comment, null, active));
             }
             file = getUploadFile(InboxEntry.getFilename(id, extension));
             LOG.info("Writing photo to {}", file);

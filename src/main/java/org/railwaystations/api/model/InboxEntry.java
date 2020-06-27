@@ -70,7 +70,7 @@ public class InboxEntry extends PublicInboxEntry {
                       final Coordinates coordinates, final int photographerId, final String photographerNickname, final String photographerEmail,
                       final String extension, final String comment, final String rejectReason,
                       final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
-                      final boolean conflict, final ProblemReportType problemReportType) {
+                      final boolean conflict, final ProblemReportType problemReportType, final Boolean active) {
         super(countryCode, stationId, title, coordinates);
         this.id = id;
         this.photographerId = photographerId;
@@ -85,6 +85,7 @@ public class InboxEntry extends PublicInboxEntry {
         this.hasPhoto = hasPhoto;
         this.conflict = conflict;
         this.problemReportType = problemReportType;
+        this.active = active;
     }
 
     /**
@@ -92,10 +93,11 @@ public class InboxEntry extends PublicInboxEntry {
      */
     public InboxEntry(final String countryCode, final String stationId, final String title,
                       final Coordinates coordinates, final int photographerId,
-                      final String extension, final String comment, final ProblemReportType problemReportType) {
+                      final String extension, final String comment, final ProblemReportType problemReportType,
+                      final Boolean active) {
         this(0, countryCode, stationId, title, coordinates, photographerId, null, null, extension,
                 comment, null, System.currentTimeMillis(), false, null, false,
-                false, problemReportType);
+                false, problemReportType, active);
     }
 
     /**
@@ -113,9 +115,8 @@ public class InboxEntry extends PublicInboxEntry {
                       @JsonProperty(value = "createStation") final Boolean createStation) {
         this(id, countryCode, stationId, null, null, 0, null, null,
                 null, null, rejectReason, null, false, command, false,
-                false, null);
+                false, null, active != null ? active : true);
         this.ds100 = ds100;
-        this.active = active != null ? active : true;
         this.ignoreConflict = ignoreConflict;
         this.createStation = createStation;
     }
@@ -207,7 +208,7 @@ public class InboxEntry extends PublicInboxEntry {
         return ds100;
     }
 
-    public Boolean isActive() {
+    public Boolean getActive() {
         return active;
     }
 

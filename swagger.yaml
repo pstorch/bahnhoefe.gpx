@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200604.2015'
+  version: '20200627.2315'
   title: RSAPI
   license:
     name: MIT
@@ -326,6 +326,11 @@ paths:
           description: comment of the photographer to the reviewer (needs to be URL-encoded with UTF-8 charset)
           required: false
           type: string
+        - name: Active
+          in: header
+          description: is this station active?
+          required: false
+          type: boolean
       responses:
         '202':
           description: upload successful
@@ -974,6 +979,9 @@ definitions:
       isProcessed:
         type: boolean
         description: was this image process (e.g. pixelated)
+      active:
+        type: boolean
+        description: active flag provided by the user
   InboxCommand:
     type: object
     description: command to import or reject an inbox entry

@@ -83,7 +83,7 @@ public class PhotoInboxEntryResourceTest {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
         final Response response = resource.post(is, "UserAgent", stationId, country, "image/jpeg",
-                stationTitle, latitude, longitude, comment,
+                stationTitle, latitude, longitude, comment, null,
                 new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false)));
         return (InboxResponse) response.getEntity();
     }
@@ -180,10 +180,10 @@ public class PhotoInboxEntryResourceTest {
     public void testUserInbox() throws IOException {
         final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false);
 
-        when(inboxDao.findById(1)).thenReturn(new InboxEntry(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, false, null, false, false, null));
-        when(inboxDao.findById(2)).thenReturn(new InboxEntry(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, true, null, false, false, null));
-        when(inboxDao.findById(3)).thenReturn(new InboxEntry(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, "rejected", 0l, true, null, false, false, null));
-        when(inboxDao.findById(4)).thenReturn(new InboxEntry(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, false, null, false, false, null));
+        when(inboxDao.findById(1)).thenReturn(new InboxEntry(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, false, null, false, false, null, null));
+        when(inboxDao.findById(2)).thenReturn(new InboxEntry(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, true, null, false, false, null, null));
+        when(inboxDao.findById(3)).thenReturn(new InboxEntry(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, "rejected", 0l, true, null, false, false, null, null));
+        when(inboxDao.findById(4)).thenReturn(new InboxEntry(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, false, null, false, false, null, null));
 
         final List<InboxStateQuery> inboxStateQueries = new ArrayList<>();
         inboxStateQueries.add(new InboxStateQuery(1, "de", "4711", null, null, null));
@@ -225,7 +225,7 @@ public class PhotoInboxEntryResourceTest {
     @Test
     public void testPostInvalidCountry() throws IOException {
         final Response response = resource.post(null, "UserAgent", "4711", "xy", "image/jpeg",
-                null, null, null, null,
+                null, null, null, null, null,
                 new AuthUser(new User("nickname", "nickname@example.com", "CC0", true, null, false)));
         final InboxResponse inboxResponse = (InboxResponse) response.getEntity();
         assertThat(inboxResponse.getState(), equalTo(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA));

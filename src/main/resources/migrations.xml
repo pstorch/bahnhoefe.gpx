@@ -491,4 +491,10 @@
         </update>
     </changeSet>
 
+    <changeSet id="25" author="pstorch">
+        <addColumn tableName="inbox">
+            <column name="active" type="boolean"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
