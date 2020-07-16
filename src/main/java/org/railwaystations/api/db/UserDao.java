@@ -36,16 +36,19 @@ public interface UserDao {
     @SqlUpdate("update users set uploadTokenSalt = null, `key` = :key where id = :id")
     void updateCredentials(@Bind("id") final int id, @Bind("key") final String key);
 
-    @SqlUpdate("update users set email = :email, `key` = :key where id = :id")
-    void updateEmailAndKey(@Bind("id") final int id, @Bind("email") final String email, @Bind("key") final String key);
-
-    @SqlUpdate("insert into users (id, name, url, license, email, normalizedName, ownPhotos, anonymous, `key`) values (:id, :name, :url, :license, :email, :normalizedName, :ownPhotos, :anonymous, :key)")
+    @SqlUpdate("insert into users (id, name, url, license, email, normalizedName, ownPhotos, anonymous, `key`, emailVerification) values (:id, :name, :url, :license, :email, :normalizedName, :ownPhotos, :anonymous, :key, :emailVerification)")
     @GetGeneratedKeys("id")
     Integer insert(@BindBean final User user);
 
-    @SqlUpdate("update users set name = :name, url = :url, license = :license, email = :email, normalizedName = :normalizedName, ownPhotos = :ownPhotos, anonymous = :anonymous where id = :id")
+    @SqlUpdate("update users set name = :name, url = :url, license = :license, email = :email, normalizedName = :normalizedName, ownPhotos = :ownPhotos, anonymous = :anonymous, emailVerification = :emailVerification where id = :id")
     void update(@BindBean final User user);
 
+    @SqlQuery("select * from users where emailVerification = :emailVerification")
+    @RegisterRowMapper(UserMapper.class)
+    Optional<User> findByEmailVerification(@Bind("emailVerification") final String emailVerification);
+
+    @SqlUpdate("update users set emailVerification = :emailVerification where id = :id")
+    void updateEmailVerification(@Bind("id") final int id, @Bind("emailVerification") final String emailVerification);
 
     class UserMapper implements RowMapper<User> {
         public User map(final ResultSet rs, final StatementContext ctx) throws SQLException {
@@ -58,7 +61,8 @@ public interface UserDao {
                     rs.getBoolean("anonymous"),
                     rs.getLong("uploadTokenSalt"),
                     rs.getString("key"),
-                    rs.getBoolean("admin")
+                    rs.getBoolean("admin"),
+                    rs.getString("emailVerification")
                     );
         }
     }

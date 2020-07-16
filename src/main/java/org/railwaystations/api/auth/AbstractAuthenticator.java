@@ -30,6 +30,7 @@ abstract class AbstractAuthenticator {
         // try to verify user defined password
         if (PasswordUtil.verifyPassword(secret, user.getKey())) {
             LOG.info("User verified by password '{}'", user.getEmail());
+            updateEmailVerification(user);
             return Optional.of(new AuthUser(user));
         }
 
@@ -37,11 +38,19 @@ abstract class AbstractAuthenticator {
         final Long tokenSalt = user.getUploadTokenSalt();
         if (tokenSalt != null && tokenSalt > 0 && tokenGenerator.buildFor(user.getEmail(), user.getUploadTokenSalt()).equals(secret)) {
             LOG.info("User verified by UploadToken '{}'", user.getEmail());
+            updateEmailVerification(user);
             return Optional.of(new AuthUser(user));
         }
 
         LOG.info("Password failed and UploadToken doesn't fit to email '{}'", user.getEmail());
         return Optional.empty();
+    }
+
+    private void updateEmailVerification(final User user) {
+        if (user.isEmailVerifiedWithNextLogin()) {
+            LOG.info("User eMail verified by successful login '{}'", user.getEmail());
+            userDao.updateEmailVerification(user.getId(), User.EMAIL_VERIFIED);
+        }
     }
 
 

@@ -86,24 +86,24 @@ public class InboxResource {
     @POST
     @Path("photoUpload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String post(@HeaderParam("User-Agent") final String userAgent,
-                       @FormDataParam("email") final String email,
-                       @FormDataParam("uploadToken") final String uploadToken,
-                       @FormDataParam("stationId") final String stationId,
-                       @FormDataParam("countryCode") final String countryCode,
-                       @FormDataParam("stationTitle") final String stationTitle,
-                       @FormDataParam("latitude") final Double latitude,
-                       @FormDataParam("longitude") final Double longitude,
-                       @FormDataParam("comment") final String comment,
-                       @FormDataParam("active") final Boolean active,
-                       @FormDataParam("file") final InputStream file,
-                       @FormDataParam("file") final FormDataContentDisposition fd,
-                       @HeaderParam("Referer") final String referer) throws JsonProcessingException {
+    public String photoUpload(@HeaderParam("User-Agent") final String userAgent,
+                              @FormDataParam("email") final String email,
+                              @FormDataParam("uploadToken") final String uploadToken,
+                              @FormDataParam("stationId") final String stationId,
+                              @FormDataParam("countryCode") final String countryCode,
+                              @FormDataParam("stationTitle") final String stationTitle,
+                              @FormDataParam("latitude") final Double latitude,
+                              @FormDataParam("longitude") final Double longitude,
+                              @FormDataParam("comment") final String comment,
+                              @FormDataParam("active") final Boolean active,
+                              @FormDataParam("file") final InputStream file,
+                              @FormDataParam("file") final FormDataContentDisposition fd,
+                              @HeaderParam("Referer") final String referer) throws JsonProcessingException {
         LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
 
         try {
             final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
-            if (!authUser.isPresent()) {
+            if (!authUser.isPresent() || !authUser.get().getUser().isEmailVerified()) {
                 final InboxResponse response = consumeBodyAndReturn(file, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED));
                 return createIFrameAnswer(response, referer);
             }
@@ -122,21 +122,25 @@ public class InboxResource {
     @Path("photoUpload")
     @Consumes({IMAGE_PNG, IMAGE_JPEG})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response post(final InputStream body,
-                         @HeaderParam("User-Agent") final String userAgent,
-                         @HeaderParam("Station-Id") final String stationId,
-                         @HeaderParam("Country") final String country,
-                         @HeaderParam("Content-Type") final String contentType,
-                         @HeaderParam("Station-Title") final String encStationTitle,
-                         @HeaderParam("Latitude") final Double latitude,
-                         @HeaderParam("Longitude") final Double longitude,
-                         @HeaderParam("Comment") final String encComment,
-                         @HeaderParam("Active") final Boolean active,
-                         @Auth final AuthUser user) throws UnsupportedEncodingException {
+    public Response photoUpload(final InputStream body,
+                                @HeaderParam("User-Agent") final String userAgent,
+                                @HeaderParam("Station-Id") final String stationId,
+                                @HeaderParam("Country") final String country,
+                                @HeaderParam("Content-Type") final String contentType,
+                                @HeaderParam("Station-Title") final String encStationTitle,
+                                @HeaderParam("Latitude") final Double latitude,
+                                @HeaderParam("Longitude") final Double longitude,
+                                @HeaderParam("Comment") final String encComment,
+                                @HeaderParam("Active") final Boolean active,
+                                @Auth final AuthUser user) throws UnsupportedEncodingException {
+        if (!user.getUser().isEmailVerified()) {
+            LOG.info("Photo upload failed for user {}, email not verified", user.getName());
+            return Response.status(Response.Status.UNAUTHORIZED).entity(new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED, "Email not verified")).build();
+        }
         final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, "UTF-8") : null;
         final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
-        LOG.info("Nickname: {}; Email: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
-                user.getName(), user.getUser().getEmail(), country, stationId, latitude, longitude, stationTitle, contentType);
+        LOG.info("Photo upload from Nickname: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
+                user.getName(), country, stationId, latitude, longitude, stationTitle, contentType);
         final InboxResponse inboxResponse = uploadPhoto(userAgent, body, StringUtils.trimToNull(stationId),
                 StringUtils.trimToNull(country), contentType, stationTitle, latitude, longitude, comment, active, user);
         return Response.status(inboxResponse.getState().getResponseStatus()).entity(inboxResponse).build();
@@ -149,6 +153,11 @@ public class InboxResource {
     public InboxResponse reportProblem(@HeaderParam("User-Agent") final String userAgent,
                                        @NotNull() final ProblemReport problemReport,
                                        @Auth final AuthUser user) {
+        if (!user.getUser().isEmailVerified()) {
+            LOG.info("New problem report failed for user {}, email not verified", user.getName());
+            return new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED, "Email not verified");
+        }
+
         LOG.info("New problem report: Nickname: {}; Country: {}; Station-Id: {}",
                 user.getName(), problemReport.getCountryCode(), problemReport.getStationId());
         final Station station = repository.findByCountryAndId(problemReport.getCountryCode(), problemReport.getStationId());

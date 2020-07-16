@@ -350,20 +350,14 @@ public class RsApiAppTest {
 
         assertThat(response.getStatus(), is(202));
         assertThat(mailer.getTo(), is("nick.name@example.com"));
-        assertThat(mailer.getSubject(), is("Railway-Stations.org initial password (Upload-Token)"));
+        assertThat(mailer.getSubject(), is("Railway-Stations.org new password"));
         assertThat(mailer.getText().matches("Hello nickname,\n\n" +
-                "thank you for your registration.\n" +
-                "Your initial password \\(formerly Upload-Token\\) is: .*\n" +
-                "Please click on http://railway-stations.org/uploadToken/.* to transfer it into the App.\n" +
-                "Alternatively you can log in manually.\n\n" +
+                "your new password is: .*\n\n" +
                 "Cheers\n" +
                 "Your Railway-Stations-Team\n" +
                 "\n---\n" +
                 "Hallo nickname,\n\n" +
-                "vielen Dank für Deine Registrierung.\n" +
-                "Dein Initial-Passwort \\(ehemals Upload-Token\\) lautet: .*\n" +
-                "Klicke bitte auf http://railway-stations.org/uploadToken/.*, um es in die App zu übernehmen.\n" +
-                "Alternativ kannst Du Dich manuell einloggen.\n\n" +
+                "Dein neues Passwort lautet: .*\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"), is(true));
     }
@@ -405,7 +399,7 @@ public class RsApiAppTest {
         final Response response = client.target(
                 String.format("http://localhost:%d%s", RULE.getLocalPort(), "/photoUpload"))
                 .request()
-                .header("Authorization", getBasicAuthentication("@stefanopitz", "y89zFqkL6hro"))
+                .header("Authorization", getBasicAuthentication("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8"))
                 .header("Station-Title", URLEncoder.encode("Achères-Grand-Cormier", StandardCharsets.UTF_8.toString()))
                 .header("Latitude", "50.123")
                 .header("Longitude", "10.123")

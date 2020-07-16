@@ -45,10 +45,10 @@ public class PhotoImporterTest {
         when(countryDao.findById("fr")).thenReturn(Optional.of(new Country("fr", "France", null, null, null, "CC BY-NC 4.0 International", true)));
 
         final UserDao userDao = mock(UserDao.class);
-        when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, true, true, null, null, false)));
-        when(userDao.findByNormalizedName("someuser")).thenReturn(Optional.of(new User("Some User", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, true, true, null, null, false)));
-        when(userDao.findByNormalizedName("gabybecker")).thenReturn(Optional.of(new User("@Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, true, true, null, null, true)));
-        when(userDao.findByNormalizedName("storchp")).thenReturn(Optional.of(new User("@storchp", null, "CC0 1.0 Universell (CC0 1.0)", 2, null, true, false, null, null, true)));
+        when(userDao.findByNormalizedName("anonym")).thenReturn(Optional.of(new User("Anonym", null, "CC0 1.0 Universell (CC0 1.0)", 0, null, true, true, null, null, false, null)));
+        when(userDao.findByNormalizedName("someuser")).thenReturn(Optional.of(new User("Some User", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, true, true, null, null, false, null)));
+        when(userDao.findByNormalizedName("gabybecker")).thenReturn(Optional.of(new User("@Gaby Becker", null, "CC0 1.0 Universell (CC0 1.0)", 1, null, true, true, null, null, true, null)));
+        when(userDao.findByNormalizedName("storchp")).thenReturn(Optional.of(new User("@storchp", null, "CC0 1.0 Universell (CC0 1.0)", 2, null, true, false, null, null, true, null)));
 
         photoDao = mock(PhotoDao.class);
 
@@ -57,7 +57,7 @@ public class PhotoImporterTest {
         when(stationDao.findByKey(felde.getKey().getCountry(), felde.getKey().getId())).thenReturn(Collections.singleton(felde));
 
         final Station.Key hannoverKey = new Station.Key("de", "6913");
-        final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", new User("", "", ""), 0L, ""), true);
+        final Station hannover = new Station(hannoverKey, "Hannover", null, new Photo(hannoverKey, "", createTestPhotographer(), 0L, ""), true);
         when(stationDao.findByKey(hannoverKey.getCountry(), hannoverKey.getId())).thenReturn(Collections.singleton(hannover));
 
         final Station wangerooge = new Station(new Station.Key("de", "DE20763"), "Wangerooge Westanleger", null, null, true);
@@ -217,6 +217,10 @@ public class PhotoImporterTest {
         assertPostedPhoto(argument.getValue(), 2,"fr", "8768600", "CC BY-NC 4.0 International");
         assertThat(importFile.exists(), is(false));
         assertThat(new File(photoDir.toFile(), "fr/8768600.jpg").exists(), is(true));
+    }
+
+    private User createTestPhotographer() {
+        return new User("test", "photographerUrl", "CC0", 0, null, true, false, null, null, false, null);
     }
 
 }

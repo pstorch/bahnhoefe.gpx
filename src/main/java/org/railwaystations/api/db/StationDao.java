@@ -93,7 +93,7 @@ public interface StationDao {
             final String photoUrl = rs.getString("url");
             Photo photo = null;
             if (photoUrl != null) {
-                final User photographer = new User(rs.getString("name"), rs.getString("photographerUrl"), rs.getString("photographerLicense"), rs.getInt("photographerId"), rs.getBoolean("anonymous"));
+                final User photographer = new User(rs.getString("name"), rs.getString("photographerUrl"), rs.getString("photographerLicense"), rs.getInt("photographerId"), null, true, rs.getBoolean("anonymous"), null, null, false, null);
                 photo = new Photo(key, photoBaseUrl + photoUrl, photographer, rs.getLong("createdAt"), rs.getString("license"));
             }
             return new Station(key, rs.getString("title"),

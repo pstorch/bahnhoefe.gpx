@@ -23,7 +23,7 @@ public class UserTest {
             "nickname,, false",
             "nickname,' ', false"})
     public void testIsValidForRegistration(final String name, final String email, final boolean expected) {
-        assertThat(new User(name, email, null, true, null, false).isValidForRegistration(), is(expected));
+        assertThat(new User(name, email, null, true, null, false, null).isValidForRegistration(), is(expected));
     }
 
     @ParameterizedTest
@@ -38,7 +38,7 @@ public class UserTest {
                  "nickname, email@example.com, CC4, true,                    , false",
                  "        , email@example.com, CC0, false,                   , false"})
     public void testIsValid(final String name, final String email, final String license, final boolean photoOwner, final String link, final boolean expected) {
-        assertThat(new User(name, email, license, photoOwner, link, false).isValid(), is(expected));
+        assertThat(new User(name, email, license, photoOwner, link, false, null).isValid(), is(expected));
     }
 
     @Test
@@ -63,9 +63,9 @@ public class UserTest {
     @Test
     public void testJsonSerialization() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        User user = new User("@Nick Name", "https://example.com", "CC0 1.0 Universell (CC0 1.0)", 1, "nick@example.com", true, true, 1234L, "key", true);
+        User user = new User("@Nick Name", "https://example.com", "CC0 1.0 Universell (CC0 1.0)", 1, "nick@example.com", true, true, 1234L, "key", true, null);
         String json = mapper.writerFor(User.class).writeValueAsString(user);
-        assertThat(json, is("{\"nickname\":\"@Nick Name\",\"email\":\"nick@example.com\",\"license\":\"CC0 1.0 Universell (CC0 1.0)\",\"photoOwner\":true,\"link\":\"https://example.com\",\"anonymous\":true,\"admin\":true}"));
+        assertThat(json, is("{\"nickname\":\"@Nick Name\",\"email\":\"nick@example.com\",\"license\":\"CC0 1.0 Universell (CC0 1.0)\",\"photoOwner\":true,\"link\":\"https://example.com\",\"anonymous\":true,\"admin\":true,\"emailVerified\":false}"));
     }
 
 }

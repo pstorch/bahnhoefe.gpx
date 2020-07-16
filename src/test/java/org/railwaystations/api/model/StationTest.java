@@ -25,7 +25,7 @@ public class StationTest {
 
     @Test
     public void appliesToPhotographer() {
-        final Station station = new Station(TEST_KEY, "", new Coordinates(0.0, 0.0), new Photo(TEST_KEY, "URL", new User("test", "photographerUrl", "CC0"), null, "CC0"), true);
+        final Station station = new Station(TEST_KEY, "", new Coordinates(0.0, 0.0), new Photo(TEST_KEY, "URL", createTestPhotographer(), null, "CC0"), true);
         assertThat(station.appliesTo(null, "test", null, null, null, null), is(true));
         assertThat(station.appliesTo(false, null, null, null, null, null), is(false));
         assertThat(station.appliesTo(true, null, null, null, null, null), is(true));
@@ -40,20 +40,23 @@ public class StationTest {
 
     @Test
     public void appliesToDistanceAndPhotographer() {
-        final Station station = new Station(TEST_KEY, "", new Coordinates(50.554550, 9.683787), new Photo(TEST_KEY, "URL", new User("test", "photographerUrl", "CC0"), null, "CC0"), true);
+        final Station station = new Station(TEST_KEY, "", new Coordinates(50.554550, 9.683787), new Photo(TEST_KEY, "URL", createTestPhotographer(), null, "CC0"), true);
         assertThat(station.appliesTo(null, "test", 50, 50.8, 9.8, null), is(true));
     }
 
     @Test
     public void appliesToActive() {
-        final Station station = new Station(TEST_KEY, "", new Coordinates(50.554550, 9.683787), new Photo(TEST_KEY, "URL", new User("test", "photographerUrl", "CC0"), null, "CC0"), true);
+        final Station station = new Station(TEST_KEY, "", new Coordinates(50.554550, 9.683787), new Photo(TEST_KEY, "URL", createTestPhotographer(), null, "CC0"), true);
         assertThat(station.appliesTo(null, "test", null, null, null, true), is(true));
     }
 
     @Test
     public void appliesToInactive() {
-        final Station station = new Station(TEST_KEY, "", new Coordinates(50.554550, 9.683787), new Photo(TEST_KEY, "URL", new User("test", "photographerUrl", "CC0"), null, "CC0"), false);
+        final Station station = new Station(TEST_KEY, "", new Coordinates(50.554550, 9.683787), new Photo(TEST_KEY, "URL", createTestPhotographer(), null, "CC0"), false);
         assertThat(station.appliesTo(null, "test", null, null, null, false), is(true));
     }
 
+    private User createTestPhotographer() {
+        return new User("test", "photographerUrl", "CC0", 0, null, true, false, null, null, false, null);
+    }
 }

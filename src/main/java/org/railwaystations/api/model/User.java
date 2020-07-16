@@ -21,6 +21,10 @@ public class User {
     /** the one and only valid license */
     public static final String CC0 = "CC0 1.0 Universell (CC0 1.0)";
 
+    public static final String EMAIL_VERIFIED = "VERIFIED";
+    public static final String EMAIL_VERIFIED_AT_NEXT_LOGIN = "NEXT_LOGIN";
+    public static final String EMAIL_VERIFICATION_TOKEN = "TOKEN:";
+
     static {
         LICENSE_MAP.put("CC0", CC0);
         LICENSE_MAP.put("CC4", "CC BY-SA 4.0");
@@ -62,9 +66,18 @@ public class User {
     @JsonProperty(value = "admin", access = JsonProperty.Access.READ_ONLY)
     private final boolean admin;
 
+    @JsonIgnore
+    private String emailVerification;
+
+    @JsonIgnore
+    private String emailVerificationToken;
+
+    @JsonProperty
+    private String newPassword;
+
     public User(final String name, final String url, final String license, final int id, final String email,
                 final boolean ownPhotos, final boolean anonymous, final Long uploadTokenSalt,
-                final String key, final boolean admin) {
+                final String key, final boolean admin, final String emailVerification) {
         this.name = name;
         this.url = url;
         this.license = license;
@@ -76,6 +89,7 @@ public class User {
         this.uploadTokenSalt = uploadTokenSalt;
         this.key = key;
         this.admin = admin;
+        this.emailVerification = emailVerification;
     }
 
     /**
@@ -86,7 +100,8 @@ public class User {
                         @JsonProperty("license") final String license,
                         @JsonProperty("photoOwner") final boolean photoOwner,
                         @JsonProperty("link") final String link,
-                        @JsonProperty("anonymous") final boolean anonymous) {
+                        @JsonProperty("anonymous") final boolean anonymous,
+                        @JsonProperty("newPassword") final String newPassword) {
         this.name = StringUtils.trimToEmpty(name);
         this.normalizedName = normalizeName(name);
         this.email = normalizeEmail(email);
@@ -95,14 +110,8 @@ public class User {
         this.anonymous = anonymous;
         this.url = StringUtils.trimToEmpty(link);
         this.admin = false;
-    }
-
-    public User(final String name, final String url, final String license) {
-        this(name, url, license, 0, null, true, false, null, null, false);
-    }
-
-    public User(final String name, final String url, final String license, final int id, final boolean anonymous) {
-        this(name, url, license, id, null, true, anonymous, null, null, false);
+        this.emailVerification = null;
+        this.newPassword = newPassword;
     }
 
     public static Map<String, User> toNameMap(final List<User> list) {
@@ -263,4 +272,38 @@ public class User {
         return admin;
     }
 
+    @JsonProperty("emailVerified")
+    public boolean isEmailVerified() {
+        return EMAIL_VERIFIED.equals(emailVerification);
+    }
+
+    @JsonIgnore
+    public boolean isEmailVerifiedWithNextLogin() {
+        return EMAIL_VERIFIED_AT_NEXT_LOGIN.equals(emailVerification);
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(final String newPassword) {
+        this.newPassword = newPassword;
+    }
+
+    public String getEmailVerification() {
+        return emailVerification;
+    }
+
+    public void setEmailVerification(final String emailVerification) {
+        this.emailVerification = emailVerification;
+    }
+
+    public String getEmailVerificationToken() {
+        return emailVerificationToken;
+    }
+
+    public void setEmailVerificationToken(final String emailVerificationToken) {
+        this.emailVerificationToken = emailVerificationToken;
+        this.emailVerification = EMAIL_VERIFICATION_TOKEN + emailVerificationToken;
+    }
 }

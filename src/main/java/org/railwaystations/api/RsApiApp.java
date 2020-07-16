@@ -68,7 +68,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
 
         // Configure CORS parameters
         cors.setInitParameter(ALLOWED_ORIGINS_PARAM, "*");
-        cors.setInitParameter(ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Authorization,Comment,Country,Station-Id,NameOrEmail");
+        cors.setInitParameter(ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Authorization,Comment,Country,Station-Id,NameOrEmail,New-Password");
         cors.setInitParameter(ALLOWED_METHODS_PARAM, "OPTIONS,GET,PUT,POST,DELETE,HEAD");
 
         // Add URL mapping
@@ -98,7 +98,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new InboxResource(repository, config.getInboxDir(), config.getInboxToProcessDir(),
                 config.getInboxProcessedDir(), config.getPhotosDir(), config.getMonitor(), authenticator,
                 inboxDao, userDao, countryDao, photoDao, config.getInboxBaseUrl()));
-        environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao));
+        environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao, config.getMailVerificationUrl()));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
                 new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotosDir(), inboxDao)));
         environment.jersey().register(new StationsGpxWriter());

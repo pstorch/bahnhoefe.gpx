@@ -6,6 +6,8 @@ server:
     - type: http
       port: 8081
       bindHost: 127.0.0.1
+#logging:
+#  level: DEBUG
 database:
   driverClass: org.mariadb.jdbc.Driver
   user: rsapi
@@ -26,5 +28,6 @@ mailer:
 #  from: ${SMTP_FROM:-}
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
-photoBaseUrl: ${PHOTO_BASE_URL:-http://localhost:8080/photos}
-inboxBaseUrl: ${INBOX_BASE_URL:-http://localhost:8080/inbox}
+photoBaseUrl: http://localhost:8080/photos
+inboxBaseUrl: http://localhost:8080/inbox
+mailVerificationUrl: http://localhost:8088/emailVerification.php?token=

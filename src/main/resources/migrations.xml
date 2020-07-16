@@ -497,4 +497,14 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="26" author="pstorch">
+        <addColumn tableName="users">
+            <column name="emailVerification" type="varchar(100)"/>
+        </addColumn>
+        <update tableName="users">
+            <column name="emailVerification" value="VERIFIED"/>
+            <where>email IS NOT NULL</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

@@ -23,11 +23,11 @@ public class StationsResourceTest {
     public void setUp() {
         final Map<Station.Key, Station> stationsXY = new HashMap<>(2);
         final Station.Key key5 = new Station.Key("xy", "5");
-        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "/fotos/xy/5.jpg", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0"), false));
+        stationsXY.put(key5, new Station(key5, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", new Photo(key5, "/fotos/xy/5.jpg", createTestPhotographer("Jim Knopf", "photographerUrl", "CC0"), null, "CC0"), false));
 
         final Map<Station.Key, Station> stationsAB = new HashMap<>(2);
         final Station.Key key3 = new Station.Key("ab", "3");
-        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "/fotos/ab/3.jpg", new User("Peter Pan", "photographerUrl2", "CC0 by SA"), null, "CC0 by SA"), true));
+        stationsAB.put(key3, new Station(key3, "Nimmerland", new Coordinates(40.0, 6.0), "ABC", new Photo(key3, "/fotos/ab/3.jpg", createTestPhotographer("Peter Pan", "photographerUrl2", "CC0 by SA"), null, "CC0 by SA"), true));
 
         final Map<Station.Key, Station> stationsAll = new HashMap<>(2);
         stationsAll.putAll(stationsAB);
@@ -111,4 +111,7 @@ public class StationsResourceTest {
         assertThat(resultAll.size(), equalTo(2));
     }
 
+    private User createTestPhotographer(final String name, final String url, final String license) {
+        return new User(name, url, license, 0, null, true, false, null, null, false, null);
+    }
 }

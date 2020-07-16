@@ -15,7 +15,7 @@ public class MockMailer implements Mailer {
 
     @Override
     public void send(final String to, final String subject, final String text) {
-        LOG.debug("Sending mail to {} with subject {}\n{}", to, subject, text);
+        LOG.info("Sending mail to {} with subject {}\n{}", to, subject, text);
         this.to = to;
         this.subject = subject;
         this.text = text;

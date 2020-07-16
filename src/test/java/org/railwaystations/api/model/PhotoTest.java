@@ -20,8 +20,12 @@ public class PhotoTest {
         "CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/",
         "CC0 1.0 Universell (CC0 1.0), https://creativecommons.org/publicdomain/zero/1.0/" })
     public void license2LicenseUrlMapping(final String license, final String licenseUrl) {
-        final Photo photo = new Photo(TEST_KEY, "url", new User("photographer", "photographerUrl", license), null, license);
+        final Photo photo = new Photo(TEST_KEY, "url", createTestPhotographer(license), null, license);
         assertEquals(licenseUrl, photo.getLicenseUrl());
+    }
+
+    private User createTestPhotographer(final String license) {
+        return new User("photographer", "photographerUrl", license, 0, null, true, false, null, null, false, null);
     }
 
     /**
@@ -29,7 +33,7 @@ public class PhotoTest {
      */
     @Test
     public void license2LicenseUrlMappingUnknownLicense() {
-        final Photo photo = new Photo(TEST_KEY, "url", new User("photographer", "photographerUrl", null), null, "unknown license name");
+        final Photo photo = new Photo(TEST_KEY, "url", createTestPhotographer(null), null, "unknown license name");
         assertNull(photo.getLicenseUrl());
     }
 

@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200627.2315'
+  version: '20200716.2020'
   title: RSAPI
   license:
     name: MIT
@@ -494,6 +494,30 @@ paths:
           description: conflict with existing name or email
         '422':
           description: unprocessable entity, Registration input document error
+  /emailVerification/{token}:
+    get:
+      summary: Verify eMail-Address with verification token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: email successfully verified
+        '400':
+          description: token not found, verification failed
+  /resendEmailVerification:
+    post:
+      summary: Sends a new eMail-Verification mail
+      parameters:
+        - name: Authorization
+          in: header
+          description: basic authorization with old password
+          type: string
+      responses:
+        '200':
+          description: email successfully sent
   /resetPassword:
     post:
       summary: Requests a new password only
@@ -604,8 +628,6 @@ paths:
       responses:
         '200':
           description: ok
-        '202':
-          description: new email accepted
         '400':
           description: wrong request
         '401':
@@ -853,6 +875,10 @@ definitions:
         type: boolean
       admin:
         type: admin
+      newPassword:
+        type: string
+      emailVerified:
+        type: boolean
   InboxResponse:
     type: object
     description: Response status of photo uploads and problem reports

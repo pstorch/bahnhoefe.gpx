@@ -33,6 +33,8 @@ public class RsApiConfiguration extends Configuration {
 
     private String inboxBaseUrl;
 
+    private String mailVerificationUrl;
+
     @Valid
     @NotNull
     private DataSourceFactory database = new DataSourceFactory();
@@ -122,4 +124,11 @@ public class RsApiConfiguration extends Configuration {
         return getInboxDir() + File.separator + "toprocess";
     }
 
+    public String getMailVerificationUrl() {
+        return mailVerificationUrl;
+    }
+
+    public void setMailVerificationUrl(final String mailVerificationUrl) {
+        this.mailVerificationUrl = mailVerificationUrl;
+    }
 }

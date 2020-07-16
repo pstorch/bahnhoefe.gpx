@@ -44,20 +44,20 @@ public class PhotoInboxEntryResourceTest {
     @BeforeEach
     public void setUp() throws IOException {
         final Station.Key key0815 = new Station.Key("ch", "0815");
-        final Station station0815 = new Station(key0815, "Station 0815", new Coordinates(40.1, 7.0), "LAL", new Photo(key0815, "URL", new User("Jim Knopf", "photographerUrl", "CC0", 18, false), null, "CC0"), true);
+        final Station station0815 = new Station(key0815, "Station 0815", new Coordinates(40.1, 7.0), "LAL", new Photo(key0815, "URL", createUser("Jim Knopf", 18), null, "CC0"), true);
         final Station.Key key4711 = new Station.Key("de", "4711");
         final Station station4711 = new Station(key4711, "Lummerland", new Coordinates(50.0, 9.0), "XYZ", null, true);
         final Station.Key key1234 = new Station.Key("de", "1234");
-        final Station station1234 = new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", new User("Jim Knopf", "photographerUrl", "CC0"), null, "CC0"), true);
+        final Station station1234 = new Station(key1234, "Neverland", new Coordinates(51.0, 10.0), "ABC", new Photo(key1234, "URL", createUser("Jim Knopf"), null, "CC0"), true);
         final Station.Key key5678 = new Station.Key("de", "5678");
-        final Station station5678 = new Station(key5678, "Phantasia", new Coordinates(51.0, 10.0), "DEF", new Photo(key5678, "URL", new User("nickname", "photographerUrl", "CC0"), null, "CC0"), true);
+        final Station station5678 = new Station(key5678, "Phantasia", new Coordinates(51.0, 10.0), "DEF", new Photo(key5678, "URL", createUser("nickname"), null, "CC0"), true);
         final Station.Key key9876 = new Station.Key("de", "9876");
-        final Station station9876 = new Station(key9876, "Station 9876", new Coordinates(52.0, 8.0), "EFF", new Photo(key9876, "URL", new User("nickname", "photographerUrl", "CC0", 42, false), null, "CC0"), true);
+        final Station station9876 = new Station(key9876, "Station 9876", new Coordinates(52.0, 8.0), "EFF", new Photo(key9876, "URL", createUser("nickname", 42), null, "CC0"), true);
 
         final UserDao userDao = mock(UserDao.class);
-        final User userNickname = new User("nickname", "nickname@example.com", "CC0", true, null, true);
+        final User userNickname = new User("nickname", "nickname@example.com", "CC0", true, null, true, null);
         when(userDao.findByEmail("nickname@example.com")).thenReturn(Optional.of(userNickname));
-        final User userSomeuser = new User("someuser", "someuser@example.com", "CC0", true, null, true);
+        final User userSomeuser = new User("someuser", "someuser@example.com", "CC0", true, null, true, null);
         userSomeuser.setUploadTokenSalt(123456L);
         when(userDao.findByEmail("someuser@example.com")).thenReturn(Optional.of(userSomeuser));
         inboxDao = mock(InboxDao.class);
@@ -80,11 +80,16 @@ public class PhotoInboxEntryResourceTest {
 
     private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
                                         final String stationTitle, final Double latitude, final Double longitude, final String comment) throws UnsupportedEncodingException {
+        return whenPostImage(content, nickname, userId, email, stationId, country, stationTitle, latitude, longitude, comment, User.EMAIL_VERIFIED);
+    }
+
+    private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
+                                        final String stationTitle, final Double latitude, final Double longitude, final String comment, final String emailVerification) throws UnsupportedEncodingException {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
-        final Response response = resource.post(is, "UserAgent", stationId, country, "image/jpeg",
+        final Response response = resource.photoUpload(is, "UserAgent", stationId, country, "image/jpeg",
                 stationTitle, latitude, longitude, comment, null,
-                new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false)));
+                new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false, emailVerification)));
         return (InboxResponse) response.getEntity();
     }
 
@@ -178,7 +183,7 @@ public class PhotoInboxEntryResourceTest {
 
     @Test
     public void testUserInbox() throws IOException {
-        final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false);
+        final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, null);
 
         when(inboxDao.findById(1)).thenReturn(new InboxEntry(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, false, null, false, false, null, null));
         when(inboxDao.findById(2)).thenReturn(new InboxEntry(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, true, null, false, false, null, null));
@@ -223,10 +228,16 @@ public class PhotoInboxEntryResourceTest {
     }
 
     @Test
+    public void testPostEmailNotVerified() throws IOException {
+        final InboxResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","1234", "de", null, null, null, null, User.EMAIL_VERIFICATION_TOKEN + "blahblah");
+        assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.UNAUTHORIZED));
+    }
+
+    @Test
     public void testPostInvalidCountry() throws IOException {
-        final Response response = resource.post(null, "UserAgent", "4711", "xy", "image/jpeg",
+        final Response response = resource.photoUpload(null, "UserAgent", "4711", "xy", "image/jpeg",
                 null, null, null, null, null,
-                new AuthUser(new User("nickname", "nickname@example.com", "CC0", true, null, false)));
+                new AuthUser(new User("nickname", null, "CC0", 0,  "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED)));
         final InboxResponse inboxResponse = (InboxResponse) response.getEntity();
         assertThat(inboxResponse.getState(), equalTo(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA));
         assertThat(inboxResponse.getId(), nullValue());
@@ -234,15 +245,31 @@ public class PhotoInboxEntryResourceTest {
     }
 
     @Test
-    public void testPostProblemReport() throws IOException {
+    public void testPostProblemReport() {
         when(inboxDao.insert(any())).thenReturn(6);
         final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong"),
-                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false)));
+                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED)));
 
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.REVIEW));
         assertThat(response.getId(), equalTo(6));
         assertThat(response.getFilename(), nullValue());
         assertThat(monitor.getMessages().get(0), equalTo("New problem report for Neverland - de:1234\nOTHER: something is wrong\nby @nick name\nvia UserAgent"));
     }
+
+    @Test
+    public void testPostProblemReportEmailNotVerified() {
+        final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong"),
+                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFICATION_TOKEN + "blah")));
+        assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.UNAUTHORIZED));
+    }
+
+    private User createUser(final String name) {
+        return createUser(name, 0);
+    }
+
+    private User createUser(final String name, final int id) {
+        return new User(name, "photographerUrl", "CC0", id, null, true, false, null, null, false, User.EMAIL_VERIFIED);
+    }
+
 
 }

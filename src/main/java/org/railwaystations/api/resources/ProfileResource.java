@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Optional;
+import java.util.UUID;
 
 @Path("/")
 public class ProfileResource {
@@ -29,11 +30,13 @@ public class ProfileResource {
     private final Monitor monitor;
     private final Mailer mailer;
     private final UserDao userDao;
+    private final String eMailVerificationUrl;
 
-    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao) {
+    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao, final String eMailVerificationUrl) {
         this.monitor = monitor;
         this.mailer = mailer;
         this.userDao = userDao;
+        this.eMailVerificationUrl = eMailVerificationUrl;
     }
 
     @POST
@@ -80,10 +83,24 @@ public class ProfileResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        final String initialPassword = createNewPassword(user);
-        saveRegistration(userAgent, user, user);
-        sendPasswordMail(user, initialPassword);
+        user.setNewPassword(createNewPassword());
+        encryptPassword(user);
+        saveNewPassword(userAgent, user);
+        sendPasswordMail(user);
+        if (!user.isEmailVerified()) {
+            // if the email is not yet verified, we can verify it with the next login
+            userDao.updateEmailVerification(user.getId(), User.EMAIL_VERIFIED_AT_NEXT_LOGIN);
+        }
         return Response.accepted().build();
+    }
+
+    private void saveNewPassword(final String userAgent, final User user) {
+        userDao.updateCredentials(user.getId(), user.getKey());
+        monitor.sendMessage(
+                String.format("Reset Password for '%s', email='%s'%nvia %s",
+                        user.getName(), user.getEmail(), userAgent));
+
+        LOG.info("Reset Password for '{}'", user.getName());
     }
 
     @POST
@@ -98,19 +115,6 @@ public class ProfileResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        return register(userAgent, registration, false);
-    }
-
-    private String createNewPassword(@NotNull final User user) {
-        final String initialPassword = RandomStringUtils.randomAlphanumeric(12);
-        user.setKey(PasswordUtil.hashPassword(initialPassword));
-        user.setUploadTokenSalt(null);
-        user.setUploadToken(null);
-
-        return initialPassword;
-    }
-
-    private Response register(final String userAgent, final User registration, final boolean eMailVerified) {
         final Optional<User> existingName = userDao.findByNormalizedName(registration.getNormalizedName());
         if (existingName.isPresent() && !registration.getEmail().equals(existingName.get().getEmail())) {
             monitor.sendMessage(
@@ -119,17 +123,40 @@ public class ProfileResource {
             return Response.status(Response.Status.CONFLICT).build();
         }
 
-        final String initialPassword = createNewPassword(registration);
-        final Optional<User> existing = userDao.findByEmail(registration.getEmail());
-        saveRegistration(userAgent, registration, existing.orElse(null));
-
-        if (eMailVerified) {
-            LOG.info("Email verified, returning profile");
-            return Response.accepted().entity(existing.orElse(registration)).build();
+        if (userDao.findByEmail(registration.getEmail()).isPresent()) {
+            monitor.sendMessage(
+                    String.format("Registration for user '%s' with eMail '%s' failed, because eMail is already taken%nvia %s",
+                            registration.getName(), registration.getEmail(), userAgent));
+            return Response.status(Response.Status.CONFLICT).build();
         }
 
-        sendPasswordMail(registration, initialPassword);
+        final boolean passwordProvided = StringUtils.isNotBlank(registration.getNewPassword());
+        if (!passwordProvided) {
+            registration.setNewPassword(createNewPassword());
+            registration.setEmailVerification(User.EMAIL_VERIFIED_AT_NEXT_LOGIN);
+        } else {
+            registration.setEmailVerificationToken(UUID.randomUUID().toString());
+        }
+
+        encryptPassword(registration);
+        saveRegistration(userAgent, registration);
+
+        if (passwordProvided) {
+            sendEmailVerification(registration);
+        } else {
+            sendPasswordMail(registration);
+        }
         return Response.accepted().build();
+    }
+
+    private String createNewPassword() {
+        return RandomStringUtils.randomAlphanumeric(12);
+    }
+
+    private void encryptPassword(@NotNull final User user) {
+        user.setKey(PasswordUtil.hashPassword(user.getNewPassword()));
+        user.setUploadTokenSalt(null);
+        user.setUploadToken(null);
     }
 
     @GET
@@ -154,24 +181,29 @@ public class ProfileResource {
             throw new WebApplicationException(HttpStatus.BAD_REQUEST_400);
         }
 
+        if (!newProfile.getNormalizedName().equals(user.getNormalizedName())) {
+            if (userDao.findByNormalizedName(newProfile.getNormalizedName()).isPresent()) {
+                LOG.info("Name conflict '{}'", newProfile.getName());
+                return Response.status(Response.Status.CONFLICT).build();
+            }
+            monitor.sendMessage(
+                    String.format("Update nickname for user '%s' to '%s'%n%s",
+                            user.getName(), newProfile.getName(), userAgent));
+        }
+
         if (!newProfile.getEmail().equals(user.getEmail())) {
             if (userDao.findByEmail(newProfile.getEmail()).isPresent()) {
                 LOG.info("Email conflict '{}'", newProfile.getEmail());
                 return Response.status(Response.Status.CONFLICT).build();
             }
-            final String initialPassword = createNewPassword(newProfile);
-            userDao.updateEmailAndKey(user.getId(), newProfile.getEmail(), newProfile.getKey());
+            newProfile.setEmailVerificationToken(UUID.randomUUID().toString());
             monitor.sendMessage(
                     String.format("Update email for user '%s' from email '%s' to '%s'%n%s",
                             user.getName(), user.getEmail(), newProfile.getEmail(), userAgent));
-            sendPasswordMail(newProfile, initialPassword);
-            return Response.accepted().build();
-        }
-
-        if (!newProfile.getNormalizedName().equals(user.getNormalizedName())
-                && userDao.findByNormalizedName(newProfile.getNormalizedName()).isPresent()) {
-            LOG.info("Name conflict '{}'", newProfile.getName());
-            return Response.status(Response.Status.CONFLICT).build();
+            sendEmailVerification(newProfile);
+        } else {
+            // keep email verification status
+            newProfile.setEmailVerification(user.getEmailVerification());
         }
 
         newProfile.setId(user.getId());
@@ -179,43 +211,64 @@ public class ProfileResource {
         return Response.ok().build();
     }
 
-    private void sendPasswordMail(@NotNull final User registration, final String initialPassword) {
-        final String url = "http://railway-stations.org/uploadToken/" + initialPassword;
+    @POST
+    @Path("resendEmailVerification")
+    public Response resendEmailVerification(@HeaderParam("User-Agent") final String userAgent, @Auth final AuthUser authUser) {
+        final User user = authUser.getUser();
+        LOG.info("Resend EmailVerification for '{}'", user.getEmail());
 
-        final String text = String.format("Hello %1s,%n%n" +
-                        "thank you for your registration.%n" +
-                        "Your initial password (formerly Upload-Token) is: %2s%n" +
-                        "Please click on %3s to transfer it into the App.%n" +
-                        "Alternatively you can log in manually.%n%n" +
+        user.setEmailVerificationToken(UUID.randomUUID().toString());
+        userDao.updateEmailVerification(user.getId(), user.getEmailVerification());
+        sendEmailVerification(user);
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("emailVerification/{token}")
+    public Response emailVerification(@HeaderParam("User-Agent") final String userAgent, @PathParam("token") final String token) {
+        final Optional<User> userByToken = userDao.findByEmailVerification(User.EMAIL_VERIFICATION_TOKEN + token);
+        if (userByToken.isPresent()) {
+            final User user = userByToken.get();
+            userDao.updateEmailVerification(user.getId(), User.EMAIL_VERIFIED);
+            monitor.sendMessage(
+                    String.format("Email verified {nickname='%s', email='%s'}%nvia %s", user.getName(), user.getEmail(), userAgent));
+            return Response.ok("Email successfully verified!").build();
+        }
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    private void sendPasswordMail(@NotNull final User user) {
+        final String text = String.format("Hello %1$s,%n%n" +
+                        "your new password is: %2$s%n%n" +
                         "Cheers%n" +
                         "Your Railway-Stations-Team%n" +
                         "%n---%n" +
-                        "Hallo %1s,%n%n" +
-                        "vielen Dank für Deine Registrierung.%n" +
-                        "Dein Initial-Passwort (ehemals Upload-Token) lautet: %2s%n" +
-                        "Klicke bitte auf %3s, um es in die App zu übernehmen.%n" +
-                        "Alternativ kannst Du Dich manuell einloggen.%n%n" +
+                        "Hallo %1$s,%n%n" +
+                        "Dein neues Passwort lautet: %2$s%n%n" +
                         "Viele Grüße%n" +
                         "Dein Bahnhofsfoto-Team",
-                registration.getName(), initialPassword, url,
-                registration.getName(), initialPassword, url);
-        mailer.send(registration.getEmail(), "Railway-Stations.org initial password (Upload-Token)", text);
-        LOG.info("Password sent to {}", registration.getEmail());
+                user.getName(), user.getNewPassword());
+        mailer.send(user.getEmail(), "Railway-Stations.org new password", text);
+        LOG.info("Password sent to {}", user.getEmail());
     }
 
-    private void saveRegistration(final String userAgent, final User registration, final User existing) {
-        if (existing != null) {
-            userDao.updateCredentials(existing.getId(), registration.getKey());
-            monitor.sendMessage(
-                    String.format("Re-registration: sending new password{nickname='%s', email='%s'}%nvia %s",
-                            registration.getName(), registration.getEmail(), userAgent));
-            return;
-        }
+    private void sendEmailVerification(@NotNull final User user) {
+        final String url = eMailVerificationUrl + user.getEmailVerificationToken();
+        final String text = String.format("Hello %1$s,%n%n" +
+                        "please click on %2$s to verify your eMail-Address.%n%n" +
+                        "Cheers%n" +
+                        "Your Railway-Stations-Team%n" +
+                        "%n---%n" +
+                        "Hallo %1$s,%n%n" +
+                        "bitte klicke auf %2$s, um Deine eMail-Adresse zu verifizieren%n%n" +
+                        "Viele Grüße%n" +
+                        "Dein Bahnhofsfoto-Team",
+                user.getName(), url);
+        mailer.send(user.getEmail(), "Railway-Stations.org eMail verification", text);
+        LOG.info("Email verification sent to {}", user.getEmail());
+    }
 
-        if (!registration.isValid()) {
-            LOG.info("User invalid {}", registration);
-            throw new WebApplicationException(HttpStatus.BAD_REQUEST_400);
-        }
+    private void saveRegistration(final String userAgent, final User registration) {
         final Integer id = userDao.insert(registration);
         monitor.sendMessage(
                 String.format("New registration{nickname='%s', email='%s', license='%s', photoOwner=%s, link='%s', anonymous=%s}%nvia %s",

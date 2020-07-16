@@ -24,6 +24,8 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class ProfileResourceTest {
 
+    private static final String EMAIL_VERIFICATION_URL = "EMAIL_VERIFICATION_URL";
+
     private MockMonitor monitor;
     private MockMailer mailer;
     private ProfileResource resource;
@@ -35,20 +37,20 @@ public class ProfileResourceTest {
         mailer = new MockMailer();
         userDao = mock(UserDao.class);
 
-        resource = new ProfileResource(monitor, mailer, userDao);
+        resource = new ProfileResource(monitor, mailer, userDao, EMAIL_VERIFICATION_URL);
     }
 
     @Test
-    public void testInvalid() {
-        final User registration = new User("nickname", null, null, true, "https://link@example.com", false);
+    public void testRegisterInvalidData() {
+        final User registration = new User("nickname", null, null, true, "https://link@example.com", false, null);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(400));
     }
 
     @Test
-    public void testNewUser() {
-        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", false);
+    public void testRegisterNewUser() {
+        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", false, null);
         final Response response = resource.register("UserAgent", registration);
         verify(userDao).findByNormalizedName("nickname");
         verify(userDao).findByEmail("nickname@example.com");
@@ -57,32 +59,54 @@ public class ProfileResourceTest {
 
         assertThat(response.getStatus(), equalTo(202));
         assertThat(monitor.getMessages().get(0), equalTo("New registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}\nvia UserAgent"));
-        assertEmail("nickname");
+        assertNewPasswordEmail("nickname");
 
         verifyNoMoreInteractions(userDao);
     }
 
-    private void assertEmail(final String nickname) {
+    @Test
+    public void testRegisterNewUserWithPassword() {
+        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", false, "verySecretPassword");
+        final Response response = resource.register("UserAgent", registration);
+        verify(userDao).findByNormalizedName("nickname");
+        verify(userDao).findByEmail("nickname@example.com");
+        verify(userDao).insert(any(User.class));
+        verify(userDao, never()).updateCredentials(anyInt(), anyString());
+
+        assertThat(response.getStatus(), equalTo(202));
+        assertThat(monitor.getMessages().get(0), equalTo("New registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}\nvia UserAgent"));
+        assertVerificationEmail("nickname");
+
+        verifyNoMoreInteractions(userDao);
+    }
+
+    private void assertVerificationEmail(final String nickname) {
         assertThat(mailer.getText().matches("Hello " + nickname + ",\n\n" +
-                "thank you for your registration.\n" +
-                "Your initial password \\(formerly Upload-Token\\) is: .*\n" +
-                "Please click on http://railway-stations.org/uploadToken/.* to transfer it into the App.\n" +
-                "Alternatively you can log in manually.\n\n" +
+                "please click on EMAIL_VERIFICATION_URL.* to verify your eMail-Address.\n\n" +
                 "Cheers\n" +
                 "Your Railway-Stations-Team\n" +
                 "\n---\n" +
                 "Hallo " + nickname + ",\n\n" +
-                "vielen Dank für Deine Registrierung.\n" +
-                "Dein Initial-Passwort \\(ehemals Upload-Token\\) lautet: .*\n" +
-                "Klicke bitte auf http://railway-stations.org/uploadToken/.*, um es in die App zu übernehmen.\n" +
-                "Alternativ kannst Du Dich manuell einloggen.\n\n" +
+                "bitte klicke auf EMAIL_VERIFICATION_URL.*, um Deine eMail-Adresse zu verifizieren\n\n" +
+                "Viele Grüße\n" +
+                "Dein Bahnhofsfoto-Team"), is(true));
+    }
+
+    private void assertNewPasswordEmail(final String nickname) {
+        assertThat(mailer.getText().matches("Hello " + nickname + ",\n\n" +
+                "your new password is: .*\n\n" +
+                "Cheers\n" +
+                "Your Railway-Stations-Team\n" +
+                "\n---\n" +
+                "Hallo " + nickname + ",\n\n" +
+                "Dein neues Passwort lautet: .*\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"), is(true));
     }
 
     @Test
-    public void testNewUserAnonymous() {
-        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", true);
+    public void testRegisterNewUserAnonymous() {
+        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", true, null);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(202));
@@ -90,38 +114,39 @@ public class ProfileResourceTest {
     }
 
     @Test
-    public void testNewUserNameTaken() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false)));
-        final User registration = new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false);
+    public void testRegisterNewUserNameTaken() {
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null)));
+        final User registration = new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false, null);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(409));
     }
 
     @Test
-    public void testExistingUserOk() {
-        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
+    public void testRegisterExistingUserEmailTaken() {
+        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
         when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
         when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         final Response response = resource.register("UserAgent", user);
 
-        assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("Re-registration: sending new password{nickname='existing', email='existing@example.com'}\nvia UserAgent"));
+        assertThat(response.getStatus(), equalTo(409));
+        assertThat(monitor.getMessages().get(0), equalTo("Registration for user 'existing' with eMail 'existing@example.com' failed, because eMail is already taken\nvia UserAgent"));
     }
 
     @Test
-    public void testExistingUserWrongEmail() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false)));
-        final User registration = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
+    public void testRegisterExistingUserNameTaken() {
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false, null)));
+        final User registration = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(409));
+        assertThat(monitor.getMessages().get(0), equalTo("Registration for user 'existing' with eMail 'existing@example.com' failed, because name is already taken by different eMail 'other@example.com'\nvia UserAgent"));
     }
 
     @Test
-    public void testExistingUserEmptyName() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false)));
-        final User registration = new User("", "existing@example.com", "CC0", true, "https://link@example.com", false);
+    public void testRegisterExistingUserEmptyName() {
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false, null)));
+        final User registration = new User("", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(400));
@@ -129,7 +154,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testGetMyProfile() {
-        final User user = new User("existing", "existing@example.com", null, true, null, false);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
         final Response response = resource.getMyProfile(new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(200));
@@ -138,7 +163,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testChangePasswordTooShort() throws UnsupportedEncodingException {
-        final User user = new User("existing", "existing@example.com", null, true, null, false);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
         final Response response = resource.changePassword(new AuthUser(user), "secret");
         verify(userDao, never()).updateCredentials(anyInt(), anyString());
 
@@ -147,10 +172,10 @@ public class ProfileResourceTest {
 
     @Test
     public void testChangePassword() throws UnsupportedEncodingException {
-        final User user = new User("existing", "existing@example.com", null, true, null, false);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
         user.setId(4711);
-        ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
-        ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
+        final ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
         final Response response = resource.changePassword(new AuthUser(user), "secretlong");
         verify(userDao).updateCredentials(idCaptor.capture(), keyCaptor.capture());
 
@@ -162,8 +187,8 @@ public class ProfileResourceTest {
     @Test
     public void testUpdateMyProfile() {
         when(userDao.findByNormalizedName("newname")).thenReturn(Optional.empty());
-        final User user = new User("existing", "existing@example.com", null, true, null, false);
-        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
+        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true, null);
         final Response response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(200));
@@ -172,9 +197,9 @@ public class ProfileResourceTest {
 
     @Test
     public void testUpdateMyProfileConflict() {
-        when(userDao.findByNormalizedName("newname")).thenReturn(Optional.of(new User("@New name", "newname@example.com", null, true, null, false)));
-        final User user = new User("existing", "existing@example.com", null, true, null, false);
-        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true);
+        when(userDao.findByNormalizedName("newname")).thenReturn(Optional.of(new User("@New name", "newname@example.com", null, true, null, false, null)));
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
+        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true, null);
         final Response response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(409));
@@ -184,36 +209,35 @@ public class ProfileResourceTest {
     @Test
     public void testUpdateMyProfileNewMail() {
         when(userDao.findByEmail("newname@example.com")).thenReturn(Optional.empty());
-        final User user = new User("existing", "existing@example.com", null, true, null, false);
-        final User newProfile = new User("existing", "newname@example.com", "CC0", true, "http://twitter.com/", true);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
+        final User newProfile = new User("existing", "newname@example.com", "CC0", true, "http://twitter.com/", true, null);
         final Response response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user));
 
-        assertThat(response.getStatus(), equalTo(202));
-        assertEmail("existing");
-        verify(userDao).updateEmailAndKey(user.getId(), newProfile.getEmail(), newProfile.getKey());
-        verify(userDao, never()).update(newProfile);
+        assertThat(response.getStatus(), equalTo(200));
+        assertVerificationEmail("existing");
+        verify(userDao).update(newProfile);
     }
 
     @Test
     public void testNewUploadTokenViaEmail() {
-        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
+        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
         when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
         when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         final Response response = resource.newUploadToken("UserAgent", "existing@example.com");
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("Re-registration: sending new password{nickname='existing', email='existing@example.com'}\nvia UserAgent"));
+        assertThat(monitor.getMessages().get(0), equalTo("Reset Password for 'existing', email='existing@example.com'\nvia UserAgent"));
     }
 
     @Test
     public void testNewUploadTokenViaName() {
-        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false);
+        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
         when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
         when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         final Response response = resource.newUploadToken("UserAgent", "existing");
 
         assertThat(response.getStatus(), equalTo(202));
-        assertThat(monitor.getMessages().get(0), equalTo("Re-registration: sending new password{nickname='existing', email='existing@example.com'}\nvia UserAgent"));
+        assertThat(monitor.getMessages().get(0), equalTo("Reset Password for 'existing', email='existing@example.com'\nvia UserAgent"));
     }
 
     @Test
@@ -225,12 +249,50 @@ public class ProfileResourceTest {
 
     @Test
     public void testNewUploadTokenEmailMissing() {
-        final User user = new User("existing", "", "CC0", true, "https://link@example.com", false);
+        final User user = new User("existing", "", "CC0", true, "https://link@example.com", false, null);
         when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
         when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         final Response response = resource.newUploadToken("UserAgent", "existing");
 
         assertThat(response.getStatus(), equalTo(400));
+    }
+
+    @Test
+    public void testVerifyEmailSuccess() {
+        final String token = "verification";
+        final String emailVerification = User.EMAIL_VERIFICATION_TOKEN + token;
+        final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, emailVerification);
+        when(userDao.findByEmailVerification(emailVerification)).thenReturn(Optional.of(user));
+        final Response response = resource.emailVerification("UserAgent", token);
+
+        assertThat(response.getStatus(), equalTo(200));
+        assertThat(monitor.getMessages().get(0), equalTo("Email verified {nickname='existing', email='existing@example.com'}\nvia UserAgent"));
+        verify(userDao).updateEmailVerification(42, User.EMAIL_VERIFIED);
+    }
+
+    @Test
+    public void testVerifyEmailFailed() {
+        final String token = "verification";
+        final String emailVerification = User.EMAIL_VERIFICATION_TOKEN + token;
+        final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, emailVerification);
+        when(userDao.findByEmailVerification(emailVerification)).thenReturn(Optional.of(user));
+        final Response response = resource.emailVerification("UserAgent", "wrong_token");
+
+        assertThat(response.getStatus(), equalTo(404));
+        assertThat(monitor.getMessages().isEmpty(), equalTo(true));
+        verify(userDao, never()).updateEmailVerification(42, User.EMAIL_VERIFIED);
+    }
+
+    @Test
+    public void testResendEmailVerification() {
+        when(userDao.findByEmail("newname@example.com")).thenReturn(Optional.empty());
+        final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, User.EMAIL_VERIFIED_AT_NEXT_LOGIN);
+        final Response response = resource.resendEmailVerification("UserAgent", new AuthUser(user));
+
+        assertThat(response.getStatus(), equalTo(200));
+        assertThat(user.getEmailVerification().startsWith(User.EMAIL_VERIFICATION_TOKEN), is(true));
+        assertVerificationEmail("existing");
+        verify(userDao).updateEmailVerification(user.getId(), user.getEmailVerification());
     }
 
 }
