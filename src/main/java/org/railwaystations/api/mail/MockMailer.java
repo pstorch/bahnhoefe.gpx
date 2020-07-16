@@ -3,8 +3,6 @@ package org.railwaystations.api.mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-
 public class MockMailer implements Mailer {
 
     private static final Logger LOG = LoggerFactory.getLogger(MockMailer.class);
@@ -15,15 +13,12 @@ public class MockMailer implements Mailer {
 
     private String text;
 
-    private File qrCode;
-
     @Override
-    public void send(final String to, final String subject, final String text, final File qrCode) {
+    public void send(final String to, final String subject, final String text) {
         LOG.debug("Sending mail to {} with subject {}\n{}", to, subject, text);
         this.to = to;
         this.subject = subject;
         this.text = text;
-        this.qrCode = qrCode;
     }
 
     public String getTo() {
@@ -38,7 +33,4 @@ public class MockMailer implements Mailer {
         return text;
     }
 
-    public File getQrCode() {
-        return qrCode;
-    }
 }

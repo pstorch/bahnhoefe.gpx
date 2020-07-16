@@ -1,11 +1,5 @@
 package org.railwaystations.api.resources;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import io.dropwizard.auth.Auth;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,18 +13,12 @@ import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Hashtable;
 import java.util.Optional;
 
 @Path("/")
@@ -198,7 +186,7 @@ public class ProfileResource {
                         "thank you for your registration.%n" +
                         "Your initial password (formerly Upload-Token) is: %2s%n" +
                         "Please click on %3s to transfer it into the App.%n" +
-                        "Alternatively you can scan this QR-Code or log in manually.%n%n" +
+                        "Alternatively you can log in manually.%n%n" +
                         "Cheers%n" +
                         "Your Railway-Stations-Team%n" +
                         "%n---%n" +
@@ -206,12 +194,12 @@ public class ProfileResource {
                         "vielen Dank für Deine Registrierung.%n" +
                         "Dein Initial-Passwort (ehemals Upload-Token) lautet: %2s%n" +
                         "Klicke bitte auf %3s, um es in die App zu übernehmen.%n" +
-                        "Alternativ kannst Du auch mit Deinem Smartphone den QR-Code scannen oder Dich manuell einloggen.%n%n" +
+                        "Alternativ kannst Du Dich manuell einloggen.%n%n" +
                         "Viele Grüße%n" +
                         "Dein Bahnhofsfoto-Team",
                 registration.getName(), initialPassword, url,
                 registration.getName(), initialPassword, url);
-        mailer.send(registration.getEmail(), "Railway-Stations.org initial password (Upload-Token)", text, generateComZXing(url));
+        mailer.send(registration.getEmail(), "Railway-Stations.org initial password (Upload-Token)", text);
         LOG.info("Password sent to {}", registration.getEmail());
     }
 
@@ -235,37 +223,6 @@ public class ProfileResource {
                         registration.getUrl(), registration.isAnonymous(), userAgent));
 
         LOG.info("User '{}' created with id {}", registration.getName(), id);
-    }
-
-    private File generateComZXing(final String url) {
-        try {
-            final File file = File.createTempFile("rsapi", "qrcode.png");
-            final Hashtable<EncodeHintType, ErrorCorrectionLevel> hintMap = new Hashtable<>();
-            hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-            final QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            final BitMatrix byteMatrix = qrCodeWriter.encode(url, BarcodeFormat.QR_CODE, 200, 200, hintMap);
-            final int crunchifySize = byteMatrix.getWidth();
-            final BufferedImage image = new BufferedImage(crunchifySize, crunchifySize, BufferedImage.TYPE_INT_RGB);
-            image.createGraphics();
-            final Graphics2D graphics = (Graphics2D) image.getGraphics();
-            graphics.setColor(Color.WHITE);
-            graphics.fillRect(0, 0, crunchifySize, crunchifySize);
-            graphics.setColor(Color.BLACK);
-
-            for (int i = 0; i < crunchifySize; i++) {
-                for (int j = 0; j < crunchifySize; j++) {
-                    if (byteMatrix.get(i, j)) {
-                        graphics.fillRect(i, j, 1, 1);
-                    }
-                }
-            }
-
-            ImageIO.write(image, "png", file);
-            LOG.info("qr-code generated at: " + file.getAbsolutePath());
-            return file;
-        } catch (final IOException | WriterException e) {
-            throw new RuntimeException("Error creating QR-Code", e);
-        }
     }
 
 }

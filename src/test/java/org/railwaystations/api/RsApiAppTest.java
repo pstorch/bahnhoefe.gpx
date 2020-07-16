@@ -355,7 +355,7 @@ public class RsApiAppTest {
                 "thank you for your registration.\n" +
                 "Your initial password \\(formerly Upload-Token\\) is: .*\n" +
                 "Please click on http://railway-stations.org/uploadToken/.* to transfer it into the App.\n" +
-                "Alternatively you can scan this QR-Code or log in manually.\n\n" +
+                "Alternatively you can log in manually.\n\n" +
                 "Cheers\n" +
                 "Your Railway-Stations-Team\n" +
                 "\n---\n" +
@@ -363,7 +363,7 @@ public class RsApiAppTest {
                 "vielen Dank für Deine Registrierung.\n" +
                 "Dein Initial-Passwort \\(ehemals Upload-Token\\) lautet: .*\n" +
                 "Klicke bitte auf http://railway-stations.org/uploadToken/.*, um es in die App zu übernehmen.\n" +
-                "Alternativ kannst Du auch mit Deinem Smartphone den QR-Code scannen oder Dich manuell einloggen.\n\n" +
+                "Alternativ kannst Du Dich manuell einloggen.\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"), is(true));
     }
