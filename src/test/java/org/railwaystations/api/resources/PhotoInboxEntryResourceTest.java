@@ -247,7 +247,7 @@ public class PhotoInboxEntryResourceTest {
     @Test
     public void testPostProblemReport() {
         when(inboxDao.insert(any())).thenReturn(6);
-        final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong"),
+        final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong", null),
                 new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED)));
 
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.REVIEW));
@@ -258,7 +258,7 @@ public class PhotoInboxEntryResourceTest {
 
     @Test
     public void testPostProblemReportEmailNotVerified() {
-        final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong"),
+        final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong", null),
                 new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFICATION_TOKEN + "blah")));
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.UNAUTHORIZED));
     }

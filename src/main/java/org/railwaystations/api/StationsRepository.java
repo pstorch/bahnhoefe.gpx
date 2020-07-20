@@ -110,4 +110,7 @@ public class StationsRepository {
         stationDao.changeStationTitle(station, newTitle);
     }
 
+    public void updateLocation(final Station station, final Coordinates coordinates) {
+        stationDao.updateLocation(station, coordinates);
+    }
 }

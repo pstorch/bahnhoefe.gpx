@@ -80,6 +80,9 @@ public interface StationDao {
     @SqlUpdate("update stations set title = :new_title where countryCode = :key.country and id = :key.id")
     void changeStationTitle(@BindBean final Station station, @Bind("new_title") final String newTitle);
 
+    @SqlUpdate("update stations set lat = :coords.lat, lon = :coords.lon where countryCode = :key.country and id = :key.id")
+    void updateLocation(@BindBean final Station station, @Bind("coords") final Coordinates coordinates);
+
     class StationMapper implements RowMapper<Station> {
 
         private static String photoBaseUrl = "";

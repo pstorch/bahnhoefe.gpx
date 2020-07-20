@@ -236,7 +236,8 @@ public class InboxEntry extends PublicInboxEntry {
         DELETE_PHOTO,
         MARK_SOLVED,
         REJECT,
-        CHANGE_NAME
+        CHANGE_NAME,
+        UPDATE_LOCATION
     }
 
 }

@@ -171,7 +171,7 @@ public class InboxResource {
             return new InboxResponse(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA, "Problem type is mandatory");
         }
         final InboxEntry inboxEntry = new InboxEntry(problemReport.getCountryCode(), problemReport.getStationId(),
-                null, null, user.getUser().getId(), null, problemReport.getComment(),
+                null, problemReport.getCoordinates(), user.getUser().getId(), null, problemReport.getComment(),
                 problemReport.getType(), null);
         monitor.sendMessage(String.format("New problem report for %s - %s:%s%n%s: %s%nby %s%nvia %s",
                 station.getTitle(), station.getKey().getCountry(), station.getKey().getId(), problemReport.getType(),
@@ -293,11 +293,27 @@ public class InboxResource {
                 }
                 changeStationTitle(inboxEntry, command.getTitle());
                 break;
+            case UPDATE_LOCATION:
+                updateLocation(inboxEntry, command);
+                break;
             default:
                 throw new WebApplicationException("Unexpected command value: " + command.getCommand(), Response.Status.BAD_REQUEST);
         }
 
         return Response.ok().build();
+    }
+
+    private void updateLocation(final InboxEntry inboxEntry, final InboxEntry command) {
+        Coordinates coordinates = inboxEntry.getCoordinates();
+        if (command.hasCoords()) {
+            coordinates = command.getCoordinates();
+        }
+        if (coordinates == null || !coordinates.isValid()) {
+            throw new WebApplicationException("Can't update location, coordinates: " + command.getCommand(), Response.Status.BAD_REQUEST);
+        }
+
+        final Station station = assertStationExists(inboxEntry);
+        repository.updateLocation(station, coordinates);
     }
 
     @GET

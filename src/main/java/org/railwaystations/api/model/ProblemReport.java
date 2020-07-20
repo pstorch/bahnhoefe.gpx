@@ -1,6 +1,7 @@
 package org.railwaystations.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 public class ProblemReport {
 
@@ -16,15 +17,19 @@ public class ProblemReport {
     @JsonProperty
     private String comment;
 
+    @JsonUnwrapped
+    private Coordinates coordinates;
+
     public ProblemReport() {
     }
 
-    public ProblemReport(final String countryCode, final String stationId, final ProblemReportType type, final String comment) {
+    public ProblemReport(final String countryCode, final String stationId, final ProblemReportType type, final String comment, final Coordinates coordinates) {
         super();
         this.countryCode = countryCode;
         this.stationId = stationId;
         this.type = type;
         this.comment = comment;
+        this.coordinates = coordinates;
     }
 
     public String getCountryCode() {
@@ -59,4 +64,11 @@ public class ProblemReport {
         this.comment = comment;
     }
 
+    public Coordinates getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(final Coordinates coordinates) {
+        this.coordinates = coordinates;
+    }
 }

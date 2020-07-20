@@ -1046,6 +1046,7 @@ definitions:
           - MARK_SOLVED
           - REJECT
           - CHANGE_NAME
+          - UPDATE_LOCATION
   InboxCountResponse:
     type: object
     description: counts the pending inbox entries
@@ -1071,3 +1072,9 @@ definitions:
           - WRONG_PHOTO
           - OTHER
           - WRONG_NAME
+      lat:
+        type: number
+        format: double
+      lon:
+        type: number
+        format: double
