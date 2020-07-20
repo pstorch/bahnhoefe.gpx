@@ -1,5 +1,6 @@
 package org.railwaystations.api.db;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
@@ -73,17 +74,8 @@ public interface InboxDao {
 
         public InboxEntry map(final ResultSet rs, final StatementContext ctx) throws SQLException {
             final int id = rs.getInt("id");
-            final String countryCode = rs.getString("countryCode");
-            final String stationId = rs.getString("stationId");
-            final Coordinates coordinates;
-            final String title;
-            if (countryCode != null && stationId != null) {
-                coordinates = new Coordinates(rs.getDouble("s_lat"), rs.getDouble("s_lon"));
-                title = rs.getString("s_title");
-            } else {
-                coordinates = new Coordinates(rs.getDouble("u_lat"), rs.getDouble("u_lon"));
-                title = rs.getString("u_title");
-            }
+            final Coordinates coordinates = getCoordinates(rs);
+            final String title = getTitle(rs);
             final boolean done = rs.getBoolean("done");
             final String problemReportType = rs.getString("problemReportType");
             final String extension = rs.getString("extension");
@@ -104,20 +96,33 @@ public interface InboxDao {
     class PublicInboxEntryMapper implements RowMapper<PublicInboxEntry> {
 
         public PublicInboxEntry map(final ResultSet rs, final StatementContext ctx) throws SQLException {
-            final String countryCode = rs.getString("countryCode");
-            final String stationId = rs.getString("stationId");
-            final Coordinates coordinates;
-            final String title;
-            if (countryCode != null && stationId != null) {
-                coordinates = new Coordinates(rs.getDouble("s_lat"), rs.getDouble("s_lon"));
-                title = rs.getString("s_title");
-            } else {
-                coordinates = new Coordinates(rs.getDouble("u_lat"), rs.getDouble("u_lon"));
-                title = rs.getString("u_title");
-            }
+            final String title = getTitle(rs);
+            final Coordinates coordinates = getCoordinates(rs);
             return new PublicInboxEntry(rs.getString("countryCode"), rs.getString("stationId"), title, coordinates);
         }
 
+    }
+
+    /**
+     * Gets the uploaded title, if not present returns the station title
+     */
+    static String getTitle(final ResultSet rs) throws SQLException {
+        String title = rs.getString("u_title");
+        if (StringUtils.isBlank(title)) {
+            title = rs.getString("s_title");
+        }
+        return title;
+    }
+
+    /**
+     * Get the uploaded coordinates, if not present or not valid gets the station coordinates
+     */
+    static Coordinates getCoordinates(final ResultSet rs) throws SQLException {
+        Coordinates coordinates = new Coordinates(rs.getDouble("u_lat"), rs.getDouble("u_lon"));
+        if (!coordinates.isValid()) {
+            coordinates = new Coordinates(rs.getDouble("s_lat"), rs.getDouble("s_lon"));
+        }
+        return coordinates;
     }
 
 }
