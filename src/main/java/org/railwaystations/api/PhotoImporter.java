@@ -195,11 +195,19 @@ public class PhotoImporter {
     }
 
     public static void moveFile(final File importFile, final File countryDir, final String stationId, final String extension) throws IOException {
-        FileUtils.moveFile(importFile, new File(countryDir, stationId + "." + extension));
+        final File destFile = getCleanDestFile(countryDir, stationId, extension);
+        FileUtils.moveFile(importFile, destFile);
     }
 
     public static void copyFile(final File importFile, final File countryDir, final String stationId, final String extension) throws IOException {
-        FileUtils.copyFile(importFile, new File(countryDir, stationId + "." + extension));
+        final File destFile = getCleanDestFile(countryDir, stationId, extension);
+        FileUtils.copyFile(importFile, destFile);
+    }
+
+    private static File getCleanDestFile(final File countryDir, final String stationId, final String extension) {
+        final File destFile = new File(countryDir, stationId + "." + extension);
+        FileUtils.deleteQuietly(destFile);
+        return destFile;
     }
 
     public static final class ReportEntry {
