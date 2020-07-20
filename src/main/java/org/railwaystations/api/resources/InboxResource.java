@@ -386,7 +386,7 @@ public class InboxResource {
         if (station == null && command.createStation()) {
             station = repository.findByCountryAndId(command.getCountryCode(), command.getStationId());
             if (station != null) {
-                throw new WebApplicationException("Station already exists", Response.Status.BAD_REQUEST);
+                LOG.info("Importing missing station upload {} to existing station {}", inboxEntry.getId(), station.getKey());
             }
         }
         if (station == null) {
@@ -515,7 +515,7 @@ public class InboxResource {
                         null, user.getUser().getId(), extension, comment, null, active));
             } else {
                 // missing station
-                id = inboxDao.insert(new InboxEntry(null, null, stationTitle,
+                id = inboxDao.insert(new InboxEntry(country, null, stationTitle,
                         coordinates, user.getUser().getId(), extension, comment, null, active));
             }
             file = getUploadFile(InboxEntry.getFilename(id, extension));
