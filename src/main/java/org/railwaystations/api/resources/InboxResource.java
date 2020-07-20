@@ -272,8 +272,11 @@ public class InboxResource {
             case IMPORT :
                 importUpload(inboxEntry, command);
                 break;
+            case ACTIVATE_STATION:
+                updateStationActiveState(inboxEntry, true);
+                break;
             case DEACTIVATE_STATION:
-                deactivateStation(inboxEntry);
+                updateStationActiveState(inboxEntry, false);
                 break;
             case DELETE_STATION:
                 deleteStation(inboxEntry);
@@ -312,11 +315,12 @@ public class InboxResource {
         return new NextZResponse(repository.getNextZ());
     }
 
-    private void deactivateStation(final InboxEntry inboxEntry) {
+    private void updateStationActiveState(final InboxEntry inboxEntry, final boolean active) {
         final Station station = assertStationExists(inboxEntry);
-        repository.deactivate(station);
+        station.setActive(active);
+        repository.updateActive(station);
         inboxDao.done(inboxEntry.getId());
-        LOG.info("Problem report {} station {} deactivated", inboxEntry.getId(), station.getKey());
+        LOG.info("Problem report {} station {} set active to {}", inboxEntry.getId(), station.getKey(), active);
     }
 
     private void changeStationTitle(final InboxEntry inboxEntry, final String newTitle) {

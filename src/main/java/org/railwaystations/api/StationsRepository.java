@@ -90,8 +90,8 @@ public class StationsRepository {
         stationDao.delete(station);
     }
 
-    public void deactivate(final Station station) {
-        stationDao.deactivate(station);
+    public void updateActive(final Station station) {
+        stationDao.updateActive(station);
     }
 
     public List<Station> findRecentImports(final long fromTimestampMillis) {

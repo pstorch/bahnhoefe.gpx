@@ -3,7 +3,7 @@ info:
   description: >-
     Backend Service for https://www.railway-stations.org/.
     Sourcecode available at: https://github.com/RailwayStations/RSAPI.
-  version: '20200716.2020'
+  version: '20200720.2000'
   title: RSAPI
   license:
     name: MIT
@@ -1039,6 +1039,7 @@ definitions:
       command:
         enum:
           - IMPORT
+          - ACTIVATE_STATION
           - DEACTIVATE_STATION
           - DELETE_STATION
           - DELETE_PHOTO

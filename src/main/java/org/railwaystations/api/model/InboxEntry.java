@@ -230,6 +230,7 @@ public class InboxEntry extends PublicInboxEntry {
 
     public enum Command {
         IMPORT,
+        ACTIVATE_STATION,
         DEACTIVATE_STATION,
         DELETE_STATION,
         DELETE_PHOTO,

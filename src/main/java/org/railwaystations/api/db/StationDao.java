@@ -61,8 +61,8 @@ public interface StationDao {
     @SqlUpdate("delete from stations where countryCode = :key.country and id = :key.id")
     void delete(@BindBean final Station station);
 
-    @SqlUpdate("update stations set active = false where countryCode = :key.country and id = :key.id")
-    void deactivate(@BindBean final Station station);
+    @SqlUpdate("update stations set active = :active where countryCode = :key.country and id = :key.id")
+    void updateActive(@BindBean final Station station);
 
     @SqlQuery(JOIN_QUERY + " where createdAt > :fromTimestampMillis order by createdAt desc")
     @RegisterRowMapper(StationMapper.class)
