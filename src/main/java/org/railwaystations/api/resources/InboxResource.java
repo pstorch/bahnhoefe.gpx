@@ -314,6 +314,7 @@ public class InboxResource {
 
         final Station station = assertStationExists(inboxEntry);
         repository.updateLocation(station, coordinates);
+        inboxDao.done(inboxEntry.getId());
     }
 
     @GET
