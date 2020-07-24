@@ -135,7 +135,8 @@ public class InboxResource {
                                 @Auth final AuthUser user) throws UnsupportedEncodingException {
         if (!user.getUser().isEmailVerified()) {
             LOG.info("Photo upload failed for user {}, email not verified", user.getName());
-            return Response.status(Response.Status.UNAUTHORIZED).entity(new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED, "Email not verified")).build();
+            final InboxResponse response = consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED,"Email not verified"));
+            return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
         final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, "UTF-8") : null;
         final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
