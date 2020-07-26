@@ -392,9 +392,7 @@ public class InboxResource {
             }
         }
         if (station == null) {
-            if (!command.createStation()
-                    || StringUtils.isNotBlank(inboxEntry.getCountryCode())
-                    || StringUtils.isNotBlank(inboxEntry.getStationId())) {
+            if (!command.createStation() || StringUtils.isNotBlank(inboxEntry.getStationId())) {
                 throw new WebApplicationException("Station not found", Response.Status.BAD_REQUEST);
             }
 
