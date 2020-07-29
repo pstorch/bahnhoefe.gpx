@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
+import org.railwaystations.api.MastodonBot;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.db.CountryDao;
@@ -75,7 +76,7 @@ public class PhotoInboxEntryResourceTest {
 
         resource = new InboxResource(repository, tempDir.toString(), tempDir.resolve( "toprocess").toString(),
                 tempDir.resolve("processed").toString(), photoDir.toString(), monitor, null,
-                inboxDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org");
+                inboxDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org", new MastodonBot());
     }
 
     private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,

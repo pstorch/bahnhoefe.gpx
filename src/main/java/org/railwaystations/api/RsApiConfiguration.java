@@ -35,6 +35,8 @@ public class RsApiConfiguration extends Configuration {
 
     private String mailVerificationUrl;
 
+    private MastodonBot mastodonBot = new MastodonBot();
+
     @Valid
     @NotNull
     private DataSourceFactory database = new DataSourceFactory();
@@ -130,5 +132,13 @@ public class RsApiConfiguration extends Configuration {
 
     public void setMailVerificationUrl(final String mailVerificationUrl) {
         this.mailVerificationUrl = mailVerificationUrl;
+    }
+
+    public MastodonBot getMastodonBot() {
+        return mastodonBot;
+    }
+
+    public void setMastodonBot(final MastodonBot mastodonBot) {
+        this.mastodonBot = mastodonBot;
     }
 }

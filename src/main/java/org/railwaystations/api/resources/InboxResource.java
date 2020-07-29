@@ -11,6 +11,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.eclipse.jetty.util.URIUtil;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.railwaystations.api.MastodonBot;
 import org.railwaystations.api.PhotoImporter;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.auth.AuthUser;
@@ -59,12 +60,13 @@ public class InboxResource {
     private final String inboxBaseUrl;
     private final File inboxToProcessDir;
     private final File inboxProcessedDir;
+    private final MastodonBot mastodonBot;
 
     public InboxResource(final StationsRepository repository, final String inboxDir,
                          final String inboxToProcessDir, final String inboxProcessedDir, final String photoDir,
                          final Monitor monitor, final UploadTokenAuthenticator authenticator,
                          final InboxDao inboxDao, final UserDao userDao, final CountryDao countryDao,
-                         final PhotoDao photoDao, final String inboxBaseUrl) {
+                         final PhotoDao photoDao, final String inboxBaseUrl, final MastodonBot mastodonBot) {
         this.repository = repository;
         this.inboxDir = new File(inboxDir);
         this.inboxToProcessDir = new File(inboxToProcessDir);
@@ -77,6 +79,7 @@ public class InboxResource {
         this.countryDao = countryDao;
         this.photoDao = photoDao;
         this.inboxBaseUrl = inboxBaseUrl;
+        this.mastodonBot = mastodonBot;
     }
 
     /**
@@ -444,6 +447,7 @@ public class InboxResource {
             } else {
                 photoDao.insert(photo);
             }
+            station.setPhoto(photo);
 
             if (processedFile.exists()) {
                 PhotoImporter.moveFile(processedFile, countryDir, station.getKey().getId(), inboxEntry.getExtension());
@@ -453,6 +457,7 @@ public class InboxResource {
             FileUtils.moveFileToDirectory(originalFile, new File(inboxDir, "done"), true);
             inboxDao.done(inboxEntry.getId());
             LOG.info("Upload {} accepted: {}", inboxEntry.getId(), fileToImport);
+            mastodonBot.tootNewPhoto(repository.findByKey(station.getKey()));
         } catch (final Exception e) {
             LOG.error("Error importing upload {} photo {}", inboxEntry.getId(), fileToImport);
             throw new WebApplicationException("Error moving file: " + e.getMessage());
