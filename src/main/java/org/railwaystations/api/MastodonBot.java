@@ -10,6 +10,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.railwaystations.api.model.InboxEntry;
 import org.railwaystations.api.model.Station;
 import org.railwaystations.api.monitoring.SlackMonitor;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class MastodonBot {
         this.token = token;
     }
 
-    public void tootNewPhoto(final Station station) {
+    public void tootNewPhoto(final Station station, final InboxEntry inboxEntry) {
         if (StringUtils.isBlank(instanceUrl) || StringUtils.isBlank(token)) {
             LOG.info("New photo for Station {} not tooted", station.getKey());
             return;
@@ -63,8 +64,12 @@ public class MastodonBot {
         LOG.info("Sending toot for new photo of : {}", station.getKey());
         new Thread(() -> {
             try {
-                final String status = String.format("%s%nby %s%n%s?countryCode=%s&stationId=%s",
-                        station.getTitle(), station.getPhotographer(), stationUrl, station.getKey().getCountry(), station.getKey().getId());
+                String status = String.format("%s%nby %s%n%s?countryCode=%s&stationId=%s",
+                        station.getTitle(), station.getPhotographer(), stationUrl,
+                        station.getKey().getCountry(), station.getKey().getId());
+                if (StringUtils.isNotBlank(inboxEntry.getComment())) {
+                    status += String.format("%n%s", inboxEntry.getComment());
+                }
                 final String json = MAPPER.writeValueAsString(new Toot(status));
                 final HttpPost httpPost = new HttpPost(instanceUrl + "/api/v1/statuses");
                 httpPost.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON.withCharset("UTF-8")));

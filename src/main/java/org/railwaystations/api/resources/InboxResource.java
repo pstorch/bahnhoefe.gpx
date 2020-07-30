@@ -457,7 +457,7 @@ public class InboxResource {
             FileUtils.moveFileToDirectory(originalFile, new File(inboxDir, "done"), true);
             inboxDao.done(inboxEntry.getId());
             LOG.info("Upload {} accepted: {}", inboxEntry.getId(), fileToImport);
-            mastodonBot.tootNewPhoto(repository.findByKey(station.getKey()));
+            mastodonBot.tootNewPhoto(repository.findByKey(station.getKey()), inboxEntry);
         } catch (final Exception e) {
             LOG.error("Error importing upload {} photo {}", inboxEntry.getId(), fileToImport);
             throw new WebApplicationException("Error moving file: " + e.getMessage());
