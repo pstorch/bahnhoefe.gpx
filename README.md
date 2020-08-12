@@ -10,10 +10,14 @@ Over time more and more countries have been added, see [Use](#use).
 This API is hosted at https://api.railway-stations.org or at the Deutsche Bahn developer site: https://developer.deutschebahn.com/store/apis/list where you can also find an online and executable version of the swagger documentation.
 
 ## build
-To build the project, you need Maven and Java 8.
+To build the project, you need Java 8.
 
-Run:
-```mvn clean install```
+Run on Unix like systems:
+```./mvnw clean install```
+
+Run on Windows:
+
+```./mvnw.cmd clean install```
 
 ## Working Directory
 
