@@ -17,8 +17,8 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,8 +42,8 @@ public class ProfileResource {
     @POST
     @Path("changePassword")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response changePassword(@Auth final AuthUser authUser, @NotNull @HeaderParam("New-Password") final String newPassword) throws UnsupportedEncodingException {
-        final String decodedPassword = URLDecoder.decode(newPassword, "UTF-8");
+    public Response changePassword(@Auth final AuthUser authUser, @NotNull @HeaderParam("New-Password") final String newPassword) {
+        final String decodedPassword = URLDecoder.decode(newPassword, StandardCharsets.UTF_8);
         final User user = authUser.getUser();
         LOG.info("Password change for '{}'", user.getEmail());
         final String trimmedPassword = StringUtils.trimToEmpty(decodedPassword);

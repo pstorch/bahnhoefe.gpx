@@ -38,7 +38,6 @@ public class PhotoInboxEntryResourceTest {
     private final MockMonitor monitor = new MockMonitor();
 
     private Path tempDir;
-    private Path photoDir;
     private InboxResource resource;
     private InboxDao inboxDao = null;
 
@@ -66,7 +65,7 @@ public class PhotoInboxEntryResourceTest {
         final PhotoDao photoDao = mock(PhotoDao.class);
 
         tempDir = Files.createTempDirectory("rsapi");
-        photoDir = Files.createTempDirectory("rsapi-photos");
+        final Path photoDir = Files.createTempDirectory("rsapi-photos");
         final StationsRepository repository = mock(StationsRepository.class);
         when(repository.findByCountryAndId(key4711.getCountry(), key4711.getId())).thenReturn(station4711);
         when(repository.findByCountryAndId(key1234.getCountry(), key1234.getId())).thenReturn(station1234);
@@ -80,12 +79,12 @@ public class PhotoInboxEntryResourceTest {
     }
 
     private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
-                                        final String stationTitle, final Double latitude, final Double longitude, final String comment) throws UnsupportedEncodingException {
+                                        final String stationTitle, final Double latitude, final Double longitude, final String comment) {
         return whenPostImage(content, nickname, userId, email, stationId, country, stationTitle, latitude, longitude, comment, User.EMAIL_VERIFIED);
     }
 
     private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
-                                        final String stationTitle, final Double latitude, final Double longitude, final String comment, final String emailVerification) throws UnsupportedEncodingException {
+                                        final String stationTitle, final Double latitude, final Double longitude, final String comment, final String emailVerification) {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
         final Response response = resource.photoUpload(is, "UserAgent", stationId, country, "image/jpeg",
@@ -148,7 +147,7 @@ public class PhotoInboxEntryResourceTest {
                 "50.9876d, -181d",
                 "50.9876d, 181d",
     })
-    public void testPostMissingStationLatLonOutOfRange(final Double latitude, final Double longitude) throws IOException {
+    public void testPostMissingStationLatLonOutOfRange(final Double latitude, final Double longitude) {
         final InboxResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", latitude, longitude, null);
 
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.LAT_LON_OUT_OF_RANGE));
@@ -183,13 +182,13 @@ public class PhotoInboxEntryResourceTest {
     }
 
     @Test
-    public void testUserInbox() throws IOException {
+    public void testUserInbox() {
         final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, null);
 
-        when(inboxDao.findById(1)).thenReturn(new InboxEntry(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, false, null, false, false, null, null));
-        when(inboxDao.findById(2)).thenReturn(new InboxEntry(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, true, null, false, false, null, null));
-        when(inboxDao.findById(3)).thenReturn(new InboxEntry(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, "rejected", 0l, true, null, false, false, null, null));
-        when(inboxDao.findById(4)).thenReturn(new InboxEntry(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0l, false, null, false, false, null, null));
+        when(inboxDao.findById(1)).thenReturn(new InboxEntry(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0L, false, null, false, false, null, null));
+        when(inboxDao.findById(2)).thenReturn(new InboxEntry(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0L, true, null, false, false, null, null));
+        when(inboxDao.findById(3)).thenReturn(new InboxEntry(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, "rejected", 0L, true, null, false, false, null, null));
+        when(inboxDao.findById(4)).thenReturn(new InboxEntry(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0L, false, null, false, false, null, null));
 
         final List<InboxStateQuery> inboxStateQueries = new ArrayList<>();
         inboxStateQueries.add(new InboxStateQuery(1, "de", "4711", null, null, null));
@@ -229,13 +228,13 @@ public class PhotoInboxEntryResourceTest {
     }
 
     @Test
-    public void testPostEmailNotVerified() throws IOException {
+    public void testPostEmailNotVerified() {
         final InboxResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","1234", "de", null, null, null, null, User.EMAIL_VERIFICATION_TOKEN + "blahblah");
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.UNAUTHORIZED));
     }
 
     @Test
-    public void testPostInvalidCountry() throws IOException {
+    public void testPostInvalidCountry() {
         final Response response = resource.photoUpload(null, "UserAgent", "4711", "xy", "image/jpeg",
                 null, null, null, null, null,
                 new AuthUser(new User("nickname", null, "CC0", 0,  "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED)));

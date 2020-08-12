@@ -118,7 +118,7 @@ public class PhotoImporter {
             try {
                 final Matcher matcher = IMPORT_FILE_PATTERN.matcher(importFile.getName());
                 if (!matcher.find()) {
-                    report.add(new ReportEntry(true, countryCode, importFile.getAbsolutePath(), "File doesn't match pattern: $photographer-$stationid.jpg"));
+                    report.add(new ReportEntry(true, countryCode, importFile.getAbsolutePath(), "File doesn't match pattern: $photographer-$stationId.jpg"));
                     continue;
                 }
 
@@ -126,7 +126,7 @@ public class PhotoImporter {
                 final String photographerName = matcher.group(1);
 
                 final Optional<User> user = userDao.findByNormalizedName(User.normalizeName(photographerName));
-                if (!user.isPresent()) {
+                if (user.isEmpty()) {
                     report.add(new ReportEntry(true, countryCode, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
                 }

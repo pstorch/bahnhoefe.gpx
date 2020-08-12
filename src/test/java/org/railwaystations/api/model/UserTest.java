@@ -43,8 +43,8 @@ public class UserTest {
 
     @Test
     public void testJsonDeserialization() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        User user = mapper.readerFor(User.class).readValue("{\"id\":\"1\", \"nickname\":\"@Nick Name\",\"email\":\"nick@example.com\",\"license\":\"CC0 1.0 Universell (CC0 1.0)\",\"photoOwner\":true,\"link\":\"https://example.com\",\"anonymous\":false,\"uploadToken\":\"token\",\"uploadTokenSalt\":\"123456\",\"key\":\"key\", \"admin\":true}");
+        final ObjectMapper mapper = new ObjectMapper();
+        final User user = mapper.readerFor(User.class).readValue("{\"id\":\"1\", \"nickname\":\"@Nick Name\",\"email\":\"nick@example.com\",\"license\":\"CC0 1.0 Universell (CC0 1.0)\",\"photoOwner\":true,\"link\":\"https://example.com\",\"anonymous\":false,\"uploadToken\":\"token\",\"uploadTokenSalt\":\"123456\",\"key\":\"key\", \"admin\":true}");
         assertThat(user.getId(), is(0));
         assertThat(user.getName(), is("@Nick Name"));
         assertThat(user.getDisplayName(), is("@Nick Name"));
@@ -62,9 +62,9 @@ public class UserTest {
 
     @Test
     public void testJsonSerialization() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        User user = new User("@Nick Name", "https://example.com", "CC0 1.0 Universell (CC0 1.0)", 1, "nick@example.com", true, true, 1234L, "key", true, null);
-        String json = mapper.writerFor(User.class).writeValueAsString(user);
+        final ObjectMapper mapper = new ObjectMapper();
+        final User user = new User("@Nick Name", "https://example.com", "CC0 1.0 Universell (CC0 1.0)", 1, "nick@example.com", true, true, 1234L, "key", true, null);
+        final String json = mapper.writerFor(User.class).writeValueAsString(user);
         assertThat(json, is("{\"nickname\":\"@Nick Name\",\"email\":\"nick@example.com\",\"license\":\"CC0 1.0 Universell (CC0 1.0)\",\"photoOwner\":true,\"link\":\"https://example.com\",\"anonymous\":true,\"admin\":true,\"emailVerified\":false}"));
     }
 

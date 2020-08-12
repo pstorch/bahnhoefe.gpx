@@ -8,7 +8,7 @@ import org.railwaystations.api.model.User;
 
 import javax.ws.rs.WebApplicationException;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class StationsTxtWriterTest {
 
     @Test
-    public void test() throws WebApplicationException, IOException {
+    public void test() throws WebApplicationException {
         final List<Station> stations = new ArrayList<>();
         final Station.Key key4711 = new Station.Key("", "4711");
         stations.add(new Station(key4711, "Test", new Coordinates(50d, 9d), new Photo(key4711, null, createTestPhotographer("@pstorch"), null, null), true));
@@ -28,7 +28,7 @@ public class StationsTxtWriterTest {
         final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();
         writer.writeTo(stations, null, null, null, null, null, entityStream);
 
-        final String txt = entityStream.toString("UTF-8");
+        final String txt = entityStream.toString(StandardCharsets.UTF_8);
         final String[] lines = txt.split("\n");
         assertThat(lines[0], is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
         assertThat(lines[1], is("50.0\t9.0\tTest\tTest\tgruenpunkt.png\t10,10\t0,-10"));

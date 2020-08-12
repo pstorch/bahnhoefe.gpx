@@ -13,6 +13,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 
 @Produces(StatisticTxtWriter.TEXT_PLAIN)
 public class StatisticTxtWriter implements MessageBodyWriter<Statistic> {
@@ -39,7 +40,7 @@ public class StatisticTxtWriter implements MessageBodyWriter<Statistic> {
     public void writeTo(final Statistic t, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
-        final PrintWriter pw = new PrintWriter(new OutputStreamWriter(entityStream, "UTF-8"));
+        final PrintWriter pw = new PrintWriter(new OutputStreamWriter(entityStream, StandardCharsets.UTF_8));
         pw.println("name\tvalue");
         statisticToCsv(pw, "total", t.getTotal());
         statisticToCsv(pw, "withPhoto", t.getWithPhoto());

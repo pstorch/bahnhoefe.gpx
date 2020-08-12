@@ -2,6 +2,7 @@ package org.railwaystations.api.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @SuppressWarnings("PMD.LongVariable")
 public class Country {
@@ -65,7 +66,7 @@ public class Country {
 
         final Country country = (Country) o;
 
-        return code != null ? code.equals(country.code) : country.code == null;
+        return Objects.equals(code, country.code);
     }
 
     @Override

@@ -660,7 +660,7 @@ public class RsApiAppTest {
                                                 ConfigOverride.config("workDir", TMP_WORK_DIR));
 
         static {
-            DROPWIZARD.addListener(new DropwizardAppExtension.ServiceListener<RsApiConfiguration>() {
+            DROPWIZARD.addListener(new DropwizardAppExtension.ServiceListener<>() {
                 @Override
                 public void onRun(final RsApiConfiguration config, final Environment environment, final DropwizardAppExtension<RsApiConfiguration> rule) throws Exception {
                     rule.getApplication().run("db", "migrate", "-i", "junit", CONFIG_PATH);

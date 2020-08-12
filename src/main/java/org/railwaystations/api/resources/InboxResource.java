@@ -34,6 +34,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -106,7 +107,7 @@ public class InboxResource {
 
         try {
             final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
-            if (!authUser.isPresent() || !authUser.get().getUser().isEmailVerified()) {
+            if (authUser.isEmpty() || !authUser.get().getUser().isEmailVerified()) {
                 final InboxResponse response = consumeBodyAndReturn(file, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED));
                 return createIFrameAnswer(response, referer);
             }
@@ -135,14 +136,14 @@ public class InboxResource {
                                 @HeaderParam("Longitude") final Double longitude,
                                 @HeaderParam("Comment") final String encComment,
                                 @HeaderParam("Active") final Boolean active,
-                                @Auth final AuthUser user) throws UnsupportedEncodingException {
+                                @Auth final AuthUser user) {
         if (!user.getUser().isEmailVerified()) {
             LOG.info("Photo upload failed for user {}, email not verified", user.getName());
             final InboxResponse response = consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED,"Email not verified"));
             return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
-        final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, "UTF-8") : null;
-        final String comment = encComment != null ? URLDecoder.decode(encComment, "UTF-8") : null;
+        final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, StandardCharsets.UTF_8) : null;
+        final String comment = encComment != null ? URLDecoder.decode(encComment, StandardCharsets.UTF_8) : null;
         LOG.info("Photo upload from Nickname: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
                 user.getName(), country, stationId, latitude, longitude, stationTitle, contentType);
         final InboxResponse inboxResponse = uploadPhoto(userAgent, body, StringUtils.trimToNull(stationId),
@@ -401,7 +402,7 @@ public class InboxResource {
 
             // create station
             final Optional<Country> country = countryDao.findById(StringUtils.lowerCase(command.getCountryCode()));
-            if (!country.isPresent()) {
+            if (country.isEmpty()) {
                 throw new WebApplicationException("Country not found", Response.Status.BAD_REQUEST);
             }
             if (StringUtils.isBlank(command.getStationId())) {
@@ -434,7 +435,7 @@ public class InboxResource {
 
         final Optional<User> user = userDao.findById(inboxEntry.getPhotographerId());
         final Optional<Country> country = countryDao.findById(StringUtils.lowerCase(station.getKey().getCountry()));
-        if (!country.isPresent()) {
+        if (country.isEmpty()) {
             throw new WebApplicationException("Country not found", Response.Status.BAD_REQUEST);
         }
 

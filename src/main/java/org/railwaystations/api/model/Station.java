@@ -120,12 +120,12 @@ public class Station {
      * @returns Distance in km
      */
     public double distanceTo(final double latitude, final double longitude) {
-        final Double latDistance = Math.toRadians(latitude - this.coordinates.getLat());
-        final Double lonDistance = Math.toRadians(longitude - this.coordinates.getLon());
-        final Double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+        final double latDistance = Math.toRadians(latitude - this.coordinates.getLat());
+        final double lonDistance = Math.toRadians(longitude - this.coordinates.getLon());
+        final double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
                 + Math.cos(Math.toRadians(this.coordinates.getLat())) * Math.cos(Math.toRadians(latitude))
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        final Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        final double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return Station.EARTH_RADIUS * c;
     }
 
@@ -141,7 +141,7 @@ public class Station {
             result &= this.distanceTo(lat, lon) < maxDistance;
         }
         if (active != null) {
-            result &= active.booleanValue() == this.active;
+            result &= active == this.active;
         }
         return result;
     }

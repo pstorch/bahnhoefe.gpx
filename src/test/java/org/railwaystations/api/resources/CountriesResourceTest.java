@@ -39,7 +39,7 @@ public class CountriesResourceTest {
 
         final Collection<Country> countries = resource.list(null);
         assertThat(countries.size(), equalTo(2));
-        countries.stream().forEach(this::assertCountry);
+        countries.forEach(this::assertCountry);
     }
 
     @SuppressFBWarnings("DM_CONVERT_CASE")

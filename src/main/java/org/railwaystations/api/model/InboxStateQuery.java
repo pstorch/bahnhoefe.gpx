@@ -95,7 +95,7 @@ public class InboxStateQuery {
         REVIEW,
         CONFLICT,
         ACCEPTED,
-        REJECTED;
+        REJECTED
     }
 
 }

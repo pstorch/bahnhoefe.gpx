@@ -160,7 +160,7 @@ public class User {
 
         final User that = (User) o;
 
-        return name != null ? name.equals(that.name) : that.name == null;
+        return Objects.equals(name, that.name);
     }
 
     @Override
@@ -233,7 +233,7 @@ public class User {
             final URL validatedUrl;
             try {
                 validatedUrl = new URL( url );
-            } catch (MalformedURLException e) {
+            } catch (final MalformedURLException e) {
                 return false;
             }
             if (!validatedUrl.getProtocol().matches("https?")) {

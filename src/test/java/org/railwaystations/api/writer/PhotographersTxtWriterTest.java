@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.WebApplicationException;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class PhotographersTxtWriterTest {
 
     @Test
-    public void test() throws WebApplicationException, IOException {
+    public void test() throws WebApplicationException {
         final Map<String, Long> photographers = new HashMap<>();
         photographers.put("@foo", 10L);
         photographers.put("@bar", 5L);
@@ -23,7 +23,7 @@ public class PhotographersTxtWriterTest {
         final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();
         writer.writeTo(photographers, null, null, null, null, null, entityStream);
 
-        final String txt = entityStream.toString("UTF-8");
+        final String txt = entityStream.toString(StandardCharsets.UTF_8);
         final String[] lines = txt.split("\n");
         assertThat(lines[0], is("count\tphotographer"));
         assertThat(lines[1], is("10\t@foo"));

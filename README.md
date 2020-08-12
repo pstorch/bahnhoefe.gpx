@@ -10,7 +10,7 @@ Over time more and more countries have been added, see [Use](#use).
 This API is hosted at https://api.railway-stations.org or at the Deutsche Bahn developer site: https://developer.deutschebahn.com/store/apis/list where you can also find an online and executable version of the swagger documentation.
 
 ## build
-To build the project, you need Java 8.
+To build the project, you need Java 11.
 
 Run on Unix like systems:
 ```./mvnw clean install```
@@ -75,7 +75,7 @@ Enter mysql CLI:
 
 Before using the DB it needs to be populated with schema and data, also updates might be necessary from time to time.
 
-When the project is build, you can start the DB migrations with: `java -jar target/rsapi-20180902.2226-SNAPSHOT.jar db migrate -i test config.yml
+When the project is build, you can start the DB migrations with: `java -jar target/rsapi-1.0.0-SNAPSHOT.jar db migrate -i test config.yml
 `.
 
 The context (`-i` parameter) can take the following values:

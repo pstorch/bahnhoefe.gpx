@@ -17,7 +17,6 @@ import org.railwaystations.api.model.PublicInboxEntry;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
 public interface InboxDao {
 
@@ -43,10 +42,6 @@ public interface InboxDao {
               " where u.done = false and (u.problemReportType is null or u.problemReportType = '')")
     @RegisterRowMapper(PublicInboxEntryMapper.class)
     List<PublicInboxEntry> findPublicInboxEntries();
-
-    @SqlQuery(JOIN_QUERY)
-    @RegisterRowMapper(InboxEntryMapper.class)
-    Set<InboxEntry> all();
 
     @SqlUpdate("insert into inbox (countryCode, stationId, title, lat, lon, photographerId, extension, comment, done, createdAt, problemReportType, active) values (:countryCode, :stationId, :title, :coordinates?.lat, :coordinates?.lon, :photographerId, :extension, :comment, :done, :createdAt, :problemReportType, :active)")
     @GetGeneratedKeys("id")

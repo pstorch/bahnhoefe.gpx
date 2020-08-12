@@ -12,7 +12,6 @@ import org.railwaystations.api.model.User;
 import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
-import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -162,7 +161,7 @@ public class ProfileResourceTest {
     }
 
     @Test
-    public void testChangePasswordTooShort() throws UnsupportedEncodingException {
+    public void testChangePasswordTooShort() {
         final User user = new User("existing", "existing@example.com", null, true, null, false, null);
         final Response response = resource.changePassword(new AuthUser(user), "secret");
         verify(userDao, never()).updateCredentials(anyInt(), anyString());
@@ -171,7 +170,7 @@ public class ProfileResourceTest {
     }
 
     @Test
-    public void testChangePassword() throws UnsupportedEncodingException {
+    public void testChangePassword() {
         final User user = new User("existing", "existing@example.com", null, true, null, false, null);
         user.setId(4711);
         final ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);

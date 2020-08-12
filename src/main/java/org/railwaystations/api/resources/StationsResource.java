@@ -76,8 +76,8 @@ public class StationsResource {
     @GET
     @Path("recentPhotoImports")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Station> recentPhotoImports(@QueryParam(StationsResource.SINCE_HOURS)  @DefaultValue("10") final OptionalLong sinceHours) {
-        return repository.findRecentImports(System.currentTimeMillis() - (HOURS_IN_MILLIS * sinceHours.getAsLong()));
+    public List<Station> recentPhotoImports(@QueryParam(StationsResource.SINCE_HOURS)  @DefaultValue("10") final long sinceHours) {
+        return repository.findRecentImports(System.currentTimeMillis() - (HOURS_IN_MILLIS * sinceHours));
     }
 
     private Map<Station.Key, Station> getStationsMap(final Set<String> countries) {

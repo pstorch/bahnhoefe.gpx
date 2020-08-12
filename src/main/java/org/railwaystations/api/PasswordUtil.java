@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 
 public class PasswordUtil {
 
-    private static LazySodiumJava LAZY_SODIUM = new LazySodiumJava(new SodiumJava(), StandardCharsets.UTF_8);
-    private static PwHash.Lazy PW_HASH_LAZY = LAZY_SODIUM;
+    private static final LazySodiumJava LAZY_SODIUM = new LazySodiumJava(new SodiumJava(), StandardCharsets.UTF_8);
+    private static final PwHash.Lazy PW_HASH_LAZY = LAZY_SODIUM;
 
     public static String hashPassword(final String password) {
         try {
