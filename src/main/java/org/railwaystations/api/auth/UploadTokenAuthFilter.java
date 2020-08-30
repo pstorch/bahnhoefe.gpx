@@ -29,7 +29,7 @@ public class UploadTokenAuthFilter<P extends Principal> extends AuthFilter<Uploa
         if (body != null) {
             final InputStreamEntity inputStreamEntity = new InputStreamEntity(body);
             try {
-                inputStreamEntity.writeTo(new NullOutputStream());
+                inputStreamEntity.writeTo(NullOutputStream.NULL_OUTPUT_STREAM);
             } catch (final IOException ignored) {
             }
         }

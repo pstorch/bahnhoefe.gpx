@@ -116,7 +116,7 @@ public class PhotoImporterTest {
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("Station 6913 has already a photo"));
         assertThat(importFile.exists(), is(true));
-        verifyZeroInteractions(photoDao);
+        verifyNoInteractions(photoDao);
     }
 
     @Test
@@ -129,7 +129,7 @@ public class PhotoImporterTest {
         assertThat(result.get(1).getMessage(), is("conflict with another photo in inbox"));
         assertThat(importFile1.exists(), is(true));
         assertThat(importFile2.exists(), is(true));
-        verifyZeroInteractions(photoDao);
+        verifyNoInteractions(photoDao);
     }
 
     @Test
@@ -180,7 +180,7 @@ public class PhotoImporterTest {
         assertThat(result.get(0).getMessage(), is("Photographer @unknown not found"));
         assertThat(importFile.exists(), is(true));
         assertThat(repository.findByKey(key).hasPhoto(), is(false));
-        verifyZeroInteractions(photoDao);
+        verifyNoInteractions(photoDao);
     }
 
     @Test
@@ -190,7 +190,7 @@ public class PhotoImporterTest {
         final List<PhotoImporter.ReportEntry> result = importer.importPhotos();
         assertThat(result.get(0).getMessage(), is("Station 99999999 not found"));
         assertThat(importFile.exists(), is(true));
-        verifyZeroInteractions(photoDao);
+        verifyNoInteractions(photoDao);
     }
 
     @Test
