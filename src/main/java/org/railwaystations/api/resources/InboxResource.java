@@ -37,6 +37,8 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedOutputStream;
 
 @Path("/")
 public class InboxResource {
@@ -201,31 +203,37 @@ public class InboxResource {
 
         for (final InboxStateQuery query : queries) {
             query.setState(InboxStateQuery.InboxState.UNKNOWN);
+            InboxEntry inboxEntry = null;
             if (query.getId() != null) {
-                final InboxEntry inboxEntry = inboxDao.findById(query.getId());
-                if (inboxEntry != null && inboxEntry.getPhotographerId() == user.getUser().getId()) {
-                    query.setRejectedReason(inboxEntry.getRejectReason());
-                    query.setCountryCode(inboxEntry.getCountryCode());
-                    query.setStationId(inboxEntry.getStationId());
-                    query.setCoordinates(inboxEntry.getCoordinates());
-                    query.setFilename(inboxEntry.getFilename());
-                    query.setInboxUrl(getInboxUrl(inboxEntry.getFilename(), isProcessed(inboxEntry.getFilename())));
+                inboxEntry = inboxDao.findById(query.getId());
+            } else if (query.getCountryCode() != null && query.getStationId() != null) {
+                inboxEntry = inboxDao.findNewestByCountryAndStationIdAndPhotographerId(query.getCountryCode(), query.getStationId(), user.getUser().getId());
+            }
+
+            if (inboxEntry != null && inboxEntry.getPhotographerId() == user.getUser().getId()) {
+                query.setId(inboxEntry.getId());
+                query.setRejectedReason(inboxEntry.getRejectReason());
+                query.setCountryCode(inboxEntry.getCountryCode());
+                query.setStationId(inboxEntry.getStationId());
+                query.setCoordinates(inboxEntry.getCoordinates());
+                query.setFilename(inboxEntry.getFilename());
+                query.setInboxUrl(getInboxUrl(inboxEntry.getFilename(), isProcessed(inboxEntry.getFilename())));
+                query.setCrc32(inboxEntry.getCrc32());
 
 
-                    if (inboxEntry.isDone()) {
-                        if (inboxEntry.getRejectReason() == null) {
-                            query.setState(InboxStateQuery.InboxState.ACCEPTED);
-                        } else {
-                            query.setState(InboxStateQuery.InboxState.REJECTED);
-                        }
+                if (inboxEntry.isDone()) {
+                    if (inboxEntry.getRejectReason() == null) {
+                        query.setState(InboxStateQuery.InboxState.ACCEPTED);
                     } else {
-                        if (hasConflict(inboxEntry.getId(),
-                                repository.findByCountryAndId(query.getCountryCode(), query.getStationId()))
+                        query.setState(InboxStateQuery.InboxState.REJECTED);
+                    }
+                } else {
+                    if (hasConflict(inboxEntry.getId(),
+                            repository.findByCountryAndId(query.getCountryCode(), query.getStationId()))
                             || (inboxEntry.getStationId() == null && hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates()))) {
-                            query.setState(InboxStateQuery.InboxState.CONFLICT);
-                        } else {
-                            query.setState(InboxStateQuery.InboxState.REVIEW);
-                        }
+                        query.setState(InboxStateQuery.InboxState.CONFLICT);
+                    } else {
+                        query.setState(InboxStateQuery.InboxState.REVIEW);
                     }
                 }
             }
@@ -514,6 +522,7 @@ public class InboxResource {
         File file = null;
         final String inboxUrl;
         final Integer id;
+        Long crc32 = null;
         try {
             if (station != null) {
                 // existing station
@@ -529,11 +538,15 @@ public class InboxResource {
 
             // write the file to the inbox directory
             FileUtils.forceMkdir(inboxDir);
-            final long bytesRead = IOUtils.copyLarge(body, new FileOutputStream(file), 0L, MAX_SIZE);
+            final CheckedOutputStream cos = new CheckedOutputStream(new FileOutputStream(file), new CRC32());
+            final long bytesRead = IOUtils.copyLarge(body, cos, 0L, MAX_SIZE);
             if (bytesRead == MAX_SIZE) {
                 FileUtils.deleteQuietly(file);
                 return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.PHOTO_TOO_LARGE, "Photo too large, max " + MAX_SIZE + " bytes allowed"));
             }
+            cos.close();
+            crc32 = cos.getChecksum().getValue();
+            inboxDao.updateCrc32(id, crc32);
 
             // additionally write the file to the input directory for Vsion.AI
             FileUtils.copyFileToDirectory(file, inboxToProcessDir, true);
@@ -557,7 +570,7 @@ public class InboxResource {
             return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.ERROR));
         }
 
-        return new InboxResponse(conflict ? InboxResponse.InboxResponseState.CONFLICT : InboxResponse.InboxResponseState.REVIEW, id, file.getName(), inboxUrl);
+        return new InboxResponse(conflict ? InboxResponse.InboxResponseState.CONFLICT : InboxResponse.InboxResponseState.REVIEW, id, file.getName(), inboxUrl, crc32);
     }
 
     private File getUploadFile(final String filename) {

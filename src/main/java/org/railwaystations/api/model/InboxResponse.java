@@ -11,25 +11,27 @@ public class InboxResponse {
     private final Integer id;
     private final String filename;
     private final String inboxUrl;
+    private final Long crc32;
 
-    public InboxResponse(final InboxResponseState state, final String message, final Integer id, final String filename, final String inboxUrl) {
+    public InboxResponse(final InboxResponseState state, final String message, final Integer id, final String filename, final String inboxUrl, final Long crc32) {
         this.state = state;
         this.message = message;
         this.id = id;
         this.filename = filename;
         this.inboxUrl = inboxUrl;
+        this.crc32 = crc32;
     }
 
-    public InboxResponse(final InboxResponseState state, final Integer id, final String filename, final String inboxUrl) {
-        this(state, state.responseStatus.getReasonPhrase(), id, filename, inboxUrl);
+    public InboxResponse(final InboxResponseState state, final Integer id, final String filename, final String inboxUrl, final Long crc32) {
+        this(state, state.responseStatus.getReasonPhrase(), id, filename, inboxUrl, crc32);
     }
 
     public InboxResponse(final InboxResponseState state, final Integer id) {
-        this(state, state.responseStatus.getReasonPhrase(), id, null, null);
+        this(state, state.responseStatus.getReasonPhrase(), id, null, null, null);
     }
 
     public InboxResponse(final InboxResponseState state, final String message) {
-        this(state, message, null, null, null);
+        this(state, message, null, null, null, null);
     }
 
     public InboxResponse(final InboxResponseState state) {
@@ -54,6 +56,10 @@ public class InboxResponse {
 
     public String getInboxUrl() {
         return inboxUrl;
+    }
+
+    public long getCrc32() {
+        return crc32;
     }
 
     public enum InboxResponseState {

@@ -507,4 +507,10 @@
         </update>
     </changeSet>
 
+    <changeSet id="27" author="pstorch">
+        <addColumn tableName="inbox">
+            <column name="crc32" type="long"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

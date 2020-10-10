@@ -904,6 +904,10 @@ definitions:
       inboxUrl:
         type: string
         description: url of the photo in the inbox
+      crc32:
+        type: number
+        format: long
+        description: CRC32 checksum of the uploaded photo
   InboxStateQuery:
     type: object
     description: Upload state query
@@ -929,6 +933,10 @@ definitions:
       inboxUrl:
         type: string
         description: url of the photo in the inbox
+      crc32:
+        type: number
+        format: long
+        description: CRC32 checksum of the uploaded photo
       state:
         enum:
           - UNKNOWN

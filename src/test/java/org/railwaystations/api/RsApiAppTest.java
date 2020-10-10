@@ -410,6 +410,7 @@ public class RsApiAppTest {
         final JsonNode inboxResponse = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(inboxResponse.get("id"), notNullValue());
         assertThat(inboxResponse.get("filename"), notNullValue());
+        assertThat(inboxResponse.get("crc32").asLong(), is(3035563974L));
 
         // download uploaded photo from inbox
         final Response photoResponse = client.target(

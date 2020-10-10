@@ -16,6 +16,7 @@ public class InboxStateQuery {
     private String rejectedReason;
     private String filename;
     private String inboxUrl;
+    private Long crc32;
 
     public InboxStateQuery() {
     }
@@ -48,6 +49,10 @@ public class InboxStateQuery {
 
     public Integer getId() {
         return id;
+    }
+
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getRejectedReason() {
@@ -88,6 +93,14 @@ public class InboxStateQuery {
 
     public String getInboxUrl() {
         return inboxUrl;
+    }
+
+    public void setCrc32(final Long crc32) {
+        this.crc32 = crc32;
+    }
+
+    public Long getCrc32() {
+        return crc32;
     }
 
     public enum InboxState {

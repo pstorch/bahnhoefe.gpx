@@ -39,6 +39,9 @@ public class InboxEntry extends PublicInboxEntry {
     @JsonProperty(value = "hasPhoto", access = JsonProperty.Access.READ_ONLY)
     private final boolean hasPhoto;
 
+    @JsonProperty(value = "crc32", access = JsonProperty.Access.READ_ONLY)
+    private final Long crc32;
+
     @JsonProperty(value = "hasConflict", access = JsonProperty.Access.READ_ONLY)
     private boolean conflict;
 
@@ -70,7 +73,7 @@ public class InboxEntry extends PublicInboxEntry {
                       final Coordinates coordinates, final int photographerId, final String photographerNickname, final String photographerEmail,
                       final String extension, final String comment, final String rejectReason,
                       final Long createdAt, final boolean done, final Command command, final boolean hasPhoto,
-                      final boolean conflict, final ProblemReportType problemReportType, final Boolean active) {
+                      final boolean conflict, final ProblemReportType problemReportType, final Boolean active, final Long crc32) {
         super(countryCode, stationId, title, coordinates);
         this.id = id;
         this.photographerId = photographerId;
@@ -86,6 +89,7 @@ public class InboxEntry extends PublicInboxEntry {
         this.conflict = conflict;
         this.problemReportType = problemReportType;
         this.active = active;
+        this.crc32 = crc32;
     }
 
     /**
@@ -97,7 +101,7 @@ public class InboxEntry extends PublicInboxEntry {
                       final Boolean active) {
         this(0, countryCode, stationId, title, coordinates, photographerId, null, null, extension,
                 comment, null, System.currentTimeMillis(), false, null, false,
-                false, problemReportType, active);
+                false, problemReportType, active, null);
     }
 
     /**
@@ -115,7 +119,7 @@ public class InboxEntry extends PublicInboxEntry {
                       @JsonProperty(value = "createStation") final Boolean createStation) {
         this(id, countryCode, stationId, null, null, 0, null, null,
                 null, null, rejectReason, null, false, command, false,
-                false, null, active != null ? active : true);
+                false, null, active != null ? active : true, null);
         this.ds100 = ds100;
         this.ignoreConflict = ignoreConflict;
         this.createStation = createStation;
@@ -226,6 +230,10 @@ public class InboxEntry extends PublicInboxEntry {
 
     public boolean hasCoords() {
         return coordinates != null && !coordinates.hasZeroCoords();
+    }
+
+    public Long getCrc32() {
+        return crc32;
     }
 
     public enum Command {
