@@ -68,9 +68,9 @@ public interface InboxDao {
     @SqlUpdate("update inbox set crc32 = :crc32 where id = :id")
     void updateCrc32(@Bind("id") Integer id, @Bind("crc32") Long crc32);
 
-    @SqlQuery(JOIN_QUERY + " where u.countryCode = :countryCode and u.stationId = stationId and u.photographerId = :photographerId order by id desc")
+    @SqlQuery(JOIN_QUERY + " where u.countryCode = :countryCode and u.stationId = stationId and u.photographerId = :photographerId and done = false order by id desc")
     @RegisterRowMapper(InboxEntryMapper.class)
-    InboxEntry findNewestByCountryAndStationIdAndPhotographerId(@Bind("countryCode") String countryCode, @Bind("stationId") String stationId, @Bind("photographerId") int photographerId);
+    InboxEntry findNewestPendingByCountryAndStationIdAndPhotographerId(@Bind("countryCode") String countryCode, @Bind("stationId") String stationId, @Bind("photographerId") int photographerId);
 
     class InboxEntryMapper implements RowMapper<InboxEntry> {
 

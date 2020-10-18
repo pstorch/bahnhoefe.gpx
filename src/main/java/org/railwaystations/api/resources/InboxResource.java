@@ -207,7 +207,7 @@ public class InboxResource {
             if (query.getId() != null) {
                 inboxEntry = inboxDao.findById(query.getId());
             } else if (query.getCountryCode() != null && query.getStationId() != null) {
-                inboxEntry = inboxDao.findNewestByCountryAndStationIdAndPhotographerId(query.getCountryCode(), query.getStationId(), user.getUser().getId());
+                inboxEntry = inboxDao.findNewestPendingByCountryAndStationIdAndPhotographerId(query.getCountryCode(), query.getStationId(), user.getUser().getId());
             }
 
             if (inboxEntry != null && inboxEntry.getPhotographerId() == user.getUser().getId()) {
