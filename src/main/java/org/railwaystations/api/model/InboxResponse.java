@@ -58,7 +58,7 @@ public class InboxResponse {
         return inboxUrl;
     }
 
-    public long getCrc32() {
+    public Long getCrc32() {
         return crc32;
     }
 
