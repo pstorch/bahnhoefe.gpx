@@ -38,6 +38,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -351,12 +352,12 @@ public class RsApiAppTest {
         assertThat(response.getStatus(), is(202));
         assertThat(mailer.getTo(), is("nick.name@example.com"));
         assertThat(mailer.getSubject(), is("Railway-Stations.org new password"));
-        assertThat(mailer.getText().matches("Hello nickname,\n\n" +
+        assertThat(mailer.getText().matches("Hello,\n\n" +
                 "your new password is: .*\n\n" +
                 "Cheers\n" +
                 "Your Railway-Stations-Team\n" +
                 "\n---\n" +
-                "Hallo nickname,\n\n" +
+                "Hallo,\n\n" +
                 "Dein neues Passwort lautet: .*\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"), is(true));
@@ -618,20 +619,30 @@ public class RsApiAppTest {
         assertThat(jsonNode.isArray(), is(true));
         assertThat(jsonNode.size(), is(2));
 
-        final JsonNode de = jsonNode.get(0);
-        assertThat(de.get("code").asText(), is("de"));
-        assertThat(de.get("name").asText(), is("Deutschland"));
-        assertThat(de.get("providerApps").size(), is(3));
-        assertProviderApp(de, 0, "android", "DB Navigator", "https://play.google.com/store/apps/details?id=de.hafas.android.db");
-        assertProviderApp(de, 1, "android", "FlixTrain", "https://play.google.com/store/apps/details?id=de.meinfernbus");
-        assertProviderApp(de, 2, "ios", "DB Navigator", "https://apps.apple.com/app/db-navigator/id343555245");
+        final AtomicInteger foundCountries = new AtomicInteger();
+        jsonNode.forEach(node->{
+            final String country = node.get("code").asText();
+            switch (country) {
+                case "de" :
+                    assertThat(node.get("code").asText(), is("de"));
+                    assertThat(node.get("name").asText(), is("Deutschland"));
+                    assertThat(node.get("providerApps").size(), is(3));
+                    assertProviderApp(node, 0, "android", "DB Navigator", "https://play.google.com/store/apps/details?id=de.hafas.android.db");
+                    assertProviderApp(node, 1, "android", "FlixTrain", "https://play.google.com/store/apps/details?id=de.meinfernbus");
+                    assertProviderApp(node, 2, "ios", "DB Navigator", "https://apps.apple.com/app/db-navigator/id343555245");
+                    foundCountries.getAndIncrement();
+                    break;
+                case "ch" :
+                    assertThat(node.get("name").asText(), is("Schweiz"));
+                    assertThat(node.get("providerApps").size(), is(2));
+                    assertProviderApp(node, 0, "android", "SBB Mobile", "https://play.google.com/store/apps/details?id=ch.sbb.mobile.android.b2c");
+                    assertProviderApp(node, 1, "ios", "SBB Mobile", "https://apps.apple.com/app/sbb-mobile/id294855237");
+                    foundCountries.getAndIncrement();
+                    break;
+            }
+        });
 
-        final JsonNode ch = jsonNode.get(1);
-        assertThat(ch.get("code").asText(), is("ch"));
-        assertThat(ch.get("name").asText(), is("Schweiz"));
-        assertThat(ch.get("providerApps").size(), is(2));
-        assertProviderApp(ch, 0, "android", "SBB Mobile", "https://play.google.com/store/apps/details?id=ch.sbb.mobile.android.b2c");
-        assertProviderApp(ch, 1, "ios", "SBB Mobile", "https://apps.apple.com/app/sbb-mobile/id294855237");
+        assertThat(foundCountries.get(), is(2));
     }
 
     @Test

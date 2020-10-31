@@ -238,32 +238,30 @@ public class ProfileResource {
     }
 
     private void sendPasswordMail(@NotNull final User user) {
-        final String text = String.format("Hello %1$s,%n%n" +
-                        "your new password is: %2$s%n%n" +
+        final String text = String.format("Hello,%n%n" +
+                        "your new password is: %1$s%n%n" +
                         "Cheers%n" +
                         "Your Railway-Stations-Team%n" +
                         "%n---%n" +
-                        "Hallo %1$s,%n%n" +
-                        "Dein neues Passwort lautet: %2$s%n%n" +
+                        "Hallo,%n%n" +
+                        "Dein neues Passwort lautet: %1$s%n%n" +
                         "Viele Grüße%n" +
-                        "Dein Bahnhofsfoto-Team",
-                user.getName(), user.getNewPassword());
+                        "Dein Bahnhofsfoto-Team", user.getNewPassword());
         mailer.send(user.getEmail(), "Railway-Stations.org new password", text);
         LOG.info("Password sent to {}", user.getEmail());
     }
 
     private void sendEmailVerification(@NotNull final User user) {
         final String url = eMailVerificationUrl + user.getEmailVerificationToken();
-        final String text = String.format("Hello %1$s,%n%n" +
-                        "please click on %2$s to verify your eMail-Address.%n%n" +
+        final String text = String.format("Hello,%n%n" +
+                        "please click on %1$s to verify your eMail-Address.%n%n" +
                         "Cheers%n" +
                         "Your Railway-Stations-Team%n" +
                         "%n---%n" +
-                        "Hallo %1$s,%n%n" +
-                        "bitte klicke auf %2$s, um Deine eMail-Adresse zu verifizieren%n%n" +
+                        "Hallo,%n%n" +
+                        "bitte klicke auf %1$s, um Deine eMail-Adresse zu verifizieren%n%n" +
                         "Viele Grüße%n" +
-                        "Dein Bahnhofsfoto-Team",
-                user.getName(), url);
+                        "Dein Bahnhofsfoto-Team", url);
         mailer.send(user.getEmail(), "Railway-Stations.org eMail verification", text);
         LOG.info("Email verification sent to {}", user.getEmail());
     }

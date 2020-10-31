@@ -58,7 +58,7 @@ public class ProfileResourceTest {
 
         assertThat(response.getStatus(), equalTo(202));
         assertThat(monitor.getMessages().get(0), equalTo("New registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}\nvia UserAgent"));
-        assertNewPasswordEmail("nickname");
+        assertNewPasswordEmail();
 
         verifyNoMoreInteractions(userDao);
     }
@@ -74,30 +74,30 @@ public class ProfileResourceTest {
 
         assertThat(response.getStatus(), equalTo(202));
         assertThat(monitor.getMessages().get(0), equalTo("New registration{nickname='nickname', email='nickname@example.com', license='CC0 1.0 Universell (CC0 1.0)', photoOwner=true, link='https://link@example.com', anonymous=false}\nvia UserAgent"));
-        assertVerificationEmail("nickname");
+        assertVerificationEmail();
 
         verifyNoMoreInteractions(userDao);
     }
 
-    private void assertVerificationEmail(final String nickname) {
-        assertThat(mailer.getText().matches("Hello " + nickname + ",\n\n" +
+    private void assertVerificationEmail() {
+        assertThat(mailer.getText().matches("Hello,\n\n" +
                 "please click on EMAIL_VERIFICATION_URL.* to verify your eMail-Address.\n\n" +
                 "Cheers\n" +
                 "Your Railway-Stations-Team\n" +
                 "\n---\n" +
-                "Hallo " + nickname + ",\n\n" +
+                "Hallo,\n\n" +
                 "bitte klicke auf EMAIL_VERIFICATION_URL.*, um Deine eMail-Adresse zu verifizieren\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"), is(true));
     }
 
-    private void assertNewPasswordEmail(final String nickname) {
-        assertThat(mailer.getText().matches("Hello " + nickname + ",\n\n" +
+    private void assertNewPasswordEmail() {
+        assertThat(mailer.getText().matches("Hello,\n\n" +
                 "your new password is: .*\n\n" +
                 "Cheers\n" +
                 "Your Railway-Stations-Team\n" +
                 "\n---\n" +
-                "Hallo " + nickname + ",\n\n" +
+                "Hallo,\n\n" +
                 "Dein neues Passwort lautet: .*\n\n" +
                 "Viele Grüße\n" +
                 "Dein Bahnhofsfoto-Team"), is(true));
@@ -213,7 +213,7 @@ public class ProfileResourceTest {
         final Response response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(200));
-        assertVerificationEmail("existing");
+        assertVerificationEmail();
         verify(userDao).update(newProfile);
     }
 
@@ -290,7 +290,7 @@ public class ProfileResourceTest {
 
         assertThat(response.getStatus(), equalTo(200));
         assertThat(user.getEmailVerification().startsWith(User.EMAIL_VERIFICATION_TOKEN), is(true));
-        assertVerificationEmail("existing");
+        assertVerificationEmail();
         verify(userDao).updateEmailVerification(user.getId(), user.getEmailVerification());
     }
 
