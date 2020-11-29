@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.RsaJsonWebKey;
+import org.jose4j.lang.JoseException;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.Monitor;
@@ -13,6 +16,8 @@ import org.railwaystations.api.monitoring.SlackMonitor;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings("PMD.LongVariable")
 public class RsApiConfiguration extends Configuration {
@@ -40,6 +45,8 @@ public class RsApiConfiguration extends Configuration {
     @Valid
     @NotNull
     private DataSourceFactory database = new DataSourceFactory();
+
+    private Map<String, Object> jwkParams = new HashMap<>();
 
     @JsonProperty("database")
     public void setDataSourceFactory(final DataSourceFactory factory) {
@@ -141,4 +148,17 @@ public class RsApiConfiguration extends Configuration {
     public void setMastodonBot(final MastodonBot mastodonBot) {
         this.mastodonBot = mastodonBot;
     }
+
+    public Map<String, Object> getJwkParams() {
+        return jwkParams;
+    }
+
+    public RsaJsonWebKey getRsaJsonWebKey() {
+        try {
+            return (RsaJsonWebKey) JsonWebKey.Factory.newJwk(jwkParams);
+        } catch (final JoseException e) {
+            throw new RuntimeException("Unable to create RsaJsonWebKey", e);
+        }
+    }
+
 }

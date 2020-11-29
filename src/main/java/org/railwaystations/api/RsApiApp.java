@@ -7,6 +7,7 @@ import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
 import io.dropwizard.auth.basic.BasicCredentials;
 import io.dropwizard.auth.chained.ChainedAuthFilter;
+import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.db.DataSourceFactory;
@@ -39,6 +40,8 @@ import static org.eclipse.jetty.servlets.CrossOriginFilter.*;
  * RailwayStations API Dropwizard App
  */
 public class RsApiApp extends Application<RsApiConfiguration> {
+
+    public static final String REALM = "RSAPI";
 
     public static void main(final String... args) throws Exception {
         new RsApiApp().run(args);
@@ -98,7 +101,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new InboxResource(repository, config.getInboxDir(), config.getInboxToProcessDir(),
                 config.getInboxProcessedDir(), config.getPhotosDir(), config.getMonitor(), authenticator,
                 inboxDao, userDao, countryDao, photoDao, config.getInboxBaseUrl(), config.getMastodonBot()));
-        environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao, config.getMailVerificationUrl()));
+        environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao, config.getMailVerificationUrl(), config.getRsaJsonWebKey()));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),
                 new PhotoImporter(repository, userDao, photoDao, countryDao, config.getMonitor(), config.getWorkDir(), config.getPhotosDir(), inboxDao)));
         environment.jersey().register(new StationsGpxWriter());
@@ -116,14 +119,23 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         final AuthFilter<BasicCredentials, AuthUser> basicCredentialAuthFilter = new BasicCredentialAuthFilter.Builder<AuthUser>()
                 .setAuthenticator(new BasicAuthenticator(userDao, config.getTokenGenerator()))
                 .setAuthorizer(new UserAuthorizer())
-                .setRealm("RSAPI").setPrefix("Basic").buildAuthFilter();
+                .setRealm(REALM).setPrefix("Basic").buildAuthFilter();
+
+        final AuthFilter oauthCredentialAuthFilter = new OAuthCredentialAuthFilter.Builder<AuthUser>()
+                .setAuthenticator(new OAuthAuthenticator(userDao))
+                .setAuthorizer(new UserAuthorizer())
+                .setRealm(REALM)
+                .setPrefix("Bearer")
+                .buildAuthFilter();
 
         final UploadTokenAuthenticator authenticator = new UploadTokenAuthenticator(userDao, config.getTokenGenerator());
         final UploadTokenAuthFilter<AuthUser> uploadTokenAuthFilter = new UploadTokenAuthFilter.Builder<AuthUser>()
                 .setAuthorizer(new UserAuthorizer())
-                .setAuthenticator(authenticator).setRealm("RSAPI").buildAuthFilter();
+                .setAuthenticator(authenticator)
+                .setRealm(REALM)
+                .buildAuthFilter();
 
-        final List<AuthFilter<?, AuthUser>> filters = Lists.newArrayList(basicCredentialAuthFilter, uploadTokenAuthFilter);
+        final List<AuthFilter<?, AuthUser>> filters = Lists.newArrayList(basicCredentialAuthFilter, uploadTokenAuthFilter, oauthCredentialAuthFilter);
         environment.jersey().register(new AuthDynamicFeature(new ChainedAuthFilter(filters)));
         environment.jersey().register(RolesAllowedDynamicFeature.class);
         environment.jersey().register(new AuthValueFactoryProvider.Binder<>(AuthUser.class));

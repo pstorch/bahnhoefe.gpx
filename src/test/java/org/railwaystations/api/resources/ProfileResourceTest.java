@@ -36,7 +36,7 @@ public class ProfileResourceTest {
         mailer = new MockMailer();
         userDao = mock(UserDao.class);
 
-        resource = new ProfileResource(monitor, mailer, userDao, EMAIL_VERIFICATION_URL);
+        resource = new ProfileResource(monitor, mailer, userDao, EMAIL_VERIFICATION_URL, null);
     }
 
     @Test

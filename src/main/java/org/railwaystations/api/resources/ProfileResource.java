@@ -1,9 +1,18 @@
 package org.railwaystations.api.resources;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import io.dropwizard.auth.Auth;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.http.HttpStatus;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.RsaJsonWebKey;
+import org.jose4j.jwk.RsaJwkGenerator;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.lang.JoseException;
 import org.railwaystations.api.PasswordUtil;
 import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.db.UserDao;
@@ -17,10 +26,13 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.jose4j.jwk.JsonWebKey.OutputControlLevel.INCLUDE_PRIVATE;
 
 @Path("/")
 public class ProfileResource {
@@ -31,12 +43,14 @@ public class ProfileResource {
     private final Mailer mailer;
     private final UserDao userDao;
     private final String eMailVerificationUrl;
+    private final RsaJsonWebKey jwk;
 
-    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao, final String eMailVerificationUrl) {
+    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao, final String eMailVerificationUrl, final RsaJsonWebKey jwk) {
         this.monitor = monitor;
         this.mailer = mailer;
         this.userDao = userDao;
         this.eMailVerificationUrl = eMailVerificationUrl;
+        this.jwk = jwk;
     }
 
     @POST
@@ -157,6 +171,43 @@ public class ProfileResource {
         user.setKey(PasswordUtil.hashPassword(user.getNewPassword()));
         user.setUploadTokenSalt(null);
         user.setUploadToken(null);
+    }
+
+    @Path("/authenticate")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response authenticateCredentials(@Auth final AuthUser user) {
+        LOG.info("Authenticating User Credentials for " + user.getName());
+
+        final String jwt;
+        try {
+            //final RsaJsonWebKey jwk =  RsaJwkGenerator.generateJwk(2048);
+            //jwk.setKeyId("k1");
+            //LOG.info("JWK (1) ===> " + jwk.toJson(INCLUDE_PRIVATE));
+
+            // Create the Claims, which will be the content of the JWT
+            final JwtClaims claims = new JwtClaims();
+            claims.setIssuer("railway-stations.org");
+            claims.setExpirationTimeMinutesInTheFuture(10);
+            claims.setGeneratedJwtId();
+            claims.setIssuedAtToNow();
+            claims.setNotBeforeMinutesInThePast(2);
+            claims.setSubject(String.valueOf(user.getUser().getId()));
+            claims.setStringListClaim("roles", user.getUser().isAdmin() ? "admin" : "");
+
+            final JsonWebSignature jws = new JsonWebSignature();
+            jws.setPayload(claims.toJson());
+            jws.setKeyIdHeaderValue(jwk.getKeyId());
+            jws.setKey(jwk.getPrivateKey());
+            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+
+            jwt = jws.getCompactSerialization();
+        } catch (final JoseException e) {
+            LOG.error("Unable to create JWT Token", e);
+            throw new WebApplicationException("Unable to create JWT Token", 500);
+        }
+
+        return Response.status(200).entity(jwt).build();
     }
 
     @GET
