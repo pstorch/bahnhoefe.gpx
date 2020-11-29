@@ -513,4 +513,20 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="28" author="pstorch" context="test">
+        <insert tableName="countries">
+            <column name="id" value="uz"/>
+            <column name="name" value="Uzbekistan"/>
+            <column name="active" valueBoolean="false"/>
+        </insert>
+        <insert tableName="stations">
+            <column name="id" value="Z1190"/>
+            <column name="countryCode" value="uz"/>
+            <column name="title" value="Tashkent"/>
+            <column name="lat" valueNumeric="41.290996091106"/>
+            <column name="lon" valueNumeric="69.287252426147"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

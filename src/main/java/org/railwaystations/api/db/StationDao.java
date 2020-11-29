@@ -22,13 +22,13 @@ import java.util.Set;
 
 public interface StationDao {
 
-    String JOIN_QUERY = "select s.countryCode, s.id, s.DS100, s.title, s.lat, s.lon, s.active, p.url, p.license, p.createdAt, u.id as photographerId, u.name, u.url as photographerUrl, u.license as photographerLicense, u.anonymous from stations s left join photos p on p.countryCode = s.countryCode and p.id = s.id left join users u on u.id = p.photographerId";
+    String JOIN_QUERY = "select s.countryCode, s.id, s.DS100, s.title, s.lat, s.lon, s.active, p.url, p.license, p.createdAt, u.id as photographerId, u.name, u.url as photographerUrl, u.license as photographerLicense, u.anonymous from countries c left join stations s on c.id = s.countryCode left join photos p on p.countryCode = s.countryCode and p.id = s.id left join users u on u.id = p.photographerId";
 
-    @SqlQuery(JOIN_QUERY + " where s.countryCode in (<countryCodes>)")
+    @SqlQuery(JOIN_QUERY + " where c.active = true and s.countryCode in (<countryCodes>)")
     @RegisterRowMapper(StationMapper.class)
     Set<Station> findByCountryCodes(@BindList("countryCodes") final Set<String> countryCodes);
 
-    @SqlQuery(JOIN_QUERY)
+    @SqlQuery(JOIN_QUERY + " where c.active = true")
     @RegisterRowMapper(StationMapper.class)
     Set<Station> all();
 
