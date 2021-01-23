@@ -75,9 +75,12 @@ public class User {
     @JsonProperty
     private String newPassword;
 
+    @JsonProperty
+    private boolean sendNotifications;
+
     public User(final String name, final String url, final String license, final int id, final String email,
                 final boolean ownPhotos, final boolean anonymous, final Long uploadTokenSalt,
-                final String key, final boolean admin, final String emailVerification) {
+                final String key, final boolean admin, final String emailVerification, final boolean sendNotifications) {
         this.name = name;
         this.url = url;
         this.license = license;
@@ -90,6 +93,7 @@ public class User {
         this.key = key;
         this.admin = admin;
         this.emailVerification = emailVerification;
+        this.sendNotifications = sendNotifications;
     }
 
     /**
@@ -101,7 +105,8 @@ public class User {
                         @JsonProperty("photoOwner") final boolean photoOwner,
                         @JsonProperty("link") final String link,
                         @JsonProperty("anonymous") final boolean anonymous,
-                        @JsonProperty("newPassword") final String newPassword) {
+                        @JsonProperty("newPassword") final String newPassword,
+                        @JsonProperty("sendNotifications") final Boolean sendNotifications) {
         this.name = StringUtils.trimToEmpty(name);
         this.normalizedName = normalizeName(name);
         this.email = normalizeEmail(email);
@@ -112,6 +117,7 @@ public class User {
         this.admin = false;
         this.emailVerification = null;
         this.newPassword = newPassword;
+        this.sendNotifications = sendNotifications == null || sendNotifications;
     }
 
     public static Map<String, User> toNameMap(final List<User> list) {
@@ -305,5 +311,13 @@ public class User {
     public void setEmailVerificationToken(final String emailVerificationToken) {
         this.emailVerificationToken = emailVerificationToken;
         this.emailVerification = EMAIL_VERIFICATION_TOKEN + emailVerificationToken;
+    }
+
+    public boolean isSendNotifications() {
+        return sendNotifications;
+    }
+
+    public void setSendNotifications(final boolean sendNotifications) {
+        this.sendNotifications = sendNotifications;
     }
 }

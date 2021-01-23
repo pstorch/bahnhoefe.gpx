@@ -36,7 +36,7 @@ public class StationsTxtWriterTest {
     }
 
     private User createTestPhotographer(final String name) {
-        return new User(name, "photographerUrl", "CC0", 0, null, true, false, null, null, false, null);
+        return new User(name, "photographerUrl", "CC0", 0, null, true, false, null, null, false, null, false);
     }
 
 }

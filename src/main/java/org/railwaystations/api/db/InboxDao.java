@@ -6,6 +6,7 @@ import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
+import org.jdbi.v3.sqlobject.customizer.BindList;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
@@ -22,7 +23,7 @@ public interface InboxDao {
 
     String JOIN_QUERY = "select u.id, u.countryCode, u.stationId, u.title u_title, s.title s_title, u.lat u_lat, u.lon u_lon, s.lat s_lat, s.lon s_lon, "
                     + "     u.photographerId, p.name photographerNickname, p.email photographerEmail, u.extension, u.comment, u.rejectReason, u.createdAt, "
-                    + "     u.done, u.problemReportType, u.active, u.crc32, f.url, "
+                    + "     u.done, u.problemReportType, u.active, u.crc32, u.notified, f.url, "
                     + "     (select count(*) from inbox u2 where u2.countryCode is not null and u2.countryCode = u.countryCode "
                     + "         and u2.stationId is not null and u2.stationId = u.stationId and u2.done = false and u2.id != u.id) as conflict"
                     + " from inbox u left join stations s on s.countryCode = u.countryCode and s.id = u.stationId "
@@ -72,6 +73,13 @@ public interface InboxDao {
     @RegisterRowMapper(InboxEntryMapper.class)
     InboxEntry findNewestPendingByCountryAndStationIdAndPhotographerId(@Bind("countryCode") String countryCode, @Bind("stationId") String stationId, @Bind("photographerId") int photographerId);
 
+    @SqlQuery(JOIN_QUERY + " where u.done = true and u.notified = false")
+    @RegisterRowMapper(InboxEntryMapper.class)
+    List<InboxEntry> findInboxEntriesToNotify();
+
+    @SqlUpdate("update inbox set notified = true where id in (<ids>)")
+    void updateNotified(@BindList("ids") final List<Integer> ids);
+
     class InboxEntryMapper implements RowMapper<InboxEntry> {
 
         public InboxEntry map(final ResultSet rs, final StatementContext ctx) throws SQLException {
@@ -95,7 +103,7 @@ public interface InboxDao {
                     rs.getLong("createdAt"), done, null, rs.getString("url") != null,
                     rs.getInt("conflict") > 0,
                     problemReportType != null ? ProblemReportType.valueOf(problemReportType) : null, active,
-                    crc32);
+                    crc32, rs.getBoolean("notified"));
         }
 
     }

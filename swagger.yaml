@@ -879,6 +879,8 @@ definitions:
         type: string
       emailVerified:
         type: boolean
+      sendNotifications:
+        type: boolean
   InboxResponse:
     type: object
     description: Response status of photo uploads and problem reports

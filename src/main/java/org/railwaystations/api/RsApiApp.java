@@ -90,13 +90,14 @@ public class RsApiApp extends Application<RsApiConfiguration> {
 
         final UploadTokenAuthenticator authenticator = registerAuthFilter(config, environment, userDao);
 
+        environment.admin().addTask(new NotifyUsersTask(userDao, inboxDao, config.getMailer()));
         environment.jersey().register(new StationsResource(repository));
         environment.jersey().register(new PhotographersResource(repository));
         environment.jersey().register(new CountriesResource(countryDao));
         environment.jersey().register(new StatisticResource(repository));
         environment.jersey().register(new PhotoDownloadResource(config.getPhotosDir(), config.getInboxDir(), config.getInboxProcessedDir()));
         environment.jersey().register(new InboxResource(repository, config.getInboxDir(), config.getInboxToProcessDir(),
-                config.getInboxProcessedDir(), config.getPhotosDir(), config.getMonitor(), authenticator,
+                config.getInboxProcessedDir(), config.getPhotosDir(), authenticator,
                 inboxDao, userDao, countryDao, photoDao, config.getInboxBaseUrl(), config.getMastodonBot()));
         environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao, config.getMailVerificationUrl()));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),

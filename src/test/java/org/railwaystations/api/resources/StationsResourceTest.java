@@ -112,6 +112,6 @@ public class StationsResourceTest {
     }
 
     private User createTestPhotographer(final String name, final String url, final String license) {
-        return new User(name, url, license, 0, null, true, false, null, null, false, null);
+        return new User(name, url, license, 0, null, true, false, null, null, false, null, true);
     }
 }

@@ -529,4 +529,20 @@
         </insert>
     </changeSet>
 
+    <changeSet id="29" author="pstorch">
+        <addColumn tableName="inbox">
+            <column name="notified" type="boolean" valueBoolean="false" defaultValueBoolean="false"/>
+        </addColumn>
+        <update tableName="inbox">
+            <column name="notified" valueBoolean="true"/>
+            <where>done = :value</where>
+            <whereParams>
+                <param valueBoolean="true" />
+            </whereParams>
+        </update>
+        <addColumn tableName="users">
+            <column name="sendNotifications" type="boolean" valueBoolean="true" defaultValueBoolean="true"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

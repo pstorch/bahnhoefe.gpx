@@ -18,11 +18,10 @@ import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.auth.UploadTokenAuthenticator;
 import org.railwaystations.api.auth.UploadTokenCredentials;
 import org.railwaystations.api.db.CountryDao;
-import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.InboxDao;
+import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.*;
-import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +31,10 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -54,7 +56,6 @@ public class InboxResource {
     private final StationsRepository repository;
     private final File inboxDir;
     private final File photoDir;
-    private final Monitor monitor;
     private final UploadTokenAuthenticator authenticator;
     private final InboxDao inboxDao;
     private final UserDao userDao;
@@ -67,7 +68,7 @@ public class InboxResource {
 
     public InboxResource(final StationsRepository repository, final String inboxDir,
                          final String inboxToProcessDir, final String inboxProcessedDir, final String photoDir,
-                         final Monitor monitor, final UploadTokenAuthenticator authenticator,
+                         final UploadTokenAuthenticator authenticator,
                          final InboxDao inboxDao, final UserDao userDao, final CountryDao countryDao,
                          final PhotoDao photoDao, final String inboxBaseUrl, final MastodonBot mastodonBot) {
         this.repository = repository;
@@ -75,7 +76,6 @@ public class InboxResource {
         this.inboxToProcessDir = new File(inboxToProcessDir);
         this.inboxProcessedDir = new File(inboxProcessedDir);
         this.photoDir = new File(photoDir);
-        this.monitor = monitor;
         this.authenticator = authenticator;
         this.inboxDao = inboxDao;
         this.userDao = userDao;

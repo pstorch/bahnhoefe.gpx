@@ -41,7 +41,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testRegisterInvalidData() {
-        final User registration = new User("nickname", null, null, true, "https://link@example.com", false, null);
+        final User registration = new User("nickname", null, null, true, "https://link@example.com", false, null, true);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(400));
@@ -49,7 +49,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testRegisterNewUser() {
-        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", false, null);
+        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", false, null, true);
         final Response response = resource.register("UserAgent", registration);
         verify(userDao).findByNormalizedName("nickname");
         verify(userDao).findByEmail("nickname@example.com");
@@ -65,7 +65,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testRegisterNewUserWithPassword() {
-        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", false, "verySecretPassword");
+        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", false, "verySecretPassword", true);
         final Response response = resource.register("UserAgent", registration);
         verify(userDao).findByNormalizedName("nickname");
         verify(userDao).findByEmail("nickname@example.com");
@@ -105,7 +105,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testRegisterNewUserAnonymous() {
-        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", true, null);
+        final User registration = new User("nickname", "nickname@example.com", "CC0", true, "https://link@example.com", true, null, true);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(202));
@@ -114,8 +114,8 @@ public class ProfileResourceTest {
 
     @Test
     public void testRegisterNewUserNameTaken() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null)));
-        final User registration = new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false, null);
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null, true)));
+        final User registration = new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false, null, true);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(409));
@@ -123,7 +123,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testRegisterExistingUserEmailTaken() {
-        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
+        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null, true);
         when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
         when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         final Response response = resource.register("UserAgent", user);
@@ -134,8 +134,8 @@ public class ProfileResourceTest {
 
     @Test
     public void testRegisterExistingUserNameTaken() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false, null)));
-        final User registration = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false, null, true)));
+        final User registration = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null, true);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(409));
@@ -144,8 +144,8 @@ public class ProfileResourceTest {
 
     @Test
     public void testRegisterExistingUserEmptyName() {
-        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false, null)));
-        final User registration = new User("", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
+        when(userDao.findByNormalizedName("existing")).thenReturn(Optional.of(new User("existing", "other@example.com", "CC0", true, "https://link@example.com", false, null, true)));
+        final User registration = new User("", "existing@example.com", "CC0", true, "https://link@example.com", false, null, true);
         final Response response = resource.register("UserAgent", registration);
 
         assertThat(response.getStatus(), equalTo(400));
@@ -153,7 +153,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testGetMyProfile() {
-        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
         final Response response = resource.getMyProfile(new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(200));
@@ -162,7 +162,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testChangePasswordTooShort() {
-        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
         final Response response = resource.changePassword(new AuthUser(user), "secret");
         verify(userDao, never()).updateCredentials(anyInt(), anyString());
 
@@ -171,7 +171,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testChangePassword() {
-        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
         user.setId(4711);
         final ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
         final ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
@@ -186,8 +186,8 @@ public class ProfileResourceTest {
     @Test
     public void testUpdateMyProfile() {
         when(userDao.findByNormalizedName("newname")).thenReturn(Optional.empty());
-        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
-        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true, null);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
+        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true, null, true);
         final Response response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(200));
@@ -196,9 +196,9 @@ public class ProfileResourceTest {
 
     @Test
     public void testUpdateMyProfileConflict() {
-        when(userDao.findByNormalizedName("newname")).thenReturn(Optional.of(new User("@New name", "newname@example.com", null, true, null, false, null)));
-        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
-        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true, null);
+        when(userDao.findByNormalizedName("newname")).thenReturn(Optional.of(new User("@New name", "newname@example.com", null, true, null, false, null, true)));
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
+        final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true, null, true);
         final Response response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(409));
@@ -208,8 +208,8 @@ public class ProfileResourceTest {
     @Test
     public void testUpdateMyProfileNewMail() {
         when(userDao.findByEmail("newname@example.com")).thenReturn(Optional.empty());
-        final User user = new User("existing", "existing@example.com", null, true, null, false, null);
-        final User newProfile = new User("existing", "newname@example.com", "CC0", true, "http://twitter.com/", true, null);
+        final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
+        final User newProfile = new User("existing", "newname@example.com", "CC0", true, "http://twitter.com/", true, null, true);
         final Response response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(200));
@@ -219,7 +219,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testNewUploadTokenViaEmail() {
-        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
+        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null, true);
         when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
         when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         final Response response = resource.newUploadToken("UserAgent", "existing@example.com");
@@ -230,7 +230,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testNewUploadTokenViaName() {
-        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null);
+        final User user = new User("existing", "existing@example.com", "CC0", true, "https://link@example.com", false, null, true);
         when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
         when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         final Response response = resource.newUploadToken("UserAgent", "existing");
@@ -248,7 +248,7 @@ public class ProfileResourceTest {
 
     @Test
     public void testNewUploadTokenEmailMissing() {
-        final User user = new User("existing", "", "CC0", true, "https://link@example.com", false, null);
+        final User user = new User("existing", "", "CC0", true, "https://link@example.com", false, null, true);
         when(userDao.findByNormalizedName(user.getName())).thenReturn(Optional.of(user));
         when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         final Response response = resource.newUploadToken("UserAgent", "existing");
@@ -260,7 +260,7 @@ public class ProfileResourceTest {
     public void testVerifyEmailSuccess() {
         final String token = "verification";
         final String emailVerification = User.EMAIL_VERIFICATION_TOKEN + token;
-        final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, emailVerification);
+        final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, emailVerification, true);
         when(userDao.findByEmailVerification(emailVerification)).thenReturn(Optional.of(user));
         final Response response = resource.emailVerification("UserAgent", token);
 
@@ -273,7 +273,7 @@ public class ProfileResourceTest {
     public void testVerifyEmailFailed() {
         final String token = "verification";
         final String emailVerification = User.EMAIL_VERIFICATION_TOKEN + token;
-        final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, emailVerification);
+        final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, emailVerification, true);
         when(userDao.findByEmailVerification(emailVerification)).thenReturn(Optional.of(user));
         final Response response = resource.emailVerification("UserAgent", "wrong_token");
 
@@ -285,7 +285,7 @@ public class ProfileResourceTest {
     @Test
     public void testResendEmailVerification() {
         when(userDao.findByEmail("newname@example.com")).thenReturn(Optional.empty());
-        final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, User.EMAIL_VERIFIED_AT_NEXT_LOGIN);
+        final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, User.EMAIL_VERIFIED_AT_NEXT_LOGIN, true);
         final Response response = resource.resendEmailVerification("UserAgent", new AuthUser(user));
 
         assertThat(response.getStatus(), equalTo(200));

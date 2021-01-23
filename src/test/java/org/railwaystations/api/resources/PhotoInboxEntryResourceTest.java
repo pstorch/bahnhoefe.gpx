@@ -11,11 +11,10 @@ import org.railwaystations.api.MastodonBot;
 import org.railwaystations.api.StationsRepository;
 import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.db.CountryDao;
-import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.InboxDao;
+import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.*;
-import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
 import java.io.*;
@@ -35,8 +34,6 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class PhotoInboxEntryResourceTest {
 
-    private final MockMonitor monitor = new MockMonitor();
-
     private Path tempDir;
     private InboxResource resource;
     private InboxDao inboxDao = null;
@@ -55,9 +52,9 @@ public class PhotoInboxEntryResourceTest {
         final Station station9876 = new Station(key9876, "Station 9876", new Coordinates(52.0, 8.0), "EFF", new Photo(key9876, "URL", createUser("nickname", 42), null, "CC0"), true);
 
         final UserDao userDao = mock(UserDao.class);
-        final User userNickname = new User("nickname", "nickname@example.com", "CC0", true, null, true, null);
+        final User userNickname = new User("nickname", "nickname@example.com", "CC0", true, null, true, null, true);
         when(userDao.findByEmail("nickname@example.com")).thenReturn(Optional.of(userNickname));
-        final User userSomeuser = new User("someuser", "someuser@example.com", "CC0", true, null, true, null);
+        final User userSomeuser = new User("someuser", "someuser@example.com", "CC0", true, null, true, null, true);
         userSomeuser.setUploadTokenSalt(123456L);
         when(userDao.findByEmail("someuser@example.com")).thenReturn(Optional.of(userSomeuser));
         inboxDao = mock(InboxDao.class);
@@ -74,7 +71,7 @@ public class PhotoInboxEntryResourceTest {
         when(repository.findByCountryAndId(key9876.getCountry(), key9876.getId())).thenReturn(station9876);
 
         resource = new InboxResource(repository, tempDir.toString(), tempDir.resolve( "toprocess").toString(),
-                tempDir.resolve("processed").toString(), photoDir.toString(), monitor, null,
+                tempDir.resolve("processed").toString(), photoDir.toString(), null,
                 inboxDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org", new MastodonBot());
     }
 
@@ -89,7 +86,7 @@ public class PhotoInboxEntryResourceTest {
         final InputStream is = new ByteArrayInputStream(inputBytes);
         final Response response = resource.photoUpload(is, "UserAgent", stationId, country, "image/jpeg",
                 stationTitle, latitude, longitude, comment, null,
-                new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false, emailVerification)));
+                new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false, emailVerification, true)));
         return (InboxResponse) response.getEntity();
     }
 
@@ -177,12 +174,12 @@ public class PhotoInboxEntryResourceTest {
 
     @Test
     public void testUserInbox() {
-        final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, null);
+        final User user = new User("nickname", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, null, true);
 
-        when(inboxDao.findById(1)).thenReturn(new InboxEntry(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0L, false, null, false, false, null, null, null));
-        when(inboxDao.findById(2)).thenReturn(new InboxEntry(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0L, true, null, false, false, null, null, null));
-        when(inboxDao.findById(3)).thenReturn(new InboxEntry(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, "rejected", 0L, true, null, false, false, null, null, null));
-        when(inboxDao.findById(4)).thenReturn(new InboxEntry(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0L, false, null, false, false, null, null, null));
+        when(inboxDao.findById(1)).thenReturn(new InboxEntry(1, "de", "4711", "Station 4711", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0L, false, null, false, false, null, null, null, false));
+        when(inboxDao.findById(2)).thenReturn(new InboxEntry(2, "de", "1234", "Station 1234", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0L, true, null, false, false, null, null, null, false));
+        when(inboxDao.findById(3)).thenReturn(new InboxEntry(3, "de", "5678", "Station 5678", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, "rejected", 0L, true, null, false, false, null, null, null, false));
+        when(inboxDao.findById(4)).thenReturn(new InboxEntry(4, "ch", "0815", "Station 0815", new Coordinates(50.1,9.2), user.getId(), user.getName(), null, "jpg", null, null, 0L, false, null, false, false, null, null, null, false));
 
         final List<InboxStateQuery> inboxStateQueries = new ArrayList<>();
         inboxStateQueries.add(new InboxStateQuery(1, "de", "4711", null, null, null));
@@ -230,7 +227,7 @@ public class PhotoInboxEntryResourceTest {
     public void testPostInvalidCountry() {
         final Response response = resource.photoUpload(null, "UserAgent", "4711", "xy", "image/jpeg",
                 null, null, null, null, null,
-                new AuthUser(new User("nickname", null, "CC0", 0,  "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED)));
+                new AuthUser(new User("nickname", null, "CC0", 0,  "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true)));
         final InboxResponse inboxResponse = (InboxResponse) response.getEntity();
         assertThat(inboxResponse.getState(), equalTo(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA));
         assertThat(inboxResponse.getId(), nullValue());
@@ -241,7 +238,7 @@ public class PhotoInboxEntryResourceTest {
     public void testPostProblemReport() {
         when(inboxDao.insert(any())).thenReturn(6);
         final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong", null),
-                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED)));
+                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true)));
 
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.REVIEW));
         assertThat(response.getId(), equalTo(6));
@@ -251,7 +248,7 @@ public class PhotoInboxEntryResourceTest {
     @Test
     public void testPostProblemReportEmailNotVerified() {
         final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong", null),
-                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFICATION_TOKEN + "blah")));
+                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFICATION_TOKEN + "blah", true)));
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.UNAUTHORIZED));
     }
 
@@ -260,7 +257,7 @@ public class PhotoInboxEntryResourceTest {
     }
 
     private User createUser(final String name, final int id) {
-        return new User(name, "photographerUrl", "CC0", id, null, true, false, null, null, false, User.EMAIL_VERIFIED);
+        return new User(name, "photographerUrl", "CC0", id, null, true, false, null, null, false, User.EMAIL_VERIFIED, true);
     }
 
 
