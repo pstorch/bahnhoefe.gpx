@@ -522,7 +522,7 @@ public class InboxResource {
         File file = null;
         final String inboxUrl;
         final Integer id;
-        Long crc32 = null;
+        final Long crc32;
         try {
             if (station != null) {
                 // existing station
