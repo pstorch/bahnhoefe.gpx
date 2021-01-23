@@ -107,3 +107,13 @@ A more detailed API documentation can be found in the [swagger](swagger.yaml) fi
 The default output format is json. But can easily be changed to GPX or TXT. Either set the `Accept` header to `text/plain` or `application/gpx+xml` or simply add the extension `.txt` or `.gpx` to the end of the URL.
 
 Download the .gpx file and import it to your favourite Map application (e.g. Locus on Android).
+
+### Nextcloud and Docker
+
+On our server we use two directories `toprocess` and `processed` from a Nextcloud shared directory. To use these two directories in the API running in Docker they need to be created as Docker volumes and mounted into the Docker instance.
+
+- Install [fentas/davfs](https://github.com/fentas/docker-volume-davfs) plugin: `docker plugin install fentas/davfs`
+- Create volumes:
+  - `docker volume create -d fentas/davfs -o url=https://<user>:<password>@cloud.railway-stations.org/remote.php/webdav/VsionAI/roh -o uid=1000 -o gid=1000 toprocess`
+  - `docker volume create -d fentas/davfs -o url=https://<user>:<password>@cloud.railway-stations.org/remote.php/webdav/VsionAI/verpixelt -o uid=1000 -o gid=1000 processed`
+- Run Container with these volumes: `docker run -d --name rsapi -v /var/rsapi:/var/rsapi -v toprocess:/var/rsapi/inbox/toprocess -v processed:/var/rsapi/inbox/processed railwaystations/rsapi:latest`
