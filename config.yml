@@ -26,6 +26,7 @@ mailer:
 #  user: ${SMTP_USER:-}
 #  passwd: ${SMTP_PASSWD:-}
 #  from: ${SMTP_FROM:-}
+matrixMonitorUrl: ${MATRIX_MONITOR_URL:-}
 slackMonitorUrl: ${SLACK_MONITOR_URL:-}
 slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
 photoBaseUrl: http://localhost:8080/photos

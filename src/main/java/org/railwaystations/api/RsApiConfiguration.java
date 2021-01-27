@@ -7,6 +7,7 @@ import io.dropwizard.db.DataSourceFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
+import org.railwaystations.api.monitoring.MatrixMonitor;
 import org.railwaystations.api.monitoring.Monitor;
 import org.railwaystations.api.monitoring.SlackMonitor;
 
@@ -54,6 +55,12 @@ public class RsApiConfiguration extends Configuration {
     public void setSlackMonitorUrl(final String slackMonitorUrl) {
         if (StringUtils.isNotBlank(slackMonitorUrl)) {
             this.monitor = new SlackMonitor(slackMonitorUrl);
+        }
+    }
+
+    public void setMatrixMonitorUrl(final String matrixMonitorUrl) {
+        if (StringUtils.isNotBlank(matrixMonitorUrl)) {
+            this.monitor = new MatrixMonitor(matrixMonitorUrl);
         }
     }
 
