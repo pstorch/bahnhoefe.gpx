@@ -545,4 +545,13 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="30" author="pstorch">
+        <dropForeignKeyConstraint baseTableName="photos" constraintName="fk_station"/>
+        <addForeignKeyConstraint baseColumnNames="countryCode, id"
+                                 baseTableName="photos"
+                                 constraintName="fk_station"
+                                 referencedColumnNames="countryCode, id"
+                                 referencedTableName="stations"
+                                 onUpdate="CASCADE"/>
+    </changeSet>
 </databaseChangeLog>
