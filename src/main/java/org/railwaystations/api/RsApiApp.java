@@ -97,7 +97,7 @@ public class RsApiApp extends Application<RsApiConfiguration> {
         environment.jersey().register(new StatisticResource(repository));
         environment.jersey().register(new PhotoDownloadResource(config.getPhotosDir(), config.getInboxDir(), config.getInboxProcessedDir()));
         environment.jersey().register(new InboxResource(repository, config.getInboxDir(), config.getInboxToProcessDir(),
-                config.getInboxProcessedDir(), config.getPhotosDir(), authenticator,
+                config.getInboxProcessedDir(), config.getPhotosDir(), config.getMonitor(), authenticator,
                 inboxDao, userDao, countryDao, photoDao, config.getInboxBaseUrl(), config.getMastodonBot()));
         environment.jersey().register(new ProfileResource(config.getMonitor(), config.getMailer(), userDao, config.getMailVerificationUrl()));
         environment.jersey().register(new SlackCommandResource(repository, config.getSlackVerificationToken(),

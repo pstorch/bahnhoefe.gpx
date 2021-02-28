@@ -22,6 +22,7 @@ import org.railwaystations.api.db.InboxDao;
 import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.*;
+import org.railwaystations.api.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,10 +66,11 @@ public class InboxResource {
     private final File inboxToProcessDir;
     private final File inboxProcessedDir;
     private final MastodonBot mastodonBot;
+    private final Monitor monitor;
 
     public InboxResource(final StationsRepository repository, final String inboxDir,
                          final String inboxToProcessDir, final String inboxProcessedDir, final String photoDir,
-                         final UploadTokenAuthenticator authenticator,
+                         final Monitor monitor, final UploadTokenAuthenticator authenticator,
                          final InboxDao inboxDao, final UserDao userDao, final CountryDao countryDao,
                          final PhotoDao photoDao, final String inboxBaseUrl, final MastodonBot mastodonBot) {
         this.repository = repository;
@@ -76,6 +78,7 @@ public class InboxResource {
         this.inboxToProcessDir = new File(inboxToProcessDir);
         this.inboxProcessedDir = new File(inboxProcessedDir);
         this.photoDir = new File(photoDir);
+        this.monitor = monitor;
         this.authenticator = authenticator;
         this.inboxDao = inboxDao;
         this.userDao = userDao;

@@ -15,6 +15,7 @@ import org.railwaystations.api.db.InboxDao;
 import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.*;
+import org.railwaystations.api.monitoring.MockMonitor;
 
 import javax.ws.rs.core.Response;
 import java.io.*;
@@ -37,6 +38,7 @@ public class PhotoInboxEntryResourceTest {
     private Path tempDir;
     private InboxResource resource;
     private InboxDao inboxDao = null;
+    private final MockMonitor monitor = new MockMonitor();
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -71,7 +73,7 @@ public class PhotoInboxEntryResourceTest {
         when(repository.findByCountryAndId(key9876.getCountry(), key9876.getId())).thenReturn(station9876);
 
         resource = new InboxResource(repository, tempDir.toString(), tempDir.resolve( "toprocess").toString(),
-                tempDir.resolve("processed").toString(), photoDir.toString(), null,
+                tempDir.resolve("processed").toString(), photoDir.toString(), monitor, null,
                 inboxDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org", new MastodonBot());
     }
 
