@@ -11,4 +11,3 @@ mailer:
   "@class": org.railwaystations.api.mail.MockMailer
 photoBaseUrl: https://api.railway-stations.org/photos
 inboxBaseUrl: https://api.railway-stations.org/inbox
-slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}

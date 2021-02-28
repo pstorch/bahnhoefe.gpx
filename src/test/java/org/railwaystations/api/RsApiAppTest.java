@@ -8,7 +8,6 @@ import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,8 +24,6 @@ import org.xml.sax.SAXException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Form;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
@@ -37,18 +34,15 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressFBWarnings("BC_UNCONFIRMED_CAST_OF_RETURN_VALUE")
-@SuppressWarnings("PMD.TooManyStaticImports")
+@SuppressWarnings({"PMD.TooManyStaticImports", "PMD.UnnecessaryModifier"})
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class RsApiAppTest {
 
@@ -154,7 +148,7 @@ public class RsApiAppTest {
     @Test
     public void stationsTxt() throws IOException {
         final Response response = loadRaw(String.format("/de/%s.txt", "stations"), 200);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), StandardCharsets.UTF_8))) {
+        try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), StandardCharsets.UTF_8))) {
             final String header = br.readLine();
             assertThat(header, is("lat\tlon\ttitle\tdescription\ticon\ticonSize\ticonOffset"));
             int count = 0;
@@ -240,7 +234,7 @@ public class RsApiAppTest {
     @Test
     public void photographersTxt() throws IOException {
         final Response response = loadRaw("/de/photographers.txt", 200);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), StandardCharsets.UTF_8))) {
+        try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), StandardCharsets.UTF_8))) {
             final String header = br.readLine();
             assertThat(header, is("count\tphotographer"));
             int count = 0;
@@ -253,52 +247,6 @@ public class RsApiAppTest {
             }
             assertThat(count, is(4));
         }
-    }
-
-    @Test
-    public void slackSearch() throws IOException {
-        final String text = executeSlackCommand("search altstadt");
-        assertThat(text.startsWith("Found:\n"), is(true));
-        assertThat(text.contains("- Meißen Altstadt: Key{country='de', id='8277'}\n"), is(true));
-        assertThat(text.contains("- Neckargemünd Altstadt: Key{country='de', id='8053'}\n"), is(true));
-    }
-
-    private String executeSlackCommand(final String command) throws IOException {
-        final Form input = new Form();
-        input.param("text", command);
-        input.param("token", "dummy");
-        final Entity<Form> entity = Entity.entity(input, MediaType.APPLICATION_FORM_URLENCODED);
-        final Response response = client.target(
-                String.format("http://localhost:%d%s", RULE.getLocalPort(), "/slack"))
-                .request(MediaType.APPLICATION_FORM_URLENCODED)
-                .accept(MediaType.APPLICATION_JSON)
-                .post(entity);
-
-        final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
-        assertThat(jsonNode.get("response_type").asText(), is("in_channel"));
-        return jsonNode.get("text").asText();
-    }
-
-    @Test
-    public void slackImport() throws IOException {
-        assertThat(getStation("/de/stations/5068").hasPhoto(), is(false));
-
-        final File importFile = new File(MySuite.TMP_WORK_DIR, "de/import/Gaby Becker-5068.jpg");
-        FileUtils.write(importFile, "test", StandardCharsets.UTF_8);
-
-        final String text = executeSlackCommand("import");
-        assertThat(text, is("Importing photos"));
-
-        await().atMost(5, SECONDS).until(fileGone(importFile));
-        assertThat(importFile.exists(), is(false));
-
-        final Station stationAfter = getStation("/de/stations/5068");
-        assertThat(stationAfter.hasPhoto(), is(true));
-        assertThat(stationAfter.getPhotographer(), is("Gaby Becker"));
-    }
-
-    private Callable<Boolean> fileGone(final File file) {
-        return () -> !file.exists();
     }
 
     private Station getStation(final String url) {
@@ -318,7 +266,7 @@ public class RsApiAppTest {
     @Test
     public void statisticTxt() throws IOException {
         final Response response = loadRaw("/de/stats.txt", 200);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), StandardCharsets.UTF_8))) {
+        try (final BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)response.getEntity(), StandardCharsets.UTF_8))) {
             final String header = br.readLine();
             assertThat(header, is("name\tvalue"));
             int count = 0;

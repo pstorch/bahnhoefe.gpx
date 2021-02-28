@@ -9,7 +9,6 @@ import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.MatrixMonitor;
 import org.railwaystations.api.monitoring.Monitor;
-import org.railwaystations.api.monitoring.SlackMonitor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -27,8 +26,6 @@ public class RsApiConfiguration extends Configuration {
     private String workDir;
 
     private Mailer mailer;
-
-    private String slackVerificationToken;
 
     private String photoBaseUrl;
 
@@ -50,12 +47,6 @@ public class RsApiConfiguration extends Configuration {
     @JsonProperty("database")
     public DataSourceFactory getDataSourceFactory() {
         return database;
-    }
-
-    public void setSlackMonitorUrl(final String slackMonitorUrl) {
-        if (StringUtils.isNotBlank(slackMonitorUrl)) {
-            this.monitor = new SlackMonitor(slackMonitorUrl);
-        }
     }
 
     public void setMatrixMonitorUrl(final String matrixMonitorUrl) {
@@ -91,14 +82,6 @@ public class RsApiConfiguration extends Configuration {
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = RsApiConfiguration.IDENT)
     public void setMailer(final Mailer mailer) {
         this.mailer = mailer;
-    }
-
-    public String getSlackVerificationToken() {
-        return slackVerificationToken;
-    }
-
-    public void setSlackVerificationToken(final String slackVerificationToken) {
-        this.slackVerificationToken = slackVerificationToken;
     }
 
     public String getPhotoBaseUrl() {

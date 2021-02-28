@@ -3,8 +3,8 @@ package org.railwaystations.api;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.db.CountryDao;
-import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.InboxDao;
+import org.railwaystations.api.db.PhotoDao;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.Country;
 import org.railwaystations.api.model.Photo;
@@ -130,7 +130,7 @@ public class PhotoImporter {
                     report.add(new ReportEntry(true, countryCode, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
                 }
-                final Photo photo = createPhoto(countryCode, country, stationId, user.get(), JPG);
+                final Photo photo = createPhoto(countryCode, country.orElse(null), stationId, user.get(), JPG);
                 photosToImport.put(importFile, photo);
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
@@ -179,7 +179,7 @@ public class PhotoImporter {
         LOG.info("Imported " + importCount + " for " + countryCode);
     }
 
-    public static Photo createPhoto(final String countryCode, final Optional<Country> country, final String stationId, final User user, final String extension) {
+    public static Photo createPhoto(final String countryCode, final Country country, final String stationId, final User user, final String extension) {
         return new Photo(new Station.Key(countryCode, stationId), "/" + countryCode + "/" + stationId + "." + extension, user, System.currentTimeMillis(), getLicense(user.getLicense(), country));
     }
 
@@ -187,9 +187,9 @@ public class PhotoImporter {
      * Gets the applicable license for the given country.
      * We need to override the license for some countries, because of limitations of the "Freedom of panorama".
      */
-    public static String getLicense(final String photographerLicense, final Optional<Country> country) {
-        if (country.isPresent() && StringUtils.isNotBlank(country.get().getOverrideLicense())) {
-            return country.get().getOverrideLicense();
+    public static String getLicense(final String photographerLicense, final Country country) {
+        if (country != null && StringUtils.isNotBlank(country.getOverrideLicense())) {
+            return country.getOverrideLicense();
         }
         return photographerLicense;
     }

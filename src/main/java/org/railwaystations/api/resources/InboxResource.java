@@ -452,7 +452,7 @@ public class InboxResource {
 
         try {
             final File countryDir = new File(photoDir, station.getKey().getCountry());
-            final Photo photo = PhotoImporter.createPhoto(station.getKey().getCountry(), country, station.getKey().getId(), user.get(), inboxEntry.getExtension());
+            final Photo photo = PhotoImporter.createPhoto(station.getKey().getCountry(), country.orElse(null), station.getKey().getId(), user.get(), inboxEntry.getExtension());
             if (station.hasPhoto()) {
                 photoDao.update(photo);
                 FileUtils.deleteQuietly(new File(countryDir, station.getKey().getId() + "." + inboxEntry.getExtension()));

@@ -12,7 +12,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.railwaystations.api.model.InboxEntry;
 import org.railwaystations.api.model.Station;
-import org.railwaystations.api.monitoring.SlackMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +21,7 @@ public class MastodonBot {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private static final Logger LOG = LoggerFactory.getLogger(SlackMonitor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MastodonBot.class);
 
     private String instanceUrl;
     private String token;
