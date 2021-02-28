@@ -102,6 +102,8 @@ public class PhotoInboxEntryResourceTest {
         assertFileWithContentExistsInInbox("image-content", "1.jpg");
         verify(inboxDao).insert(uploadCaptor.capture());
         assertUpload(uploadCaptor.getValue(), "de","4711", null, null);
+
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland - de:4711\nSome Comment\nhttp://inbox.railway-stations.org/1.jpg\nby @nick name\nvia UserAgent"));
     }
 
     private void assertUpload(final InboxEntry inboxEntry, final String countryCode, final String stationId, final String title, final Coordinates coordinates) {
@@ -132,6 +134,8 @@ public class PhotoInboxEntryResourceTest {
         assertFileWithContentExistsInInbox("image-content", "4.jpg");
         verify(inboxDao).insert(uploadCaptor.capture());
         assertUpload(uploadCaptor.getValue(), null,null, "Missing Station", new Coordinates(50.9876, 9.1234));
+
+        assertThat(monitor.getMessages().get(0), equalTo("Photo upload for missing station Missing Station at https://map.railway-stations.org/index.php?mlat=50.9876&mlon=9.1234&zoom=18&layers=M\nSome Comment\nhttp://inbox.railway-stations.org/4.jpg\nby @nick name\nvia UserAgent"));
     }
 
     @ParameterizedTest
@@ -157,6 +161,7 @@ public class PhotoInboxEntryResourceTest {
         assertThat(response.getId(), equalTo(3));
         assertThat(response.getFilename(), equalTo("3.jpg"));
         assertFileWithContentExistsInInbox("image-content", "3.jpg");
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland - de:4711\n\nhttp://inbox.railway-stations.org/3.jpg\nby @someuser\nvia UserAgent"));
     }
 
     @Test
@@ -170,6 +175,7 @@ public class PhotoInboxEntryResourceTest {
         assertThat(response.getId(), equalTo(2));
         assertThat(response.getFilename(), equalTo("2.jpg"));
         assertFileWithContentExistsInInbox("image-content", "2.jpg");
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Lummerland - de:4711\n\nhttp://inbox.railway-stations.org/2.jpg (possible duplicate!)\nby @nick name\nvia UserAgent"));
     }
 
     @Test
@@ -215,6 +221,7 @@ public class PhotoInboxEntryResourceTest {
         assertThat(response.getId(), equalTo(5));
         assertThat(response.getFilename(), equalTo("5.jpg"));
         assertFileWithContentExistsInInbox("image-content", "5.jpg");
+        assertThat(monitor.getMessages().get(0), equalTo("New photo upload for Neverland - de:1234\n\nhttp://inbox.railway-stations.org/5.jpg (possible duplicate!)\nby @nick name\nvia UserAgent"));
     }
 
     @Test
@@ -243,6 +250,7 @@ public class PhotoInboxEntryResourceTest {
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.REVIEW));
         assertThat(response.getId(), equalTo(6));
         assertThat(response.getFilename(), nullValue());
+        assertThat(monitor.getMessages().get(0), equalTo("New problem report for Neverland - de:1234\nOTHER: something is wrong\nby @nick name\nvia UserAgent"));
     }
 
     @Test

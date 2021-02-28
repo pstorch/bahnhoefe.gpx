@@ -180,7 +180,7 @@ public class InboxResource {
         final InboxEntry inboxEntry = new InboxEntry(problemReport.getCountryCode(), problemReport.getStationId(),
                 null, problemReport.getCoordinates(), user.getUser().getId(), null, problemReport.getComment(),
                 problemReport.getType(), null);
-        LOG.info(String.format("New problem report for %s - %s:%s%n%s: %s%nby %s%nvia %s",
+        monitor.sendMessage(String.format("New problem report for %s - %s:%s%n%s: %s%nby %s%nvia %s",
                 station.getTitle(), station.getKey().getCountry(), station.getKey().getId(), problemReport.getType(),
                 StringUtils.trimToEmpty(problemReport.getComment()), user.getUser().getName(), userAgent));
         return new InboxResponse(InboxResponse.InboxResponseState.REVIEW, inboxDao.insert(inboxEntry));
@@ -557,11 +557,11 @@ public class InboxResource {
             }
             inboxUrl = inboxBaseUrl + "/" + URIUtil.encodePath(file.getName());
             if (station != null) {
-                LOG.info(String.format("New photo upload for %s - %s:%s%n%s%n%s%s%nby %s%nvia %s",
+                monitor.sendMessage(String.format("New photo upload for %s - %s:%s%n%s%n%s%s%nby %s%nvia %s",
                         station.getTitle(), station.getKey().getCountry(), station.getKey().getId(),
                         StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getUser().getName(), userAgent));
             } else {
-                LOG.info(String.format("Photo upload for missing station %s at https://map.railway-stations.org/index.php?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%n%s%s%nby %s%nvia %s",
+                monitor.sendMessage(String.format("Photo upload for missing station %s at https://map.railway-stations.org/index.php?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%n%s%s%nby %s%nvia %s",
                         stationTitle, latitude, longitude,
                         StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getUser().getName(), userAgent));
             }
