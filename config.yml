@@ -26,9 +26,12 @@ mailer:
 #  user: ${SMTP_USER:-}
 #  passwd: ${SMTP_PASSWD:-}
 #  from: ${SMTP_FROM:-}
-matrixMonitorUrl: ${MATRIX_MONITOR_URL:-}
-slackMonitorUrl: ${SLACK_MONITOR_URL:-}
-slackVerificationToken: ${SLACK_VERIFICATION_TOKEN:-dummy}
+monitor:
+  "@class": org.railwaystations.api.monitoring.LoggingMonitor
+#  "@class": org.railwaystations.api.monitoring.MatrixMonitor
+#  "uploadUrl": https://matrix.org/_matrix/media/r0/upload
+#  "roomUrl": ${MATRIX_ROOM_URL:-}
+#  "accessToken": ${MATRIX_ACCESS_TOKEN:-}
 photoBaseUrl: http://localhost:8080/photos
 inboxBaseUrl: http://localhost:8080/inbox
 mailVerificationUrl: http://localhost:8088/emailVerification.php?token=

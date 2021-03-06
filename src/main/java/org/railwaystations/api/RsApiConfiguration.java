@@ -4,11 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.api.auth.TokenGenerator;
 import org.railwaystations.api.mail.Mailer;
-import org.railwaystations.api.monitoring.LoggingMonitor;
-import org.railwaystations.api.monitoring.MatrixMonitor;
 import org.railwaystations.api.monitoring.Monitor;
 
 import javax.validation.Valid;
@@ -20,7 +17,7 @@ public class RsApiConfiguration extends Configuration {
 
     private static final String IDENT = "@class";
 
-    private Monitor monitor = new LoggingMonitor();
+    private Monitor monitor;
 
     private TokenGenerator tokenGenerator;
 
@@ -48,12 +45,6 @@ public class RsApiConfiguration extends Configuration {
     @JsonProperty("database")
     public DataSourceFactory getDataSourceFactory() {
         return database;
-    }
-
-    public void setMatrixMonitorUrl(final String matrixMonitorUrl) {
-        if (StringUtils.isNotBlank(matrixMonitorUrl)) {
-            this.monitor = new MatrixMonitor(matrixMonitorUrl);
-        }
     }
 
     public Monitor getMonitor() {
@@ -131,5 +122,10 @@ public class RsApiConfiguration extends Configuration {
 
     public void setMastodonBot(final MastodonBot mastodonBot) {
         this.mastodonBot = mastodonBot;
+    }
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = RsApiConfiguration.IDENT)
+    public void setMonitor(final Monitor monitor) {
+        this.monitor = monitor;
     }
 }

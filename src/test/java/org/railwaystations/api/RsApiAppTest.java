@@ -21,6 +21,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.imageio.ImageIO;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -29,11 +30,12 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Base64;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -343,6 +345,8 @@ public class RsApiAppTest {
         assertThat(response.getStatus(), is(401));
     }
 
+    private final byte[] IMAGE = Base64.getDecoder().decode("/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=");
+
     @Test
     public void photoUploadUnknownStation() throws IOException {
         final Response response = client.target(
@@ -353,19 +357,22 @@ public class RsApiAppTest {
                 .header("Latitude", "50.123")
                 .header("Longitude", "10.123")
                 .header("Comment", "Missing Station")
-                .post(Entity.entity("IMAGE_CONTENT", "image/png"));
+                .post(Entity.entity(IMAGE, ImageUtil.IMAGE_JPEG_MIME_TYPE));
 
         assertThat(response.getStatus(), is(202));
         final JsonNode inboxResponse = MAPPER.readTree((InputStream) response.getEntity());
         assertThat(inboxResponse.get("id"), notNullValue());
         assertThat(inboxResponse.get("filename"), notNullValue());
-        assertThat(inboxResponse.get("crc32").asLong(), is(3035563974L));
+        assertThat(inboxResponse.get("crc32").asLong(), is(312729961L));
 
         // download uploaded photo from inbox
         final Response photoResponse = client.target(
                 String.format("http://localhost:%d%s%s", RULE.getLocalPort(), "/inbox/", inboxResponse.get("filename").asText()))
                 .request().get();
-        assertThat(IOUtils.readFully((InputStream)photoResponse.getEntity(), 13), is("IMAGE_CONTENT".getBytes(Charset.defaultCharset())));
+        final BufferedImage inputImage = ImageIO.read((InputStream)photoResponse.getEntity());
+        assertThat(inputImage, notNullValue());
+        // we cannot binary compare the result anymore, the photos are re-encoded
+        // assertThat(IOUtils.readFully((InputStream)photoResponse.getEntity(), IMAGE.length), is(IMAGE));
     }
 
     @Test

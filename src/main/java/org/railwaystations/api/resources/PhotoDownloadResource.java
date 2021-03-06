@@ -1,24 +1,18 @@
 package org.railwaystations.api.resources;
 
+import org.railwaystations.api.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 @Path("/")
 public class PhotoDownloadResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhotoDownloadResource.class);
-
-    private static final String IMAGE_JPEG = "image/jpeg";
 
     private final File photoDir;
     private final File inboxDir;
@@ -47,32 +41,11 @@ public class PhotoDownloadResource {
         return downloadPhoto(new File(new File(photoDir, countryCode), filename), width);
     }
 
-    private Response downloadPhoto(final File photo, @QueryParam("width") final Integer width) throws IOException {
+    private static Response downloadPhoto(final File photo, @QueryParam("width") final Integer width) throws IOException {
         if (!photo.exists() || !photo.canRead()) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-        if (width != null && width > 0) {
-            final BufferedImage inputImage = ImageIO.read(photo);
-            if (width < inputImage.getWidth()) {
-                final double scale = (double)width / (double)inputImage.getWidth();
-                final int height = (int) (inputImage.getHeight() * scale);
-
-                // creates output image
-                final BufferedImage outputImage = new BufferedImage(width,
-                        height, inputImage.getType());
-
-                // scales the input image to the output image
-                final Graphics2D g2d = outputImage.createGraphics();
-                g2d.drawImage(inputImage, 0, 0, width, height, null);
-                g2d.dispose();
-
-                final ByteArrayOutputStream os = new ByteArrayOutputStream();
-                ImageIO.write(outputImage, "jpg", os);
-
-                return Response.ok(os.toByteArray(), IMAGE_JPEG).build();
-            }
-        }
-        return Response.ok(photo, Files.probeContentType(photo.toPath())).build();
+        return Response.ok(ImageUtil.scalePhoto(photo, width), ImageUtil.IMAGE_JPEG_MIME_TYPE).build();
     }
 
     @GET

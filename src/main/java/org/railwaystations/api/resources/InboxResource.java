@@ -562,11 +562,11 @@ public class InboxResource {
             if (station != null) {
                 monitor.sendMessage(String.format("New photo upload for %s - %s:%s%n%s%n%s%s%nby %s%nvia %s",
                         station.getTitle(), station.getKey().getCountry(), station.getKey().getId(),
-                        StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getUser().getName(), userAgent));
+                        StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getUser().getName(), userAgent), file);
             } else {
                 monitor.sendMessage(String.format("Photo upload for missing station %s at https://map.railway-stations.org/index.php?mlat=%s&mlon=%s&zoom=18&layers=M%n%s%n%s%s%nby %s%nvia %s",
                         stationTitle, latitude, longitude,
-                        StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getUser().getName(), userAgent));
+                        StringUtils.trimToEmpty(comment), inboxUrl, duplicateInfo, user.getUser().getName(), userAgent), file);
             }
         } catch (final IOException e) {
             LOG.error("Error copying the uploaded file to {}", file, e);
