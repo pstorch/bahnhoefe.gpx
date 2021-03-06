@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.railwaystations.api.auth.TokenGenerator;
 import org.railwaystations.api.mail.Mailer;
 import org.railwaystations.api.monitoring.LoggingMonitor;
 import org.railwaystations.api.monitoring.MatrixMonitor;

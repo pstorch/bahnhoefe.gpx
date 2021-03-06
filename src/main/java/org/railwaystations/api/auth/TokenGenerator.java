@@ -1,4 +1,4 @@
-package org.railwaystations.api;
+package org.railwaystations.api.auth;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.railwaystations.api.model.User;

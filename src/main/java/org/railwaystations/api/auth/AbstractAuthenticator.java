@@ -1,7 +1,5 @@
 package org.railwaystations.api.auth;
 
-import org.railwaystations.api.PasswordUtil;
-import org.railwaystations.api.TokenGenerator;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.model.User;
 import org.slf4j.Logger;

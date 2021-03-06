@@ -4,7 +4,7 @@ import io.dropwizard.auth.Auth;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.http.HttpStatus;
-import org.railwaystations.api.PasswordUtil;
+import org.railwaystations.api.auth.PasswordUtil;
 import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.mail.Mailer;

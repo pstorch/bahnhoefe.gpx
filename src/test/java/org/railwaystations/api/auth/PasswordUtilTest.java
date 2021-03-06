@@ -1,4 +1,4 @@
-package org.railwaystations.api;
+package org.railwaystations.api.auth;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;

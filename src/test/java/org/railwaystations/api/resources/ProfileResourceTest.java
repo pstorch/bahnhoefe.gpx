@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.railwaystations.api.PasswordUtil;
+import org.railwaystations.api.auth.PasswordUtil;
 import org.railwaystations.api.auth.AuthUser;
 import org.railwaystations.api.db.UserDao;
 import org.railwaystations.api.mail.MockMailer;
