@@ -82,7 +82,7 @@
 		<dependency>
 			<groupId>com.jcabi</groupId>
 			<artifactId>jcabi-http</artifactId>
-			<version>1.17.5</version>
+			<version>1.17.6</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
