@@ -8,8 +8,8 @@ database:
 workDir: ${RSAPI_WORK:-/tmp/rsapi}
 salt: ${SALT:-dummy}
 mailer:
-  "@class": org.railwaystations.api.mail.MockMailer
+  "@class": org.railwaystations.rsapi.mail.MockMailer
 monitor:
-  "@class": org.railwaystations.api.monitoring.LoggingMonitor
+  "@class": org.railwaystations.rsapi.monitoring.LoggingMonitor
 photoBaseUrl: https://api.railway-stations.org/photos
 inboxBaseUrl: https://api.railway-stations.org/inbox

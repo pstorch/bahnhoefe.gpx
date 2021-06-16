@@ -18,17 +18,17 @@ database:
 workDir: ${RSAPI_WORK:-/var/rsapi}
 salt: ${SALT:-dummy}
 mailer:
-  "@class": org.railwaystations.api.mail.MockMailer
+  "@class": org.railwaystations.rsapi.mail.MockMailer
 #mailer:
-#  "@class": org.railwaystations.api.mail.SmtpMailer
+#  "@class": org.railwaystations.rsapi.mail.SmtpMailer
 #  host: ${SMTP_HOST:-localhost}
 #  port: ${SMTP_PORT:-25}
 #  user: ${SMTP_USER:-}
 #  passwd: ${SMTP_PASSWD:-}
 #  from: ${SMTP_FROM:-}
 monitor:
-  "@class": org.railwaystations.api.monitoring.LoggingMonitor
-#  "@class": org.railwaystations.api.monitoring.MatrixMonitor
+  "@class": org.railwaystations.rsapi.monitoring.LoggingMonitor
+#  "@class": org.railwaystations.rsapi.monitoring.MatrixMonitor
 #  "uploadUrl": https://matrix.org/_matrix/media/r0/upload
 #  "roomUrl": ${MATRIX_ROOM_URL:-}
 #  "accessToken": ${MATRIX_ACCESS_TOKEN:-}
