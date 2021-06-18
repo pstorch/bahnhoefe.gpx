@@ -2,19 +2,15 @@ package org.railwaystations.rsapi.resources;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.auth.Auth;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.entity.InputStreamEntity;
-import org.eclipse.jetty.util.URIUtil;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.railwaystations.api.ImageUtil;
 import org.railwaystations.rsapi.MastodonBot;
 import org.railwaystations.rsapi.PhotoImporter;
 import org.railwaystations.rsapi.StationsRepository;
+import org.railwaystations.rsapi.WorkDir;
 import org.railwaystations.rsapi.auth.AuthUser;
 import org.railwaystations.rsapi.auth.UploadTokenAuthenticator;
 import org.railwaystations.rsapi.auth.UploadTokenCredentials;
@@ -26,13 +22,18 @@ import org.railwaystations.rsapi.model.*;
 import org.railwaystations.rsapi.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.UriUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,7 +45,7 @@ import java.util.Optional;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedOutputStream;
 
-@Path("/")
+@RestController
 public class InboxResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(InboxResource.class);
@@ -54,29 +55,22 @@ public class InboxResource {
     private static final long MAX_SIZE = 20_000_000L;
 
     private final StationsRepository repository;
-    private final File inboxDir;
-    private final File photoDir;
+    private final WorkDir workDir;
     private final UploadTokenAuthenticator authenticator;
     private final InboxDao inboxDao;
     private final UserDao userDao;
     private final CountryDao countryDao;
     private final PhotoDao photoDao;
     private final String inboxBaseUrl;
-    private final File inboxToProcessDir;
-    private final File inboxProcessedDir;
     private final MastodonBot mastodonBot;
     private final Monitor monitor;
 
-    public InboxResource(final StationsRepository repository, final String inboxDir,
-                         final String inboxToProcessDir, final String inboxProcessedDir, final String photoDir,
+    public InboxResource(final StationsRepository repository, final WorkDir workDir,
                          final Monitor monitor, final UploadTokenAuthenticator authenticator,
                          final InboxDao inboxDao, final UserDao userDao, final CountryDao countryDao,
                          final PhotoDao photoDao, final String inboxBaseUrl, final MastodonBot mastodonBot) {
         this.repository = repository;
-        this.inboxDir = new File(inboxDir);
-        this.inboxToProcessDir = new File(inboxToProcessDir);
-        this.inboxProcessedDir = new File(inboxProcessedDir);
-        this.photoDir = new File(photoDir);
+        this.workDir = workDir;
         this.monitor = monitor;
         this.authenticator = authenticator;
         this.inboxDao = inboxDao;
@@ -91,33 +85,30 @@ public class InboxResource {
      * Not part of the "official" API.
      * Supports upload of photos via the website.
      */
-    @POST
-    @Path("photoUpload")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String photoUpload(@HeaderParam("User-Agent") final String userAgent,
-                              @FormDataParam("email") final String email,
-                              @FormDataParam("uploadToken") final String uploadToken,
-                              @FormDataParam("stationId") final String stationId,
-                              @FormDataParam("countryCode") final String countryCode,
-                              @FormDataParam("stationTitle") final String stationTitle,
-                              @FormDataParam("latitude") final Double latitude,
-                              @FormDataParam("longitude") final Double longitude,
-                              @FormDataParam("comment") final String comment,
-                              @FormDataParam("active") final Boolean active,
-                              @FormDataParam("file") final InputStream file,
-                              @FormDataParam("file") final FormDataContentDisposition fd,
-                              @HeaderParam("Referer") final String referer) throws JsonProcessingException {
-        LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, fd.getFileName());
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, value = "/photoUpload")
+    public String photoUpload(@RequestHeader("User-Agent") final String userAgent,
+                              @RequestPart("email") final String email,
+                              @RequestPart("uploadToken") final String uploadToken,
+                              @RequestPart("stationId") final String stationId,
+                              @RequestPart("countryCode") final String countryCode,
+                              @RequestPart("stationTitle") final String stationTitle,
+                              @RequestPart("latitude") final Double latitude,
+                              @RequestPart("longitude") final Double longitude,
+                              @RequestPart("comment") final String comment,
+                              @RequestPart("active") final Boolean active,
+                              @RequestPart("file") final MultipartFile file,
+                              @RequestHeader("Referer") final String referer) throws JsonProcessingException {
+        LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, file.getName());
 
         try {
             final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
             if (authUser.isEmpty() || !authUser.get().getUser().isEmailVerified()) {
-                final InboxResponse response = consumeBodyAndReturn(file, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED));
+                final InboxResponse response = consumeBodyAndReturn(file.getInputStream(), new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED));
                 return createIFrameAnswer(response, referer);
             }
 
-            final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fd.getFileName());
-            final InboxResponse response = uploadPhoto(userAgent, file, StringUtils.trimToNull(stationId),
+            final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(file.getName());
+            final InboxResponse response = uploadPhoto(userAgent, file.getInputStream(), StringUtils.trimToNull(stationId),
                     StringUtils.trimToNull(countryCode), contentType, stationTitle, latitude, longitude, comment, active, authUser.get());
             return createIFrameAnswer(response, referer);
         } catch (final Exception e) {
@@ -126,25 +117,22 @@ public class InboxResource {
         }
     }
 
-    @POST
-    @Path("photoUpload")
-    @Consumes({ImageUtil.IMAGE_PNG, ImageUtil.IMAGE_JPEG})
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response photoUpload(final InputStream body,
-                                @HeaderParam("User-Agent") final String userAgent,
-                                @HeaderParam("Station-Id") final String stationId,
-                                @HeaderParam("Country") final String country,
-                                @HeaderParam("Content-Type") final String contentType,
-                                @HeaderParam("Station-Title") final String encStationTitle,
-                                @HeaderParam("Latitude") final Double latitude,
-                                @HeaderParam("Longitude") final Double longitude,
-                                @HeaderParam("Comment") final String encComment,
-                                @HeaderParam("Active") final Boolean active,
-                                @Auth final AuthUser user) {
+    @PostMapping(consumes = {ImageUtil.IMAGE_PNG, ImageUtil.IMAGE_JPEG}, produces = MediaType.APPLICATION_JSON_VALUE, value = "/photoUpload")
+    public ResponseEntity<? extends Object> photoUpload(final InputStream body,
+                                @RequestHeader("User-Agent") final String userAgent,
+                                @RequestHeader("Station-Id") final String stationId,
+                                @RequestHeader("Country") final String country,
+                                @RequestHeader("Content-Type") final String contentType,
+                                @RequestHeader("Station-Title") final String encStationTitle,
+                                @RequestHeader("Latitude") final Double latitude,
+                                @RequestHeader("Longitude") final Double longitude,
+                                @RequestHeader("Comment") final String encComment,
+                                @RequestHeader("Active") final Boolean active,
+                                @AuthenticationPrincipal final AuthUser user) {
         if (!user.getUser().isEmailVerified()) {
             LOG.info("Photo upload failed for user {}, email not verified", user.getName());
             final InboxResponse response = consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED,"Email not verified"));
-            return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
         final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, StandardCharsets.UTF_8) : null;
         final String comment = encComment != null ? URLDecoder.decode(encComment, StandardCharsets.UTF_8) : null;
@@ -152,16 +140,13 @@ public class InboxResource {
                 user.getName(), country, stationId, latitude, longitude, stationTitle, contentType);
         final InboxResponse inboxResponse = uploadPhoto(userAgent, body, StringUtils.trimToNull(stationId),
                 StringUtils.trimToNull(country), contentType, stationTitle, latitude, longitude, comment, active, user);
-        return Response.status(inboxResponse.getState().getResponseStatus()).entity(inboxResponse).build();
+        return new ResponseEntity<>(inboxResponse, inboxResponse.getState().getResponseStatus());
     }
 
-    @POST
-    @Path("reportProblem")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public InboxResponse reportProblem(@HeaderParam("User-Agent") final String userAgent,
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, value = "/reportProblem")
+    public InboxResponse reportProblem(@RequestHeader("User-Agent") final String userAgent,
                                        @NotNull() final ProblemReport problemReport,
-                                       @Auth final AuthUser user) {
+                                       @AuthenticationPrincipal final AuthUser user) {
         if (!user.getUser().isEmailVerified()) {
             LOG.info("New problem report failed for user {}, email not verified", user.getName());
             return new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED, "Email not verified");
@@ -188,19 +173,14 @@ public class InboxResource {
         return new InboxResponse(InboxResponse.InboxResponseState.REVIEW, inboxDao.insert(inboxEntry));
     }
 
-    @GET
-    @Path("publicInbox")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/publicInbox")
     public List<PublicInboxEntry> publicInbox() {
         return inboxDao.findPublicInboxEntries();
     }
 
-    @POST
-    @Path("userInbox")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, value = "/userInbox")
     @SuppressWarnings("PMD.UselessParentheses")
-    public List<InboxStateQuery> userInbox(@Auth final AuthUser user, @NotNull final List<InboxStateQuery> queries) {
+    public List<InboxStateQuery> userInbox(@AuthenticationPrincipal final AuthUser user, @NotNull final List<InboxStateQuery> queries) {
         LOG.info("Query uploadStatus for Nickname: {}", user.getName());
 
         for (final InboxStateQuery query : queries) {
@@ -244,11 +224,9 @@ public class InboxResource {
         return queries;
     }
 
-    @GET
     @RolesAllowed("ADMIN")
-    @Path("adminInbox")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<InboxEntry> adminInbox(@Auth final AuthUser user) {
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/adminInbox")
+    public List<InboxEntry> adminInbox(@AuthenticationPrincipal final AuthUser user) {
         final List<InboxEntry> pendingInboxEntries = inboxDao.findPendingInboxEntries();
         for (final InboxEntry inboxEntry : pendingInboxEntries) {
             final String filename = inboxEntry.getFilename();
@@ -268,17 +246,15 @@ public class InboxResource {
     }
 
     private boolean isProcessed(final String filename) {
-        return filename != null && new File(inboxProcessedDir, filename).exists();
+        return filename != null && new File(workDir.getInboxProcessedDir(), filename).exists();
     }
 
-    @POST
     @RolesAllowed("ADMIN")
-    @Path("adminInbox")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response adminInbox(@Auth final AuthUser user, final InboxEntry command) {
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/adminInbox")
+    public ResponseEntity<? extends Object> adminInbox(@AuthenticationPrincipal final AuthUser user, final InboxEntry command) {
         final InboxEntry inboxEntry = inboxDao.findById(command.getId());
         if (inboxEntry == null || inboxEntry.isDone()) {
-            throw new WebApplicationException("No pending inbox entry found", Response.Status.BAD_REQUEST);
+            return new ResponseEntity<>("No pending inbox entry found", HttpStatus.BAD_REQUEST);
         }
         switch (command.getCommand()) {
             case REJECT :
@@ -304,7 +280,7 @@ public class InboxResource {
                 break;
             case CHANGE_NAME:
                 if (StringUtils.isBlank(command.getTitle())) {
-                    throw new WebApplicationException("Empty new title: " + command.getCommand(), Response.Status.BAD_REQUEST);
+                    return new ResponseEntity<>("Empty new title: " + command.getTitle(), HttpStatus.BAD_REQUEST);
                 }
                 changeStationTitle(inboxEntry, command.getTitle());
                 break;
@@ -312,10 +288,10 @@ public class InboxResource {
                 updateLocation(inboxEntry, command);
                 break;
             default:
-                throw new WebApplicationException("Unexpected command value: " + command.getCommand(), Response.Status.BAD_REQUEST);
+                return new ResponseEntity<>("Unexpected command value: " + command.getCommand(), HttpStatus.BAD_REQUEST);
         }
 
-        return Response.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private void updateLocation(final InboxEntry inboxEntry, final InboxEntry command) {
@@ -324,7 +300,7 @@ public class InboxResource {
             coordinates = command.getCoordinates();
         }
         if (coordinates == null || !coordinates.isValid()) {
-            throw new WebApplicationException("Can't update location, coordinates: " + command.getCommand(), Response.Status.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can't update location, coordinates: " + command.getCommand());
         }
 
         final Station station = assertStationExists(inboxEntry);
@@ -332,17 +308,13 @@ public class InboxResource {
         inboxDao.done(inboxEntry.getId());
     }
 
-    @GET
     @RolesAllowed("ADMIN")
-    @Path("adminInboxCount")
-    @Produces(MediaType.APPLICATION_JSON)
-    public InboxCountResponse adminInboxCount(@Auth final AuthUser user) {
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/adminInboxCount")
+    public InboxCountResponse adminInboxCount(@AuthenticationPrincipal final AuthUser user) {
         return new InboxCountResponse(inboxDao.countPendingInboxEntries());
     }
 
-    @GET
-    @Path("nextZ")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/nextZ")
     public NextZResponse nextZ() {
         return new NextZResponse(repository.getNextZ());
     }
@@ -386,14 +358,14 @@ public class InboxResource {
     private Station assertStationExists(final InboxEntry inboxEntry) {
         final Station station = repository.findByCountryAndId(inboxEntry.getCountryCode(), inboxEntry.getStationId());
         if (station == null) {
-           throw new WebApplicationException("Station not found", Response.Status.BAD_REQUEST);
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Station not found");
         }
         return station;
     }
 
     private void importUpload(final InboxEntry inboxEntry, final InboxEntry command) {
         final File originalFile = getUploadFile(inboxEntry.getFilename());
-        final File processedFile = new File(inboxProcessedDir, inboxEntry.getFilename());
+        final File processedFile = new File(workDir.getInboxProcessedDir(), inboxEntry.getFilename());
         final File fileToImport = processedFile.exists() ? processedFile : originalFile;
 
         LOG.info("Importing upload {}, {}", inboxEntry.getId(), fileToImport);
@@ -407,22 +379,22 @@ public class InboxResource {
         }
         if (station == null) {
             if (!command.createStation() || StringUtils.isNotBlank(inboxEntry.getStationId())) {
-                throw new WebApplicationException("Station not found", Response.Status.BAD_REQUEST);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Station not found");
             }
 
             // create station
             final Optional<Country> country = countryDao.findById(StringUtils.lowerCase(command.getCountryCode()));
             if (country.isEmpty()) {
-                throw new WebApplicationException("Country not found", Response.Status.BAD_REQUEST);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Country not found");
             }
             if (StringUtils.isBlank(command.getStationId())) {
-                throw new WebApplicationException("Station ID can't be empty", Response.Status.BAD_REQUEST);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Station ID can't be empty");
             }
             if (hasConflict(inboxEntry.getId(), inboxEntry.getCoordinates()) && !command.ignoreConflict()) {
-                throw new WebApplicationException("There is a conflict with a nearby station", Response.Status.BAD_REQUEST);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There is a conflict with a nearby station");
             }
             if (command.hasCoords() && !command.getCoordinates().isValid()) {
-                throw new WebApplicationException("Lat/Lon out of range", Response.Status.BAD_REQUEST);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lat/Lon out of range");
             }
 
             Coordinates coordinates = inboxEntry.getCoordinates();
@@ -437,20 +409,20 @@ public class InboxResource {
         }
 
         if (station.hasPhoto() && !command.ignoreConflict()) {
-            throw new WebApplicationException("Station already has a photo", Response.Status.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Station already has a photo");
         }
         if (hasConflict(inboxEntry.getId(), station) && !command.ignoreConflict()) {
-            throw new WebApplicationException("There is a conflict with another upload", Response.Status.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There is a conflict with another upload");
         }
 
         final Optional<User> user = userDao.findById(inboxEntry.getPhotographerId());
         final Optional<Country> country = countryDao.findById(StringUtils.lowerCase(station.getKey().getCountry()));
         if (country.isEmpty()) {
-            throw new WebApplicationException("Country not found", Response.Status.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Country not found");
         }
 
         try {
-            final File countryDir = new File(photoDir, station.getKey().getCountry());
+            final File countryDir = new File(workDir.getPhotosDir(), station.getKey().getCountry());
             final Photo photo = PhotoImporter.createPhoto(station.getKey().getCountry(), country.orElse(null), station.getKey().getId(), user.get(), inboxEntry.getExtension());
             if (station.hasPhoto()) {
                 photoDao.update(photo);
@@ -465,13 +437,13 @@ public class InboxResource {
             } else {
                 PhotoImporter.copyFile(originalFile, countryDir, station.getKey().getId(), inboxEntry.getExtension());
             }
-            FileUtils.moveFileToDirectory(originalFile, new File(inboxDir, "done"), true);
+            FileUtils.moveFileToDirectory(originalFile, new File(workDir.getInboxDir(), "done"), true);
             inboxDao.done(inboxEntry.getId());
             LOG.info("Upload {} accepted: {}", inboxEntry.getId(), fileToImport);
             mastodonBot.tootNewPhoto(repository.findByKey(station.getKey()), inboxEntry);
         } catch (final Exception e) {
             LOG.error("Error importing upload {} photo {}", inboxEntry.getId(), fileToImport);
-            throw new WebApplicationException("Error moving file: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error moving file: " + e.getMessage());
         }
     }
 
@@ -486,10 +458,10 @@ public class InboxResource {
         LOG.info("Rejecting upload {}, {}, {}", inboxEntry.getId(), rejectReason, file);
 
         try {
-            final File rejectDir = new File(inboxDir, "rejected");
+            final File rejectDir = new File(workDir.getInboxDir(), "rejected");
             FileUtils.moveFileToDirectory(file, rejectDir, true);
-            FileUtils.deleteQuietly(new File(inboxToProcessDir, inboxEntry.getFilename()));
-            FileUtils.deleteQuietly(new File(inboxProcessedDir, inboxEntry.getFilename()));
+            FileUtils.deleteQuietly(new File(workDir.getInboxToProcessDir(), inboxEntry.getFilename()));
+            FileUtils.deleteQuietly(new File(workDir.getInboxProcessedDir(), inboxEntry.getFilename()));
         } catch (final IOException e) {
             LOG.warn("Unable to move rejected file {}", file, e);
         }
@@ -539,7 +511,7 @@ public class InboxResource {
             LOG.info("Writing photo to {}", file);
 
             // write the file to the inbox directory
-            FileUtils.forceMkdir(inboxDir);
+            FileUtils.forceMkdir(workDir.getInboxDir());
             final CheckedOutputStream cos = new CheckedOutputStream(new FileOutputStream(file), new CRC32());
             final long bytesRead = IOUtils.copyLarge(body, cos, 0L, MAX_SIZE);
             if (bytesRead == MAX_SIZE) {
@@ -551,13 +523,13 @@ public class InboxResource {
             inboxDao.updateCrc32(id, crc32);
 
             // additionally write the file to the input directory for Vsion.AI
-            FileUtils.copyFileToDirectory(file, inboxToProcessDir, true);
+            FileUtils.copyFileToDirectory(file, workDir.getInboxToProcessDir(), true);
 
             String duplicateInfo = "";
             if (conflict) {
                 duplicateInfo = " (possible duplicate!)";
             }
-            inboxUrl = inboxBaseUrl + "/" + URIUtil.encodePath(file.getName());
+            inboxUrl = inboxBaseUrl + "/" + UriUtils.encodePath(file.getName(), StandardCharsets.UTF_8);
             if (station != null) {
                 monitor.sendMessage(String.format("New photo upload for %s - %s:%s%n%s%n%s%s%nby %s%nvia %s",
                         station.getTitle(), station.getKey().getCountry(), station.getKey().getId(),
@@ -576,7 +548,7 @@ public class InboxResource {
     }
 
     private File getUploadFile(final String filename) {
-        return new File(inboxDir, filename);
+        return new File(workDir.getInboxDir(), filename);
     }
 
     private String createIFrameAnswer(final InboxResponse response, final String referer) throws JsonProcessingException {
@@ -604,9 +576,8 @@ public class InboxResource {
 
     private InboxResponse consumeBodyAndReturn(final InputStream body, final InboxResponse response) {
         if (body != null) {
-            final InputStreamEntity inputStreamEntity = new InputStreamEntity(body);
             try {
-                inputStreamEntity.writeTo(NullOutputStream.NULL_OUTPUT_STREAM);
+                IOUtils.copy(body, NullOutputStream.NULL_OUTPUT_STREAM);
             } catch (final IOException e) {
                 LOG.warn("Unable to consume body", e);
             }

@@ -1,67 +1,74 @@
 package org.railwaystations.rsapi.resources;
 
-import org.railwaystations.rsapi.ImageUtil;
+import org.railwaystations.rsapi.WorkDir;
+import org.railwaystations.rsapi.utils.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 
-@Path("/")
 public class PhotoDownloadResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhotoDownloadResource.class);
 
-    private final File photoDir;
-    private final File inboxDir;
-    private final File inboxProcessedDir;
+    private final WorkDir workDir;
 
-    public PhotoDownloadResource(final String photoDir, final String inboxDir, final String inboxProcessedDir) {
-        this.photoDir = new File(photoDir);
-        this.inboxDir = new File(inboxDir);
-        this.inboxProcessedDir = new File(inboxProcessedDir);
+    public PhotoDownloadResource(final WorkDir workDir) {
+        this.workDir = workDir;
     }
 
-    @GET
-    @Path("fotos/{countryCode}/{filename}")
-    public Response fotos(@PathParam("countryCode") final String countryCode,
-                          @PathParam("filename") final String filename,
-                          @QueryParam("width") final Integer width) throws IOException {
+    @GetMapping("/fotos/{countryCode}/{filename}")
+    public Mono<ServerResponse> fotos(@PathVariable("countryCode") final String countryCode,
+                                @PathVariable("filename") final String filename,
+                                @RequestParam("width") final Integer width) throws IOException {
         return photos(countryCode, filename, width);
     }
 
-    @GET
-    @Path("photos/{countryCode}/{filename}")
-    public Response photos(@PathParam("countryCode") final String countryCode,
-                       @PathParam("filename") final String filename,
-                       @QueryParam("width") final Integer width) throws IOException {
+    @GetMapping("/photos/{countryCode}/{filename}")
+    public Mono<ServerResponse> photos(@PathVariable("countryCode") final String countryCode,
+                       @PathVariable("filename") final String filename,
+                       @RequestParam("width") final Integer width) throws IOException {
         LOG.info("Download photo country={}, file={}", countryCode, filename);
-        return downloadPhoto(new File(new File(photoDir, countryCode), filename), width);
+        return downloadPhoto(new File(new File(workDir.getPhotosDir(), countryCode), filename), width);
     }
 
-    private static Response downloadPhoto(final File photo, @QueryParam("width") final Integer width) throws IOException {
+    private static Mono<ServerResponse> downloadPhoto(final File photo, @RequestParam("width") final Integer width) throws IOException {
         if (!photo.exists() || !photo.canRead()) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return Response.ok(ImageUtil.scalePhoto(photo, width), ImageUtil.extensionToMimeType(ImageUtil.getExtension(photo.getName()))).build();
+
+        DataBuffer buffer = new DefaultDataBufferFactory().wrap(ImageUtil.scalePhoto(photo, width));
+        return ServerResponse
+                .ok()
+                .contentType(ImageUtil.extensionToMimeType(ImageUtil.getExtension(photo.getName()))
+                .body(BodyInserters.fromDataBuffers(Flux.just(buffer)));
     }
 
-    @GET
-    @Path("inbox/{filename}")
-    public Response inbox(@PathParam("filename") final String filename,
-                          @QueryParam("width") final Integer width) throws IOException {
+    @GetMapping("/inbox/{filename}")
+    public Mono<ServerResponse> inbox(@PathVariable("filename") final String filename,
+                          @RequestParam("width") final Integer width) throws IOException {
         LOG.info("Download inbox file={}", filename);
-        return downloadPhoto(new File(inboxDir, filename), width);
+        return downloadPhoto(new File(workDir.getInboxDir(), filename), width);
     }
 
-    @GET
-    @Path("inbox/processed/{filename}")
-    public Response inboxProcessed(@PathParam("filename") final String filename,
-                                   @QueryParam("width") final Integer width) throws IOException {
+    @GetMapping("/inbox/processed/{filename}")
+    public Mono<ServerResponse> inboxProcessed(@PathVariable("filename") final String filename,
+                                   @RequestParam("width") final Integer width) throws IOException {
         LOG.info("Download inbox file={}", filename);
-        return downloadPhoto(new File(inboxProcessedDir, filename), width);
+        return downloadPhoto(new File(workDir.getInboxProcessedDir(), filename), width);
     }
 
 }

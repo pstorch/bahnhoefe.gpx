@@ -2,15 +2,14 @@ package org.railwaystations.rsapi.resources;
 
 import org.railwaystations.rsapi.db.CountryDao;
 import org.railwaystations.rsapi.model.Country;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 
-@Path("/")
+@RestController
 public class CountriesResource {
 
     private final CountryDao countryDao;
@@ -19,10 +18,8 @@ public class CountriesResource {
         this.countryDao = countryDao;
     }
 
-    @GET
-    @Path("countries")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Collection<Country> list(@QueryParam("onlyActive") final Boolean onlyActive) {
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/countries")
+    public Collection<Country> list(@RequestParam("onlyActive") final Boolean onlyActive) {
         return countryDao.list(onlyActive == null || onlyActive);
     }
 

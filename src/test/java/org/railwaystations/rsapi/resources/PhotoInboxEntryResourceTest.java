@@ -16,6 +16,7 @@ import org.railwaystations.rsapi.db.PhotoDao;
 import org.railwaystations.rsapi.db.UserDao;
 import org.railwaystations.rsapi.model.*;
 import org.railwaystations.rsapi.monitoring.MockMonitor;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.ws.rs.core.Response;
 import java.io.*;
@@ -74,7 +75,7 @@ public class PhotoInboxEntryResourceTest {
 
         resource = new InboxResource(repository, tempDir.toString(), tempDir.resolve( "toprocess").toString(),
                 tempDir.resolve("processed").toString(), photoDir.toString(), monitor, null,
-                inboxDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org", new MastodonBot());
+                inboxDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org", new MastodonBot(WebClient.builder(), null));
     }
 
     private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,

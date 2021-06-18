@@ -1,8 +1,7 @@
 package org.railwaystations.rsapi.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import javax.ws.rs.core.Response;
+import org.springframework.http.HttpStatus;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class InboxResponse {
@@ -63,22 +62,22 @@ public class InboxResponse {
     }
 
     public enum InboxResponseState {
-        REVIEW(Response.Status.ACCEPTED),
-        LAT_LON_OUT_OF_RANGE(Response.Status.BAD_REQUEST),
-        NOT_ENOUGH_DATA(Response.Status.BAD_REQUEST),
-        UNSUPPORTED_CONTENT_TYPE(Response.Status.BAD_REQUEST),
-        PHOTO_TOO_LARGE(Response.Status.REQUEST_ENTITY_TOO_LARGE),
-        CONFLICT(Response.Status.CONFLICT),
-        UNAUTHORIZED(Response.Status.UNAUTHORIZED),
-        ERROR(Response.Status.INTERNAL_SERVER_ERROR);
+        REVIEW(HttpStatus.ACCEPTED),
+        LAT_LON_OUT_OF_RANGE(HttpStatus.BAD_REQUEST),
+        NOT_ENOUGH_DATA(HttpStatus.BAD_REQUEST),
+        UNSUPPORTED_CONTENT_TYPE(HttpStatus.BAD_REQUEST),
+        PHOTO_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE),
+        CONFLICT(HttpStatus.CONFLICT),
+        UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
+        ERROR(HttpStatus.INTERNAL_SERVER_ERROR);
 
-        final Response.Status responseStatus;
+        final HttpStatus responseStatus;
 
-        InboxResponseState(final Response.Status responseStatus) {
+        InboxResponseState(final HttpStatus responseStatus) {
             this.responseStatus = responseStatus;
         }
 
-        public Response.Status getResponseStatus() {
+        public HttpStatus getResponseStatus() {
             return responseStatus;
         }
     }

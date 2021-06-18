@@ -1,4 +1,4 @@
-package org.railwaystations.rsapi;
+package org.railwaystations.rsapi.utils;
 
 import org.apache.commons.lang3.StringUtils;
 
