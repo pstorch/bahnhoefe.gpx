@@ -117,18 +117,18 @@ public class InboxResource {
         }
     }
 
-    @PostMapping(consumes = {ImageUtil.IMAGE_PNG, ImageUtil.IMAGE_JPEG}, produces = MediaType.APPLICATION_JSON_VALUE, value = "/photoUpload")
-    public ResponseEntity<? extends Object> photoUpload(final InputStream body,
-                                @RequestHeader("User-Agent") final String userAgent,
-                                @RequestHeader("Station-Id") final String stationId,
-                                @RequestHeader("Country") final String country,
-                                @RequestHeader("Content-Type") final String contentType,
-                                @RequestHeader("Station-Title") final String encStationTitle,
-                                @RequestHeader("Latitude") final Double latitude,
-                                @RequestHeader("Longitude") final Double longitude,
-                                @RequestHeader("Comment") final String encComment,
-                                @RequestHeader("Active") final Boolean active,
-                                @AuthenticationPrincipal final AuthUser user) {
+    @PostMapping(consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE, value = "/photoUpload")
+    public ResponseEntity<?> photoUpload(final InputStream body,
+                                         @RequestHeader("User-Agent") final String userAgent,
+                                         @RequestHeader("Station-Id") final String stationId,
+                                         @RequestHeader("Country") final String country,
+                                         @RequestHeader("Content-Type") final String contentType,
+                                         @RequestHeader("Station-Title") final String encStationTitle,
+                                         @RequestHeader("Latitude") final Double latitude,
+                                         @RequestHeader("Longitude") final Double longitude,
+                                         @RequestHeader("Comment") final String encComment,
+                                         @RequestHeader("Active") final Boolean active,
+                                         @AuthenticationPrincipal final AuthUser user) {
         if (!user.getUser().isEmailVerified()) {
             LOG.info("Photo upload failed for user {}, email not verified", user.getName());
             final InboxResponse response = consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED,"Email not verified"));
@@ -251,7 +251,7 @@ public class InboxResource {
 
     @RolesAllowed("ADMIN")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/adminInbox")
-    public ResponseEntity<? extends Object> adminInbox(@AuthenticationPrincipal final AuthUser user, final InboxEntry command) {
+    public ResponseEntity<?> adminInbox(@AuthenticationPrincipal final AuthUser user, final InboxEntry command) {
         final InboxEntry inboxEntry = inboxDao.findById(command.getId());
         if (inboxEntry == null || inboxEntry.isDone()) {
             return new ResponseEntity<>("No pending inbox entry found", HttpStatus.BAD_REQUEST);

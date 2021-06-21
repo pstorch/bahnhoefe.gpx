@@ -1,15 +1,13 @@
 package org.railwaystations.rsapi.resources;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/")
+@RestController
 public class RootResource {
 
-    @GET
-    @Produces({MediaType.TEXT_HTML})
+    @GetMapping(produces = MediaType.TEXT_HTML_VALUE, value = "/")
     public String  get() {
         return "<html><head><title>RSAPI</title></head><body><h1>RSAPI</h1><p>Documentation: <a href=\"https://github.com/RailwayStations/RSAPI/blob/master/swagger.yaml\">swagger.yaml</a></body></html>";
     }

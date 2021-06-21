@@ -1,13 +1,15 @@
 package org.railwaystations.rsapi.resources;
 
 import org.railwaystations.rsapi.StationsRepository;
-import org.railwaystations.rsapi.writer.PhotographersTxtWriter;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 import java.util.Map;
 
-@Path("/")
+@RestController
 public class PhotographersResource {
 
     private static final String COUNTRY = "country";
@@ -18,17 +20,13 @@ public class PhotographersResource {
         this.repository = repository;
     }
 
-    @GET
-    @Path("photographers")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", PhotographersTxtWriter.TEXT_PLAIN + ";charset=UTF-8"})
-    public Map<String, Long> get(@QueryParam(PhotographersResource.COUNTRY) final String country) {
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8", MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8"}, value = "/photographers")
+    public Map<String, Long> get(@RequestParam(PhotographersResource.COUNTRY) final String country) {
         return getWithCountry(country);
     }
 
-    @GET
-    @Path("{country}/photographers")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", PhotographersTxtWriter.TEXT_PLAIN + ";charset=UTF-8"})
-    public Map<String, Long> getWithCountry(@PathParam(PhotographersResource.COUNTRY) final String country) {
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8", MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8"}, value = "/{country}/photographers")
+    public Map<String, Long> getWithCountry(@PathVariable(PhotographersResource.COUNTRY) final String country) {
         return repository.getPhotographerMap(country);
     }
 

@@ -1,28 +1,29 @@
 package org.railwaystations.rsapi.resources;
 
-import io.dropwizard.auth.Auth;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.http.HttpStatus;
-import org.railwaystations.rsapi.auth.PasswordUtil;
 import org.railwaystations.rsapi.auth.AuthUser;
+import org.railwaystations.rsapi.auth.PasswordUtil;
 import org.railwaystations.rsapi.db.UserDao;
 import org.railwaystations.rsapi.mail.Mailer;
 import org.railwaystations.rsapi.model.User;
 import org.railwaystations.rsapi.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
-@Path("/")
+@RestController
 public class ProfileResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProfileResource.class);
@@ -39,48 +40,42 @@ public class ProfileResource {
         this.eMailVerificationUrl = eMailVerificationUrl;
     }
 
-    @POST
-    @Path("changePassword")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response changePassword(@Auth final AuthUser authUser, @NotNull @HeaderParam("New-Password") final String newPassword) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE,value = "/changePassword")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal final AuthUser authUser, @NotNull @RequestHeader("New-Password") final String newPassword) {
         final String decodedPassword = URLDecoder.decode(newPassword, StandardCharsets.UTF_8);
         final User user = authUser.getUser();
         LOG.info("Password change for '{}'", user.getEmail());
         final String trimmedPassword = StringUtils.trimToEmpty(decodedPassword);
         if (trimmedPassword.length() < 8 ) {
             LOG.warn("Password too short");
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return new ResponseEntity<>("Password too short", HttpStatus.BAD_REQUEST);
         }
         final String key = PasswordUtil.hashPassword(trimmedPassword);
         userDao.updateCredentials(user.getId(), key);
-        return Response.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @POST
-    @Path("newUploadToken")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response newUploadToken(@HeaderParam("User-Agent") final String userAgent, @NotNull @HeaderParam("Email") final String email) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE,value = "/newUploadToken")
+    public ResponseEntity<?> newUploadToken(@RequestHeader("User-Agent") final String userAgent, @NotNull @RequestHeader("Email") final String email) {
         return resetPassword(userAgent, email);
     }
 
-    @POST
-    @Path("resetPassword")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response resetPassword(@HeaderParam("User-Agent") final String userAgent, @NotNull @HeaderParam("NameOrEmail") final String nameOrEmail) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE,value = "/resetPassword")
+    public ResponseEntity<?> resetPassword(@RequestHeader("User-Agent") final String userAgent, @NotNull @RequestHeader("NameOrEmail") final String nameOrEmail) {
         LOG.info("Password reset requested for '{}'", nameOrEmail);
 
         final User user = userDao.findByEmail(User.normalizeEmail(nameOrEmail))
                 .orElse(userDao.findByNormalizedName(User.normalizeName(nameOrEmail)).orElse(null));
 
         if (user == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         if (StringUtils.isBlank(user.getEmail())) {
             monitor.sendMessage(
                     String.format("Password reset for '%s' failed, because Email is empty: '%s'%nvia %s",
                             nameOrEmail, user, userAgent));
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return new ResponseEntity<>("Email is empty", HttpStatus.BAD_REQUEST);
         }
 
         user.setNewPassword(createNewPassword());
@@ -91,7 +86,7 @@ public class ProfileResource {
             // if the email is not yet verified, we can verify it with the next login
             userDao.updateEmailVerification(user.getId(), User.EMAIL_VERIFIED_AT_NEXT_LOGIN);
         }
-        return Response.accepted().build();
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     private void saveNewPassword(final String userAgent, final User user) {
@@ -103,16 +98,13 @@ public class ProfileResource {
         LOG.info("Reset Password for '{}'", user.getName());
     }
 
-    @POST
-    @Path("registration")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response register(@HeaderParam("User-Agent") final String userAgent, @NotNull final User registration) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, value = "/registration")
+    public ResponseEntity<?> register(@RequestHeader("User-Agent") final String userAgent, @NotNull final User registration) {
         LOG.info("New registration for '{}' with '{}'", registration.getName(), registration.getEmail());
 
         if (!registration.isValidForRegistration()) {
             LOG.warn("Registration for '{}' with '{}' invalid", registration.getName(), registration.getEmail());
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return new ResponseEntity<>("Invalid data", HttpStatus.BAD_REQUEST);
         }
 
         final Optional<User> existingName = userDao.findByNormalizedName(registration.getNormalizedName());
@@ -120,14 +112,14 @@ public class ProfileResource {
             monitor.sendMessage(
                     String.format("Registration for user '%s' with eMail '%s' failed, because name is already taken by different eMail '%s'%nvia %s",
                             registration.getName(), registration.getEmail(), existingName.get().getEmail(), userAgent));
-            return Response.status(Response.Status.CONFLICT).build();
+            return new ResponseEntity<>("Conflict with other user or email", HttpStatus.CONFLICT);
         }
 
         if (userDao.findByEmail(registration.getEmail()).isPresent()) {
             monitor.sendMessage(
                     String.format("Registration for user '%s' with eMail '%s' failed, because eMail is already taken%nvia %s",
                             registration.getName(), registration.getEmail(), userAgent));
-            return Response.status(Response.Status.CONFLICT).build();
+            return new ResponseEntity<>("Conflict with other user or email", HttpStatus.CONFLICT);
         }
 
         final boolean passwordProvided = StringUtils.isNotBlank(registration.getNewPassword());
@@ -146,7 +138,7 @@ public class ProfileResource {
         } else {
             sendPasswordMail(registration);
         }
-        return Response.accepted().build();
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     private String createNewPassword() {
@@ -159,32 +151,27 @@ public class ProfileResource {
         user.setUploadToken(null);
     }
 
-    @GET
-    @Path("myProfile")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getMyProfile(@Auth final AuthUser authUser) {
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/myProfile")
+    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Get profile for '{}'", user.getEmail());
-        return Response.ok(user).build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @POST
-    @Path("myProfile")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response updateMyProfile(@HeaderParam("User-Agent") final String userAgent, @NotNull final User newProfile, @Auth final AuthUser authUser) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, value = "/myProfile")
+    public ResponseEntity<?> updateMyProfile(@RequestHeader("User-Agent") final String userAgent, @NotNull final User newProfile, @AuthenticationPrincipal final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Update profile for '{}'", user.getEmail());
 
         if (!newProfile.isValid()) {
             LOG.info("User invalid {}", newProfile);
-            throw new WebApplicationException(HttpStatus.BAD_REQUEST_400);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         if (!newProfile.getNormalizedName().equals(user.getNormalizedName())) {
             if (userDao.findByNormalizedName(newProfile.getNormalizedName()).isPresent()) {
                 LOG.info("Name conflict '{}'", newProfile.getName());
-                return Response.status(Response.Status.CONFLICT).build();
+                return new ResponseEntity<>("Conflict with other user or email", HttpStatus.CONFLICT);
             }
             monitor.sendMessage(
                     String.format("Update nickname for user '%s' to '%s'%n%s",
@@ -194,7 +181,7 @@ public class ProfileResource {
         if (!newProfile.getEmail().equals(user.getEmail())) {
             if (userDao.findByEmail(newProfile.getEmail()).isPresent()) {
                 LOG.info("Email conflict '{}'", newProfile.getEmail());
-                return Response.status(Response.Status.CONFLICT).build();
+                return new ResponseEntity<>("Conflict with other user or email", HttpStatus.CONFLICT);
             }
             newProfile.setEmailVerificationToken(UUID.randomUUID().toString());
             monitor.sendMessage(
@@ -208,33 +195,31 @@ public class ProfileResource {
 
         newProfile.setId(user.getId());
         userDao.update(newProfile);
-        return Response.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @POST
-    @Path("resendEmailVerification")
-    public Response resendEmailVerification(@HeaderParam("User-Agent") final String userAgent, @Auth final AuthUser authUser) {
+    @PostMapping("/resendEmailVerification")
+    public ResponseEntity<?> resendEmailVerification(@AuthenticationPrincipal final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Resend EmailVerification for '{}'", user.getEmail());
 
         user.setEmailVerificationToken(UUID.randomUUID().toString());
         userDao.updateEmailVerification(user.getId(), user.getEmailVerification());
         sendEmailVerification(user);
-        return Response.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GET
-    @Path("emailVerification/{token}")
-    public Response emailVerification(@HeaderParam("User-Agent") final String userAgent, @PathParam("token") final String token) {
+    @GetMapping("/emailVerification/{token}")
+    public ResponseEntity<?> emailVerification(@RequestHeader("User-Agent") final String userAgent, @PathVariable("token") final String token) {
         final Optional<User> userByToken = userDao.findByEmailVerification(User.EMAIL_VERIFICATION_TOKEN + token);
         if (userByToken.isPresent()) {
             final User user = userByToken.get();
             userDao.updateEmailVerification(user.getId(), User.EMAIL_VERIFIED);
             monitor.sendMessage(
                     String.format("Email verified {nickname='%s', email='%s'}%nvia %s", user.getName(), user.getEmail(), userAgent));
-            return Response.ok("Email successfully verified!").build();
+            return new ResponseEntity<>("Email successfully verified!", HttpStatus.OK);
         }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     private void sendPasswordMail(@NotNull final User user) {
