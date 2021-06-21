@@ -11,7 +11,7 @@
 
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<dropwizard.version>2.0.22</dropwizard.version>
+		<dropwizard.version>2.0.23</dropwizard.version>
 		<jupiter.version>5.7.2</jupiter.version>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 	</properties>
