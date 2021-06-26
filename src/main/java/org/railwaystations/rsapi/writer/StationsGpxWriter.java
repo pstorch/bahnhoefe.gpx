@@ -1,25 +1,21 @@
 package org.railwaystations.rsapi.writer;
 
 import org.railwaystations.rsapi.model.Station;
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpOutputMessage;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.AbstractHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
-@Produces(StationsGpxWriter.GPX_MIME_TYPE)
-public class StationsGpxWriter implements MessageBodyWriter<List<Station>> {
-
-    public static final String GPX_MIME_TYPE = "application/gpx+xml";
+public class StationsGpxWriter extends AbstractHttpMessageConverter<List<Station>> {
 
     private static final String UTF_8 = "UTF-8";
 
@@ -30,6 +26,39 @@ public class StationsGpxWriter implements MessageBodyWriter<List<Station>> {
     private static final String LON_ELEMENT = "lon";
 
     private static final String LAT_ELEMENT = "lat";
+
+    public StationsGpxWriter() {
+        super(new MediaType("application", "gpx+xml"));
+    }
+
+    @Override
+    protected boolean supports(final Class<?> clazz) {
+        return List.class.isAssignableFrom(clazz);
+    }
+
+    @Override
+    protected List<Station> readInternal(final Class<? extends List<Station>> clazz, final HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+        return null;
+    }
+
+    @Override
+    protected void writeInternal(final List<Station> stations, final HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+        final XMLStreamWriter xmlw;
+        try {
+            xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputMessage.getBody(), StationsGpxWriter.UTF_8);
+            xmlw.writeStartDocument(StationsGpxWriter.UTF_8, "1.0");
+            xmlw.writeCharacters("\n");
+            xmlw.writeStartElement("gpx");
+            xmlw.writeDefaultNamespace("http://www.topografix.com/GPX/1/1");
+            xmlw.writeAttribute("version", "1.1");
+            xmlw.writeCharacters("\n");
+            stations.forEach(station -> stationToXml(xmlw, station));
+            xmlw.writeEndElement();
+            xmlw.flush();
+        } catch (final XMLStreamException e) {
+            throw new HttpMessageNotWritableException("Error converting a Station to gpx", e);
+        }
+    }
 
     private static void stationToXml(final XMLStreamWriter xmlw, final Station station) {
         try {
@@ -42,40 +71,8 @@ public class StationsGpxWriter implements MessageBodyWriter<List<Station>> {
             xmlw.writeEndElement();
             xmlw.writeCharacters("\n");
         } catch (final XMLStreamException e) {
-            throw new WebApplicationException(e);
+            throw new HttpMessageNotWritableException("Error converting a Station to gpx", e);
         }
-    }
-
-    @Override
-    public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
-                               final MediaType mediaType) {
-        return true;
-    }
-
-    @Override
-    public void writeTo(final List<Station> t, final Class<?> type, final Type genericType,
-                        final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
-                        final OutputStream entityStream) throws WebApplicationException {
-        try {
-            final XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(entityStream, StationsGpxWriter.UTF_8);
-            xmlw.writeStartDocument(StationsGpxWriter.UTF_8, "1.0");
-            xmlw.writeCharacters("\n");
-            xmlw.writeStartElement("gpx");
-            xmlw.writeDefaultNamespace("http://www.topografix.com/GPX/1/1");
-            xmlw.writeAttribute("version", "1.1");
-            xmlw.writeCharacters("\n");
-            t.forEach(station -> stationToXml(xmlw, station));
-            xmlw.writeEndElement();
-            xmlw.flush();
-        } catch (final XMLStreamException | FactoryConfigurationError e) {
-            throw new WebApplicationException(e);
-        }
-    }
-
-    @Override
-    public long getSize(final List<Station> t, final Class<?> type, final Type genericType,
-                        final Annotation[] annotations, final MediaType mediaType) {
-        return 0;
     }
 
 }

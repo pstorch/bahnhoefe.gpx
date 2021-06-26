@@ -1,22 +1,23 @@
 package org.railwaystations.rsapi.writer;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import java.io.OutputStream;
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpOutputMessage;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.AbstractHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
+
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-@Produces(PhotographersTxtWriter.TEXT_PLAIN)
-public class PhotographersTxtWriter implements MessageBodyWriter<Map<String, Long>> {
+public class PhotographersTxtWriter extends AbstractHttpMessageConverter<Map<String, Long>> {
 
-    public static final String TEXT_PLAIN = "text/plain";
+    public PhotographersTxtWriter() {
+        super(MediaType.TEXT_PLAIN);
+    }
 
     private static void photographerToCsv(final PrintWriter pw, final Map.Entry<String, Long> photographer) {
         pw.println(String.format("%s\t%s", photographer.getValue(),
@@ -24,24 +25,21 @@ public class PhotographersTxtWriter implements MessageBodyWriter<Map<String, Lon
     }
 
     @Override
-    public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
-                               final MediaType mediaType) {
-        return true;
+    protected boolean supports(final Class<?> clazz) {
+        return Map.class.isAssignableFrom(clazz);
     }
 
     @Override
-    public long getSize(final Map<String, Long> photographers, final Class<?> type, final Type genericType,
-                        final Annotation[] annotations, final MediaType mediaType) {
-        return -1;
+    protected Map<String, Long> readInternal(final Class<? extends Map<String, Long>> clazz, final HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+        return null;
     }
 
     @Override
-    public void writeTo(final Map<String, Long> t, final Class<?> type, final Type genericType,
-                        final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
-                        final OutputStream entityStream) throws WebApplicationException {
-        final PrintWriter pw = new PrintWriter(new OutputStreamWriter(entityStream, StandardCharsets.UTF_8));
+    protected void writeInternal(final Map<String, Long> stringLongMap, final HttpOutputMessage outputMessage)
+            throws IOException, HttpMessageNotWritableException {
+        final PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputMessage.getBody(), StandardCharsets.UTF_8));
         pw.println("count\tphotographer");
-        t.entrySet().forEach(photographer -> photographerToCsv(pw, photographer));
+        stringLongMap.entrySet().forEach(photographer -> photographerToCsv(pw, photographer));
         pw.flush();
     }
 

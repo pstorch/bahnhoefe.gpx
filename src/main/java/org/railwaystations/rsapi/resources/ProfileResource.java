@@ -101,7 +101,7 @@ public class ProfileResource {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, value = "/registration")
-    public ResponseEntity<?> register(@RequestHeader("User-Agent") final String userAgent, @NotNull final User registration) {
+    public ResponseEntity<?> register(@RequestHeader("User-Agent") final String userAgent, @RequestBody @NotNull final User registration) {
         LOG.info("New registration for '{}' with '{}'", registration.getName(), registration.getEmail());
 
         if (!registration.isValidForRegistration()) {
@@ -161,7 +161,7 @@ public class ProfileResource {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, value = "/myProfile")
-    public ResponseEntity<?> updateMyProfile(@RequestHeader("User-Agent") final String userAgent, @NotNull final User newProfile, @AuthenticationPrincipal final AuthUser authUser) {
+    public ResponseEntity<?> updateMyProfile(@RequestHeader("User-Agent") final String userAgent, @RequestBody @NotNull final User newProfile, @AuthenticationPrincipal final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Update profile for '{}'", user.getEmail());
 

@@ -120,7 +120,7 @@ public class InboxResource {
     }
 
     @PostMapping(consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE, value = "/photoUpload")
-    public ResponseEntity<?> photoUpload(final InputStream body,
+    public ResponseEntity<?> photoUpload(@RequestBody final InputStream body,
                                          @RequestHeader("User-Agent") final String userAgent,
                                          @RequestHeader("Station-Id") final String stationId,
                                          @RequestHeader("Country") final String country,
@@ -147,7 +147,7 @@ public class InboxResource {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, value = "/reportProblem")
     public InboxResponse reportProblem(@RequestHeader("User-Agent") final String userAgent,
-                                       @NotNull() final ProblemReport problemReport,
+                                       @RequestBody @NotNull() final ProblemReport problemReport,
                                        @AuthenticationPrincipal final AuthUser user) {
         if (!user.getUser().isEmailVerified()) {
             LOG.info("New problem report failed for user {}, email not verified", user.getUsername());
@@ -182,7 +182,7 @@ public class InboxResource {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, value = "/userInbox")
     @SuppressWarnings("PMD.UselessParentheses")
-    public List<InboxStateQuery> userInbox(@AuthenticationPrincipal final AuthUser user, @NotNull final List<InboxStateQuery> queries) {
+    public List<InboxStateQuery> userInbox(@AuthenticationPrincipal final AuthUser user, @RequestBody @NotNull final List<InboxStateQuery> queries) {
         LOG.info("Query uploadStatus for Nickname: {}", user.getUsername());
 
         for (final InboxStateQuery query : queries) {
@@ -253,7 +253,7 @@ public class InboxResource {
 
     @RolesAllowed("ADMIN")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/adminInbox")
-    public ResponseEntity<?> adminInbox(@AuthenticationPrincipal final AuthUser user, final InboxEntry command) {
+    public ResponseEntity<?> adminInbox(@AuthenticationPrincipal final AuthUser user, @RequestBody final InboxEntry command) {
         final InboxEntry inboxEntry = inboxDao.findById(command.getId());
         if (inboxEntry == null || inboxEntry.isDone()) {
             return new ResponseEntity<>("No pending inbox entry found", HttpStatus.BAD_REQUEST);
