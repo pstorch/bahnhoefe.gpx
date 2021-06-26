@@ -4,7 +4,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.railwaystations.rsapi.auth.PasswordUtil;
 import org.railwaystations.rsapi.auth.AuthUser;
 import org.railwaystations.rsapi.db.UserDao;
 import org.railwaystations.rsapi.mail.MockMailer;

@@ -3,7 +3,6 @@ package org.railwaystations.rsapi.resources;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.railwaystations.rsapi.auth.AuthUser;
-import org.railwaystations.rsapi.auth.PasswordUtil;
 import org.railwaystations.rsapi.db.UserDao;
 import org.railwaystations.rsapi.mail.Mailer;
 import org.railwaystations.rsapi.model.User;
@@ -14,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -32,12 +32,14 @@ public class ProfileResource {
     private final Mailer mailer;
     private final UserDao userDao;
     private final String eMailVerificationUrl;
+    private final PasswordEncoder passwordEncoder;
 
-    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao, final String eMailVerificationUrl) {
+    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao, final String eMailVerificationUrl, final PasswordEncoder passwordEncoder) {
         this.monitor = monitor;
         this.mailer = mailer;
         this.userDao = userDao;
         this.eMailVerificationUrl = eMailVerificationUrl;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE,value = "/changePassword")
@@ -50,7 +52,7 @@ public class ProfileResource {
             LOG.warn("Password too short");
             return new ResponseEntity<>("Password too short", HttpStatus.BAD_REQUEST);
         }
-        final String key = PasswordUtil.hashPassword(trimmedPassword);
+        final String key = passwordEncoder.encode(trimmedPassword);
         userDao.updateCredentials(user.getId(), key);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -146,7 +148,7 @@ public class ProfileResource {
     }
 
     private void encryptPassword(@NotNull final User user) {
-        user.setKey(PasswordUtil.hashPassword(user.getNewPassword()));
+        user.setKey(passwordEncoder.encode(user.getNewPassword()));
         user.setUploadTokenSalt(null);
         user.setUploadToken(null);
     }

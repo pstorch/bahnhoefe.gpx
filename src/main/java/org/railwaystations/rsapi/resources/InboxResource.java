@@ -12,8 +12,8 @@ import org.railwaystations.rsapi.PhotoImporter;
 import org.railwaystations.rsapi.StationsRepository;
 import org.railwaystations.rsapi.WorkDir;
 import org.railwaystations.rsapi.auth.AuthUser;
-import org.railwaystations.rsapi.auth.UploadTokenAuthenticator;
-import org.railwaystations.rsapi.auth.UploadTokenCredentials;
+import org.railwaystations.rsapi.auth.RSAuthenticationProvider;
+import org.railwaystations.rsapi.auth.RSUserDetailsService;
 import org.railwaystations.rsapi.db.CountryDao;
 import org.railwaystations.rsapi.db.InboxDao;
 import org.railwaystations.rsapi.db.PhotoDao;
@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,9 +58,9 @@ public class InboxResource {
 
     private final StationsRepository repository;
     private final WorkDir workDir;
-    private final UploadTokenAuthenticator authenticator;
+    private final RSAuthenticationProvider authenticator;
     private final InboxDao inboxDao;
-    private final UserDao userDao;
+    private final RSUserDetailsService userDetailsService;
     private final CountryDao countryDao;
     private final PhotoDao photoDao;
     private final String inboxBaseUrl;
@@ -66,15 +68,15 @@ public class InboxResource {
     private final Monitor monitor;
 
     public InboxResource(final StationsRepository repository, final WorkDir workDir,
-                         final Monitor monitor, final UploadTokenAuthenticator authenticator,
-                         final InboxDao inboxDao, final UserDao userDao, final CountryDao countryDao,
+                         final Monitor monitor, final RSAuthenticationProvider authenticator,
+                         final InboxDao inboxDao, final RSUserDetailsService userDetailsService, final CountryDao countryDao,
                          final PhotoDao photoDao, final String inboxBaseUrl, final MastodonBot mastodonBot) {
         this.repository = repository;
         this.workDir = workDir;
         this.monitor = monitor;
         this.authenticator = authenticator;
         this.inboxDao = inboxDao;
-        this.userDao = userDao;
+        this.userDetailsService = userDetailsService;
         this.countryDao = countryDao;
         this.photoDao = photoDao;
         this.inboxBaseUrl = inboxBaseUrl;
@@ -101,15 +103,15 @@ public class InboxResource {
         LOG.info("MultipartFormData: email={}, station={}, country={}, file={}", email, stationId, countryCode, file.getName());
 
         try {
-            final Optional<AuthUser> authUser = authenticator.authenticate(new UploadTokenCredentials(email, uploadToken));
-            if (authUser.isEmpty() || !authUser.get().getUser().isEmailVerified()) {
+            final Authentication authentication = authenticator.authenticate(new UsernamePasswordAuthenticationToken(email, uploadToken));
+            if (authentication != null && authentication.isAuthenticated()) {
                 final InboxResponse response = consumeBodyAndReturn(file.getInputStream(), new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED));
                 return createIFrameAnswer(response, referer);
             }
 
             final String contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(file.getName());
             final InboxResponse response = uploadPhoto(userAgent, file.getInputStream(), StringUtils.trimToNull(stationId),
-                    StringUtils.trimToNull(countryCode), contentType, stationTitle, latitude, longitude, comment, active, authUser.get());
+                    StringUtils.trimToNull(countryCode), contentType, stationTitle, latitude, longitude, comment, active, userDetailsService.loadUserByUsername(email));
             return createIFrameAnswer(response, referer);
         } catch (final Exception e) {
             LOG.error("FormUpload error", e);
@@ -130,14 +132,14 @@ public class InboxResource {
                                          @RequestHeader("Active") final Boolean active,
                                          @AuthenticationPrincipal final AuthUser user) {
         if (!user.getUser().isEmailVerified()) {
-            LOG.info("Photo upload failed for user {}, email not verified", user.getName());
+            LOG.info("Photo upload failed for user {}, email not verified", user.getUsername());
             final InboxResponse response = consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED,"Email not verified"));
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
         final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, StandardCharsets.UTF_8) : null;
         final String comment = encComment != null ? URLDecoder.decode(encComment, StandardCharsets.UTF_8) : null;
         LOG.info("Photo upload from Nickname: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
-                user.getName(), country, stationId, latitude, longitude, stationTitle, contentType);
+                user.getUsername(), country, stationId, latitude, longitude, stationTitle, contentType);
         final InboxResponse inboxResponse = uploadPhoto(userAgent, body, StringUtils.trimToNull(stationId),
                 StringUtils.trimToNull(country), contentType, stationTitle, latitude, longitude, comment, active, user);
         return new ResponseEntity<>(inboxResponse, inboxResponse.getState().getResponseStatus());
@@ -148,12 +150,12 @@ public class InboxResource {
                                        @NotNull() final ProblemReport problemReport,
                                        @AuthenticationPrincipal final AuthUser user) {
         if (!user.getUser().isEmailVerified()) {
-            LOG.info("New problem report failed for user {}, email not verified", user.getName());
+            LOG.info("New problem report failed for user {}, email not verified", user.getUsername());
             return new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED, "Email not verified");
         }
 
         LOG.info("New problem report: Nickname: {}; Country: {}; Station-Id: {}",
-                user.getName(), problemReport.getCountryCode(), problemReport.getStationId());
+                user.getUsername(), problemReport.getCountryCode(), problemReport.getStationId());
         final Station station = repository.findByCountryAndId(problemReport.getCountryCode(), problemReport.getStationId());
         if (station == null) {
             return new InboxResponse(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA, "Station not found");
@@ -181,7 +183,7 @@ public class InboxResource {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, value = "/userInbox")
     @SuppressWarnings("PMD.UselessParentheses")
     public List<InboxStateQuery> userInbox(@AuthenticationPrincipal final AuthUser user, @NotNull final List<InboxStateQuery> queries) {
-        LOG.info("Query uploadStatus for Nickname: {}", user.getName());
+        LOG.info("Query uploadStatus for Nickname: {}", user.getUsername());
 
         for (final InboxStateQuery query : queries) {
             query.setState(InboxStateQuery.InboxState.UNKNOWN);
@@ -415,7 +417,7 @@ public class InboxResource {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There is a conflict with another upload");
         }
 
-        final Optional<User> user = userDao.findById(inboxEntry.getPhotographerId());
+        final Optional<User> user = userDetailsService.findById(inboxEntry.getPhotographerId());
         final Optional<Country> country = countryDao.findById(StringUtils.lowerCase(station.getKey().getCountry()));
         if (country.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Country not found");

@@ -118,11 +118,11 @@ public class RsApiApp extends Application<RsApiConfiguration> {
                 .setRealm("RSAPI").setPrefix("Basic").buildAuthFilter();
 
         final UploadTokenAuthenticator authenticator = new UploadTokenAuthenticator(userDao, config.getTokenGenerator());
-        final UploadTokenAuthFilter<AuthUser> uploadTokenAuthFilter = new UploadTokenAuthFilter.Builder<AuthUser>()
+        final UploadTokenAuthenticationFilter<AuthUser> uploadTokenAuthenticationFilter = new UploadTokenAuthenticationFilter.Builder<AuthUser>()
                 .setAuthorizer(new UserAuthorizer())
                 .setAuthenticator(authenticator).setRealm("RSAPI").buildAuthFilter();
 
-        final List<AuthFilter<?, AuthUser>> filters = Lists.newArrayList(basicCredentialAuthFilter, uploadTokenAuthFilter);
+        final List<AuthFilter<?, AuthUser>> filters = Lists.newArrayList(basicCredentialAuthFilter, uploadTokenAuthenticationFilter);
         environment.jersey().register(new AuthDynamicFeature(new ChainedAuthFilter(filters)));
         environment.jersey().register(RolesAllowedDynamicFeature.class);
         environment.jersey().register(new AuthValueFactoryProvider.Binder<>(AuthUser.class));

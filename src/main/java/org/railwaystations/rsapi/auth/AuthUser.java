@@ -1,21 +1,18 @@
 package org.railwaystations.rsapi.auth;
 
 import org.railwaystations.rsapi.model.User;
+import org.springframework.security.core.GrantedAuthority;
 
 import javax.validation.constraints.NotNull;
-import java.security.Principal;
+import java.util.Collection;
 
-public class AuthUser implements Principal {
+public class AuthUser extends org.springframework.security.core.userdetails.User {
 
     private final User user;
 
-    public AuthUser(@NotNull final User user) {
+    public AuthUser(@NotNull final User user, final Collection<? extends GrantedAuthority> authorities) {
+        super(user.getDisplayName(), user.getKey(), authorities);
         this.user = user;
-    }
-
-    @Override
-    public String getName() {
-        return user.getDisplayName();
     }
 
     public User getUser() {

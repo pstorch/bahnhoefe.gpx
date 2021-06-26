@@ -1,24 +1,22 @@
 package org.railwaystations.rsapi.writer;
 
 import org.railwaystations.rsapi.model.Station;
+import org.reactivestreams.Publisher;
+import org.springframework.core.ResolvableType;
+import org.springframework.core.codec.Encoder;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+import reactor.core.publisher.Flux;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
-@Produces(StationsTxtWriter.TEXT_PLAIN)
-public class StationsTxtWriter implements MessageBodyWriter<List<Station>> {
-
-    public static final String TEXT_PLAIN = "text/plain";
+public class StationsTxtWriter implements Encoder<Station> {
 
     private static void stationToTxt(final PrintWriter pw, final Station station) {
         pw.println(String.format("%s\t%s\t%s\t%s\t%s\t10,10\t0,-10", station.getCoordinates().getLat(),
@@ -27,25 +25,22 @@ public class StationsTxtWriter implements MessageBodyWriter<List<Station>> {
     }
 
     @Override
-    public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
-                               final MediaType mediaType) {
-        return true;
+    public boolean canEncode(final ResolvableType elementType, final MimeType mimeType) {
+        return getEncodableMimeTypes().contains(mimeType) && elementType.;
     }
 
     @Override
-    public long getSize(final List<Station> t, final Class<?> type, final Type genericType,
-                        final Annotation[] annotations, final MediaType mediaType) {
-        return -1;
-    }
-
-    @Override
-    public void writeTo(final List<Station> t, final Class<?> type, final Type genericType,
-                        final Annotation[] annotations, final MediaType mediaType, final MultivaluedMap<String, Object> httpHeaders,
-                        final OutputStream entityStream) throws WebApplicationException {
+    public Flux<DataBuffer> encode(final Publisher<? extends Station> inputStream, final DataBufferFactory bufferFactory, final ResolvableType elementType, final MimeType mimeType, final Map<String, Object> hints) {
         final PrintWriter pw = new PrintWriter(new OutputStreamWriter(entityStream, StandardCharsets.UTF_8));
         pw.println("lat	lon	title	description	icon	iconSize	iconOffset");
         t.forEach(station -> stationToTxt(pw, station));
         pw.flush();
+
+        return null;
     }
 
+    @Override
+    public List<MimeType> getEncodableMimeTypes() {
+        return List.of(MediaType.TEXT_PLAIN);
+    }
 }
