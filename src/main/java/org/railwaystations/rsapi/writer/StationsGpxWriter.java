@@ -13,7 +13,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 public class StationsGpxWriter extends AbstractHttpMessageConverter<List<Station>> {
 
@@ -27,8 +26,12 @@ public class StationsGpxWriter extends AbstractHttpMessageConverter<List<Station
 
     private static final String LAT_ELEMENT = "lat";
 
+    public static final MediaType GPX_MEDIA_TYPE = new MediaType("application", "gpx+xml");
+
+    public static final String GPX_MEDIA_TYPE_VALUE = "application/gpx+xml";
+
     public StationsGpxWriter() {
-        super(new MediaType("application", "gpx+xml"));
+        super(GPX_MEDIA_TYPE);
     }
 
     @Override

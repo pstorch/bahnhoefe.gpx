@@ -8,10 +8,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class TokenGenerator {
 
-    @Value("${salt}")
     private final String salt;
 
-    public TokenGenerator(final String salt) {
+    public TokenGenerator(@Value("${salt}") final String salt) {
         this.salt = salt;
     }
 

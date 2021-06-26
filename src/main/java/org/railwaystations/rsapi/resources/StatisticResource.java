@@ -20,12 +20,12 @@ public class StatisticResource {
         this.repository = repository;
     }
 
-    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, StatisticTxtWriter.TEXT_PLAIN}, value = "/stats")
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE}, value = "/stats")
     public Statistic get(@RequestParam(StatisticResource.COUNTRY) final String country) {
         return getWithCountry(country);
     }
 
-    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, StatisticTxtWriter.TEXT_PLAIN}, value = "/{country}/stats")
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE}, value = "/{country}/stats")
     public Statistic getWithCountry(@PathVariable(StatisticResource.COUNTRY) final String country) {
         return getStatisticMap(country);
     }

@@ -1,6 +1,5 @@
 package org.railwaystations.rsapi;
 
-import io.dropwizard.servlets.tasks.Task;
 import org.railwaystations.rsapi.db.InboxDao;
 import org.railwaystations.rsapi.db.UserDao;
 import org.railwaystations.rsapi.mail.Mailer;
@@ -8,10 +7,10 @@ import org.railwaystations.rsapi.model.InboxEntry;
 import org.railwaystations.rsapi.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,14 +27,14 @@ public class NotifyUsersTask {
     private final Mailer mailer;
 
     public NotifyUsersTask(final UserDao userDao, final InboxDao inboxDao, final Mailer mailer) {
-        super("NotifyUsers");
+        super();
         this.userDao = userDao;
         this.inboxDao = inboxDao;
         this.mailer = mailer;
     }
 
-    @Override
-    public void execute(final Map<String, List<String>> map, final PrintWriter printWriter) throws Exception {
+    @Scheduled(cron = "0 0 1 * * *")
+    public void notifyUsers() {
         final List<InboxEntry> entries = inboxDao.findInboxEntriesToNotify();
         final Map<Integer, List<InboxEntry>> entriesPerUser = entries.stream()
                 .collect(groupingBy(InboxEntry::getPhotographerId));

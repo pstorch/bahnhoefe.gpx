@@ -7,9 +7,12 @@ import org.railwaystations.rsapi.writer.StatisticTxtWriter;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.servlet.DispatcherType;
+import java.util.EnumSet;
 import java.util.List;
 
 @EnableWebMvc
@@ -23,6 +26,15 @@ public class WebConfig implements WebMvcConfigurer {
         converters.add(new StationsGpxWriter());
         converters.add(new StationsTxtWriter());
         converters.add(new StatisticTxtWriter());
+    }
+
+    @Override
+    public void addCorsMappings(final CorsRegistry registry) {
+        registry
+                .addMapping("/**")
+                .allowedHeaders("X-Requested-With","Content-Type","Accept","Origin","Authorization","Comment","Country","Station-Id","NameOrEmail","New-Password")
+                .allowedMethods("OPTIONS","GET","PUT","POST","DELETE","HEAD")
+                .allowedOriginPatterns("*");
     }
 
 }

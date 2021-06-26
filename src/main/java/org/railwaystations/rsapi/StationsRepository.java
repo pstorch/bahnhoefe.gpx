@@ -7,6 +7,7 @@ import org.railwaystations.rsapi.model.Coordinates;
 import org.railwaystations.rsapi.model.Country;
 import org.railwaystations.rsapi.model.Station;
 import org.railwaystations.rsapi.model.Statistic;
+import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Repository
 public class StationsRepository {
 
     private final CountryDao countryDao;

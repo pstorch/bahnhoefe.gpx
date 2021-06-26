@@ -2,7 +2,9 @@ package org.railwaystations.rsapi.mail;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
+@Service
 public class MockMailer implements Mailer {
 
     private static final Logger LOG = LoggerFactory.getLogger(MockMailer.class);

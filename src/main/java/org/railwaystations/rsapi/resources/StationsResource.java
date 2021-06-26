@@ -40,8 +40,8 @@ public class StationsResource {
         this.repository = repository;
     }
 
-    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8", StationsGpxWriter.GPX_MIME_TYPE,
-            StationsTxtWriter.TEXT_PLAIN + ";charset=UTF-8"}, value = "/stations")
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8", StationsGpxWriter.GPX_MEDIA_TYPE_VALUE,
+            MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8"}, value = "/stations")
     public List<Station> get(@RequestParam(StationsResource.COUNTRY) final Set<String> countries,
                              @RequestParam(StationsResource.HAS_PHOTO) final Boolean hasPhoto,
                              @RequestParam(StationsResource.PHOTOGRAPHER) final String photographer,
@@ -54,8 +54,8 @@ public class StationsResource {
                 .values().stream().filter(station -> station.appliesTo(hasPhoto, photographer, maxDistance, lat, lon, active)).collect(Collectors.toList());
     }
 
-    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8", StationsGpxWriter.GPX_MIME_TYPE,
-            StationsTxtWriter.TEXT_PLAIN + ";charset=UTF-8"}, value = "/{country}/stations")
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8", StationsGpxWriter.GPX_MEDIA_TYPE_VALUE,
+            MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8"}, value = "/{country}/stations")
     public List<Station> getWithCountry(@PathVariable(StationsResource.COUNTRY) final String country,
                                         @RequestParam(StationsResource.HAS_PHOTO) final Boolean hasPhoto,
                                         @RequestParam(StationsResource.PHOTOGRAPHER) final String photographer,
