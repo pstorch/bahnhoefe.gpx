@@ -22,6 +22,7 @@ import org.railwaystations.rsapi.model.*;
 import org.railwaystations.rsapi.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +71,7 @@ public class InboxResource {
     public InboxResource(final StationsRepository repository, final WorkDir workDir,
                          final Monitor monitor, final RSAuthenticationProvider authenticator,
                          final InboxDao inboxDao, final RSUserDetailsService userDetailsService, final CountryDao countryDao,
-                         final PhotoDao photoDao, final String inboxBaseUrl, final MastodonBot mastodonBot) {
+                         final PhotoDao photoDao, @Value("${inboxBaseUrl}") final String inboxBaseUrl, final MastodonBot mastodonBot) {
         this.repository = repository;
         this.workDir = workDir;
         this.monitor = monitor;

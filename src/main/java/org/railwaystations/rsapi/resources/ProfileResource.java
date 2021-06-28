@@ -9,6 +9,7 @@ import org.railwaystations.rsapi.model.User;
 import org.railwaystations.rsapi.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,7 @@ public class ProfileResource {
     private final String eMailVerificationUrl;
     private final PasswordEncoder passwordEncoder;
 
-    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao, final String eMailVerificationUrl, final PasswordEncoder passwordEncoder) {
+    public ProfileResource(final Monitor monitor, final Mailer mailer, final UserDao userDao, @Value("${mailVerificationUrl}") final String eMailVerificationUrl, final PasswordEncoder passwordEncoder) {
         this.monitor = monitor;
         this.mailer = mailer;
         this.userDao = userDao;

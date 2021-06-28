@@ -5,16 +5,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@Component
 public class UploadTokenAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
-    public UploadTokenAuthenticationFilter (final String defaultFilterProcessesUrl) {
-        super(defaultFilterProcessesUrl);
+    public UploadTokenAuthenticationFilter () {
+        super("/");
     }
 
     @Override
