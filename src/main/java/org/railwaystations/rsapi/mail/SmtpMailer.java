@@ -1,9 +1,10 @@
 package org.railwaystations.rsapi.mail;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -15,27 +16,32 @@ public class SmtpMailer implements Mailer {
 
     private static final Logger LOG = LoggerFactory.getLogger(SmtpMailer.class);
 
-    private final String from;
+    private String host;
+    private String port;
+    private String user;
+    private String passwd;
+    private String from;
+    private Session session;
 
-    private final Session session;
+    @PostConstruct
+    public void init() {
+        if (StringUtils.isNoneBlank(host)) {
+            final Properties properties = System.getProperties();
+            properties.setProperty("mail.smtp.host", host);
+            properties.setProperty("mail.smtp.auth", "true");
+            properties.setProperty("mail.smtp.port", port);
+            properties.setProperty("mail.smtp.starttls.enable", "true");
 
-    public SmtpMailer(@JsonProperty("host") final String host,
-                      @JsonProperty("port") final String port,
-                      @JsonProperty("user") final String user,
-                      @JsonProperty("passwd") final String passwd,
-                      @JsonProperty("from") final String from) {
-        final Properties properties = System.getProperties();
-        properties.setProperty("mail.smtp.host", host);
-        properties.setProperty("mail.smtp.auth", "true");
-        properties.setProperty("mail.smtp.port", port);
-        properties.setProperty("mail.smtp.starttls.enable", "true");
-
-        session = Session.getInstance(properties, new UsernamePasswordAuthenticator(user, passwd));
-        this.from = from;
+            session = Session.getInstance(properties, new UsernamePasswordAuthenticator(user, passwd));
+        }
     }
 
     @Override
     public void send(final String to, final String subject, final String text) {
+        if (session == null) {
+            LOG.info("Mailer not initialized, can't send mail to {} with subject {} and body {}", to, subject, text);
+            return;
+        }
         try {
             LOG.info("Sending mail to {}", to);
             final MimeMessage message = new MimeMessage(session);
