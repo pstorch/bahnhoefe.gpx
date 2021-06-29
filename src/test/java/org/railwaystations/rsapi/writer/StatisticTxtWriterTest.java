@@ -2,9 +2,8 @@ package org.railwaystations.rsapi.writer;
 
 import org.junit.jupiter.api.Test;
 import org.railwaystations.rsapi.model.Statistic;
+import org.springframework.mock.http.MockHttpOutputMessage;
 
-import javax.ws.rs.WebApplicationException;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -14,14 +13,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class StatisticTxtWriterTest {
 
     @Test
-    public void test() throws WebApplicationException, IOException {
+    public void test() throws IOException {
         final Statistic stat = new Statistic(1500, 500, 20);
 
-        final StatisticTxtWriter writer = new StatisticTxtWriter();
-        final ByteArrayOutputStream entityStream = new ByteArrayOutputStream();
-        writer.writeTo(stat, null, null, null, null, null, entityStream);
 
-        final String txt = entityStream.toString(StandardCharsets.UTF_8);
+        final MockHttpOutputMessage outputMessage = new MockHttpOutputMessage();
+        new StatisticTxtWriter().writeInternal(stat, outputMessage);
+
+        final String txt = outputMessage.getBodyAsString(StandardCharsets.UTF_8);
         final String[] lines = txt.split("\n");
         assertThat(lines[0], is("name\tvalue"));
         assertThat(lines[1], is("total\t1500"));

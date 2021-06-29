@@ -2,7 +2,6 @@ package org.railwaystations.rsapi.auth;
 
 import org.railwaystations.rsapi.db.UserDao;
 import org.railwaystations.rsapi.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,8 +14,11 @@ import java.util.Optional;
 @Service
 public class RSUserDetailsService implements UserDetailsService {
 
-    @Autowired
     private UserDao userDao;
+
+    public RSUserDetailsService(final UserDao userDao) {
+        this.userDao = userDao;
+    }
 
     @Override
     public AuthUser loadUserByUsername(final String username) throws UsernameNotFoundException {

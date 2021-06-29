@@ -15,7 +15,6 @@ ENV RSAPI_HOME=/opt/services
 ENV RSAPI_WORK=/var/rsapi
 
 COPY --from=build /usr/src/app/build/libs/*.jar $RSAPI_HOME
-COPY config.yml $RSAPI_WORK/
 
 EXPOSE 8080
 EXPOSE 8081

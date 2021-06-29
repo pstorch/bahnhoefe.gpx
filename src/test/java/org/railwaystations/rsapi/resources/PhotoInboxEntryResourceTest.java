@@ -1,6 +1,5 @@
 package org.railwaystations.rsapi.resources;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,20 +8,20 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.railwaystations.rsapi.MastodonBot;
 import org.railwaystations.rsapi.StationsRepository;
+import org.railwaystations.rsapi.WorkDir;
 import org.railwaystations.rsapi.auth.AuthUser;
+import org.railwaystations.rsapi.auth.RSUserDetailsService;
 import org.railwaystations.rsapi.db.CountryDao;
 import org.railwaystations.rsapi.db.InboxDao;
 import org.railwaystations.rsapi.db.PhotoDao;
 import org.railwaystations.rsapi.db.UserDao;
 import org.railwaystations.rsapi.model.*;
 import org.railwaystations.rsapi.monitoring.MockMonitor;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.http.ResponseEntity;
 
-import javax.ws.rs.core.Response;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,11 +31,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
-@SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class PhotoInboxEntryResourceTest {
 
-    private Path tempDir;
+    private WorkDir workDir;
     private InboxResource resource;
     private InboxDao inboxDao = null;
     private final MockMonitor monitor = new MockMonitor();
@@ -64,8 +62,7 @@ public class PhotoInboxEntryResourceTest {
         final CountryDao countryDao = mock(CountryDao.class);
         final PhotoDao photoDao = mock(PhotoDao.class);
 
-        tempDir = Files.createTempDirectory("rsapi");
-        final Path photoDir = Files.createTempDirectory("rsapi-photos");
+        workDir = new WorkDir(Files.createTempDirectory("rsapi").toString());
         final StationsRepository repository = mock(StationsRepository.class);
         when(repository.findByCountryAndId(key4711.getCountry(), key4711.getId())).thenReturn(station4711);
         when(repository.findByCountryAndId(key1234.getCountry(), key1234.getId())).thenReturn(station1234);
@@ -73,9 +70,8 @@ public class PhotoInboxEntryResourceTest {
         when(repository.findByCountryAndId(key0815.getCountry(), key0815.getId())).thenReturn(station0815);
         when(repository.findByCountryAndId(key9876.getCountry(), key9876.getId())).thenReturn(station9876);
 
-        resource = new InboxResource(repository, tempDir.toString(), tempDir.resolve( "toprocess").toString(),
-                tempDir.resolve("processed").toString(), photoDir.toString(), monitor, null,
-                inboxDao, userDao, countryDao, photoDao, "http://inbox.railway-stations.org", new MastodonBot(WebClient.builder(), null));
+        resource = new InboxResource(repository, workDir, monitor, null,
+                inboxDao, new RSUserDetailsService(userDao), countryDao, photoDao, "http://inbox.railway-stations.org", new MastodonBot());
     }
 
     private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
@@ -87,10 +83,10 @@ public class PhotoInboxEntryResourceTest {
                                         final String stationTitle, final Double latitude, final Double longitude, final String comment, final String emailVerification) {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
         final InputStream is = new ByteArrayInputStream(inputBytes);
-        final Response response = resource.photoUpload(is, "UserAgent", stationId, country, "image/jpeg",
+        final ResponseEntity<InboxResponse> response = resource.photoUpload(is, "UserAgent", stationId, country, "image/jpeg",
                 stationTitle, latitude, longitude, comment, null,
-                new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false, emailVerification, true)));
-        return (InboxResponse) response.getEntity();
+                new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false, emailVerification, true), null));
+        return response.getBody();
     }
 
     @Test
@@ -196,7 +192,7 @@ public class PhotoInboxEntryResourceTest {
         inboxStateQueries.add(new InboxStateQuery(3, "de", "5678", null, null, null));
         inboxStateQueries.add(new InboxStateQuery(4,"ch", "0815", null, null, null));
 
-        final List<InboxStateQuery> uploadStateQueriesResult = resource.userInbox(new AuthUser(user), inboxStateQueries);
+        final List<InboxStateQuery> uploadStateQueriesResult = resource.userInbox(new AuthUser(user, null), inboxStateQueries);
 
         assertThat(uploadStateQueriesResult.get(0).getState(), is(InboxStateQuery.InboxState.REVIEW));
         assertThat(uploadStateQueriesResult.get(0).getFilename(), is("1.jpg"));
@@ -206,7 +202,7 @@ public class PhotoInboxEntryResourceTest {
     }
 
     private void assertFileWithContentExistsInInbox(final String content, final String filename) throws IOException {
-        final File image = new File(tempDir.toFile(), filename);
+        final File image = new File(workDir.getInboxDir(), filename);
         assertThat(image.exists(), equalTo(true));
 
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
@@ -235,10 +231,10 @@ public class PhotoInboxEntryResourceTest {
 
     @Test
     public void testPostInvalidCountry() {
-        final Response response = resource.photoUpload(null, "UserAgent", "4711", "xy", "image/jpeg",
+        final ResponseEntity<InboxResponse> response = resource.photoUpload(null, "UserAgent", "4711", "xy", "image/jpeg",
                 null, null, null, null, null,
-                new AuthUser(new User("nickname", null, "CC0", 0,  "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true)));
-        final InboxResponse inboxResponse = (InboxResponse) response.getEntity();
+                new AuthUser(new User("nickname", null, "CC0", 0,  "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true), null));
+        final InboxResponse inboxResponse = response.getBody();
         assertThat(inboxResponse.getState(), equalTo(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA));
         assertThat(inboxResponse.getId(), nullValue());
         assertThat(inboxResponse.getFilename(), nullValue());
@@ -248,7 +244,7 @@ public class PhotoInboxEntryResourceTest {
     public void testPostProblemReport() {
         when(inboxDao.insert(any())).thenReturn(6);
         final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong", null),
-                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true)));
+                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true), null));
 
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.REVIEW));
         assertThat(response.getId(), equalTo(6));
@@ -259,7 +255,7 @@ public class PhotoInboxEntryResourceTest {
     @Test
     public void testPostProblemReportEmailNotVerified() {
         final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong", null),
-                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFICATION_TOKEN + "blah", true)));
+                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFICATION_TOKEN + "blah", true), null));
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.UNAUTHORIZED));
     }
 

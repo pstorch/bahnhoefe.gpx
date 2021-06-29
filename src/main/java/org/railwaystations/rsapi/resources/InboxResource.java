@@ -121,7 +121,7 @@ public class InboxResource {
     }
 
     @PostMapping(consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE, value = "/photoUpload")
-    public ResponseEntity<?> photoUpload(@RequestBody final InputStream body,
+    public ResponseEntity<InboxResponse> photoUpload(@RequestBody final InputStream body,
                                          @RequestHeader("User-Agent") final String userAgent,
                                          @RequestHeader("Station-Id") final String stationId,
                                          @RequestHeader("Country") final String country,

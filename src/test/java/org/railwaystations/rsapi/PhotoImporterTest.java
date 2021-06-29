@@ -1,12 +1,9 @@
 package org.railwaystations.rsapi;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.railwaystations.rsapi.PhotoImporter;
-import org.railwaystations.rsapi.StationsRepository;
 import org.railwaystations.rsapi.db.*;
 import org.railwaystations.rsapi.model.Country;
 import org.railwaystations.rsapi.model.Photo;
@@ -28,7 +25,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
 
-@SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 public class PhotoImporterTest {
 
     private PhotoImporter importer;

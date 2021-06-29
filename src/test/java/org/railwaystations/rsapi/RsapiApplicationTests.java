@@ -2,28 +2,27 @@ package org.railwaystations.rsapi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.railwaystations.rsapi.mail.Mailer;
-import org.railwaystations.rsapi.mail.MockMailer;
 import org.railwaystations.rsapi.model.Station;
-import org.railwaystations.rsapi.utils.ImageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.ResponseEntity;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xmlunit.builder.Input;
 
 import javax.imageio.ImageIO;
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -38,10 +37,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class RsapiApplicationTests {
 
 	private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -286,61 +285,58 @@ class RsapiApplicationTests {
 
 	@Test
 	public void registerDifferentEmail() {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/registration"))
-				.request()
-				.post(Entity.entity("{\n" +
+		final ResponseEntity<String> response = restTemplate.postForEntity(
+				String.format("http://localhost:%d%s", port, "/registration"),"{\n" +
 						"\t\"nickname\": \"storchp\", \n" +
 						"\t\"email\": \"other@example.com\", \n" +
 						"\t\"license\": \"CC0\",\n" +
 						"\t\"photoOwner\": true, \n" +
 						"\t\"linking\": \"linking\", \n" +
 						"\t\"link\": \"link\"\n" +
-						"}", "application/json"));
+						"}", String.class);
 
-		assertThat(response.getStatus(), is(409));
+		assertThat(response.getStatusCodeValue(), is(409));
 	}
 
 	@Test
 	public void photoUploadForbidden() {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/photoUpload"))
-				.request()
-				.header("Upload-Token", "edbfc44727a6fd4f5b029aff21861a667a6b4195")
-				.header("Nickname", "nickname")
-				.header("Email", "nickname@example.com")
-				.header("Station-Id", "4711")
-				.header("Country", "de")
-				.post(Entity.entity("", "image/png"));
+		final HttpEntity<String> request = new HttpEntity<>("");
+		request.getHeaders().add("Upload-Token", "edbfc44727a6fd4f5b029aff21861a667a6b4195");
+		request.getHeaders().add("Nickname", "nickname");
+		request.getHeaders().add("Email", "nickname@example.com");
+		request.getHeaders().add("Station-Id", "4711");
+		request.getHeaders().add("Country", "de");
+		request.getHeaders().setContentType(MediaType.IMAGE_JPEG);
+		final ResponseEntity<String> response = restTemplate.postForEntity(
+				String.format("http://localhost:%d%s", port, "/photoUpload"), request, String.class);
 
-		assertThat(response.getStatus(), is(401));
+		assertThat(response.getStatusCodeValue(), is(401));
 	}
 
 	private final byte[] IMAGE = Base64.getDecoder().decode("/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=");
 
 	@Test
 	public void photoUploadUnknownStation() throws IOException {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/photoUpload"))
-				.request()
-				.header("Authorization", getBasicAuthentication("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8"))
-				.header("Station-Title", URLEncoder.encode("Achères-Grand-Cormier", StandardCharsets.UTF_8.toString()))
-				.header("Latitude", "50.123")
-				.header("Longitude", "10.123")
-				.header("Comment", "Missing Station")
-				.post(Entity.entity(IMAGE, ImageUtil.IMAGE_JPEG_MIME_TYPE));
+		final HttpEntity<String> request = new HttpEntity<>("");
+		request.getHeaders().setBasicAuth("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8");
+		request.getHeaders().add("Station-Title", URLEncoder.encode("Achères-Grand-Cormier", StandardCharsets.UTF_8.toString()));
+		request.getHeaders().add("Latitude", "50.123");
+		request.getHeaders().add("Longitude", "10.123");
+		request.getHeaders().add("Comment", "Missing Station");
+		request.getHeaders().setContentType(MediaType.IMAGE_JPEG);
+		final ResponseEntity<String> response = restTemplate.postForEntity(
+				String.format("http://localhost:%d%s", port, "/photoUpload"), request, String.class);
 
-		assertThat(response.getStatus(), is(202));
-		final JsonNode inboxResponse = MAPPER.readTree((InputStream) response.getEntity());
+		assertThat(response.getStatusCodeValue(), is(202));
+		final JsonNode inboxResponse = MAPPER.readTree(response.getBody());
 		assertThat(inboxResponse.get("id"), notNullValue());
 		assertThat(inboxResponse.get("filename"), notNullValue());
 		assertThat(inboxResponse.get("crc32").asLong(), is(312729961L));
 
 		// download uploaded photo from inbox
-		final Response photoResponse = client.target(
-				String.format("http://localhost:%d%s%s", port, "/inbox/", inboxResponse.get("filename").asText()))
-				.request().get();
-		final BufferedImage inputImage = ImageIO.read((InputStream)photoResponse.getEntity());
+		final ResponseEntity<InputStream> photoResponse = restTemplate.getForEntity(
+				String.format("http://localhost:%d%s%s", port, "/inbox/", inboxResponse.get("filename").asText()), InputStream.class);
+		final BufferedImage inputImage = ImageIO.read(photoResponse.getBody());
 		assertThat(inputImage, notNullValue());
 		// we cannot binary compare the result anymore, the photos are re-encoded
 		// assertThat(IOUtils.readFully((InputStream)photoResponse.getEntity(), IMAGE.length), is(IMAGE));
@@ -348,118 +344,89 @@ class RsapiApplicationTests {
 
 	@Test
 	public void getProfileForbidden() {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Nickname", "nickname")
-				.header("Email", "nickname@example.com")
-				.get();
+		final HttpHeaders headers = new HttpHeaders();
+		headers.add("Nickname", "nickname");
+		headers.add("Email", "nickname@example.com");
+		final ResponseEntity<String> response = restTemplate.exchange(String.format("http://localhost:%d%s", port, "/myProfile"), HttpMethod.GET, new HttpEntity<>(headers), String.class);
 
-		assertThat(response.getStatus(), is(401));
+		assertThat(response.getStatusCodeValue(), is(401));
 	}
 
 	@Test
 	public void getMyProfileWithEmail() throws IOException {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Upload-Token", "154a0dc31376d7620249fe089fb3ad417363f2f8")
-				.header("Email", "khgdrn@example.com")
-				.get();
+		final HttpHeaders headers = new HttpHeaders();
+		headers.add("Upload-Token", "154a0dc31376d7620249fe089fb3ad417363f2f8");
+		headers.add("Email", "khgdrn@example.com");
+		final ResponseEntity<String> response = restTemplate.exchange(String.format("http://localhost:%d%s", port, "/myProfile"), HttpMethod.GET, new HttpEntity<>(headers), String.class);
 
-		assertThat(response.getStatus(), is(200));
+		assertThat(response.getStatusCodeValue(), is(200));
 		assertProfile(response, "@khgdrn", "https://www.twitter.com/khgdrn", "CC0 1.0 Universell (CC0 1.0)", false, "khgdrn@example.com");
 	}
 
 	@Test
 	public void getMyProfileWithName() throws IOException {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Upload-Token", "154a0dc31376d7620249fe089fb3ad417363f2f8")
-				.header("Email", "@khgdrn")
-				.get();
+		final HttpHeaders headers = new HttpHeaders();
+		headers.add("Upload-Token", "154a0dc31376d7620249fe089fb3ad417363f2f8");
+		headers.add("Email", "@khgdrn");
+		final ResponseEntity<String> response = restTemplate.exchange(String.format("http://localhost:%d%s", port, "/myProfile"), HttpMethod.GET, new HttpEntity<>(headers), String.class);
 
-		assertThat(response.getStatus(), is(200));
+		assertThat(response.getStatusCodeValue(), is(200));
 		assertProfile(response, "@khgdrn", "https://www.twitter.com/khgdrn", "CC0 1.0 Universell (CC0 1.0)", false, "khgdrn@example.com");
 	}
 
 	@Test
 	public void getMyProfileWithBasicAuthUploadToken() throws IOException {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Authorization", getBasicAuthentication("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8"))
-				.get();
+		final ResponseEntity<String> response = restTemplate.withBasicAuth("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8")
+				.getForEntity(String.format("http://localhost:%d%s", port, "/myProfile"), String.class);
 
-		assertThat(response.getStatus(), is(200));
+		assertThat(response.getStatusCodeValue(), is(200));
 		assertProfile(response, "@khgdrn", "https://www.twitter.com/khgdrn", "CC0 1.0 Universell (CC0 1.0)", false, "khgdrn@example.com");
 	}
 
 	@Test
 	public void getMyProfileWithBasicAuthPassword() throws IOException {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Authorization", getBasicAuthentication("@stefanopitz", "y89zFqkL6hro"))
-				.get();
+		final ResponseEntity<String> response = restTemplate.withBasicAuth("@stefanopitz", "y89zFqkL6hro")
+				.getForEntity(String.format("http://localhost:%d%s", port, "/myProfile"), String.class);
 
-		assertThat(response.getStatus(), is(200));
+		assertThat(response.getStatusCodeValue(), is(200));
 		assertProfile(response, "@stefanopitz", "https://twitter.com/stefanopitz", "CC0 1.0 Universell (CC0 1.0)", false, "");
 	}
 
 	@Test
 	public void getMyProfileWithBasicAuthPasswordFail() {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Authorization", getBasicAuthentication("@stefanopitz", "blahblubb"))
-				.get();
+		final ResponseEntity<String> response = restTemplate.withBasicAuth("@stefanopitz", "blahblubb")
+				.getForEntity(String.format("http://localhost:%d%s", port, "/myProfile"), String.class);
 
-		assertThat(response.getStatus(), is(401));
+		assertThat(response.getStatusCodeValue(), is(401));
 	}
 
 	@Test
 	public void getInboxWithBasicAuthPasswordFail() {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/adminInbox"))
-				.request()
-				.header("Authorization", getBasicAuthentication("@stefanopitz", "blahblubb"))
-				.get();
+		final ResponseEntity<String> response = restTemplate.withBasicAuth("@stefanopitz", "blahblubb")
+				.getForEntity(String.format("http://localhost:%d%s", port, "/adminInbox"), String.class);
 
-		assertThat(response.getStatus(), is(401));
+		assertThat(response.getStatusCodeValue(), is(401));
 	}
 
 	@Test
 	public void getInboxWithBasicAuthNotAuthorized() {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/adminInbox"))
-				.request()
-				.header("Authorization", getBasicAuthentication("@stefanopitz", "y89zFqkL6hro"))
-				.get();
+		final ResponseEntity<String> response = restTemplate.withBasicAuth("@stefanopitz", "y89zFqkL6hro")
+				.getForEntity(String.format("http://localhost:%d%s", port, "/adminInbox"), String.class);
 
-		assertThat(response.getStatus(), is(403));
+		assertThat(response.getStatusCodeValue(), is(403));
 	}
 
 	@Test
 	public void getInboxWithBasicAuth() {
-		final Response response = client.target(
-				String.format("http://localhost:%d%s", port, "/adminInbox"))
-				.request()
-				.header("Authorization", getBasicAuthentication("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8"))
-				.get();
+		final ResponseEntity<String> response = restTemplate.withBasicAuth("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8")
+				.getForEntity(String.format("http://localhost:%d%s", port, "/adminInbox"), String.class);
 
-		assertThat(response.getStatus(), is(200));
+		assertThat(response.getStatusCodeValue(), is(200));
 		// TODO: assert response body
 	}
 
-	private String getBasicAuthentication(final String user, final String password) {
-		final String token = user + ":" + password;
-		return "BASIC " + DatatypeConverter.printBase64Binary(token.getBytes(StandardCharsets.UTF_8));
-	}
-
-	private void assertProfile(final Response response, final String name, final String link, final String license, final boolean anonymous, final String email) throws IOException {
-		final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
+	private void assertProfile(final ResponseEntity<String> response, final String name, final String link, final String license, final boolean anonymous, final String email) throws IOException {
+		final JsonNode jsonNode = MAPPER.readTree(response.getBody());
 		assertThat(jsonNode.get("nickname").asText(), is(name));
 		assertThat(jsonNode.get("email").asText(), is(email));
 		assertThat(jsonNode.get("link").asText(), is(link));
@@ -471,76 +438,50 @@ class RsapiApplicationTests {
 
 	@Test
 	public void updateMyProfileAndChangePassword() throws IOException {
-		final Response responseGetBefore = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
-				.header("Email", "storchp@example.com")
-				.get();
-
-		assertThat(responseGetBefore.getStatus(), is(200));
-		assertThat(responseGetBefore.getEntity(), notNullValue());
+		final HttpHeaders headers = new HttpHeaders();
+		headers.add("Upload-Token", "0ae7d6de822259da274581d9932052222b874016");
+		headers.add("Email", "storchp@example.com");
+		final ResponseEntity<String> responseGetBefore = restTemplate.exchange(String.format("http://localhost:%d%s", port, "/myProfile"), HttpMethod.GET, new HttpEntity<>(headers), String.class);
+		assertThat(responseGetBefore.getStatusCodeValue(), is(200));
+		assertThat(responseGetBefore.getBody(), notNullValue());
 		assertProfile(responseGetBefore, "@storchp", "https://www.twitter.com/storchp", "CC0 1.0 Universell (CC0 1.0)", false, "storchp@example.com");
 
-		final Response responsePostUpdate = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
-				.header("Email", "storchp@example.com")
-				.post(Entity.entity("{\n" +
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		final ResponseEntity<String> responsePostUpdate = restTemplate.postForEntity(
+				String.format("http://localhost:%d%s", port, "/myProfile"), new HttpEntity<>("{\n" +
 						"\t\"nickname\": \"storchp\", \n" +
 						"\t\"email\": \"storchp@example.com\", \n" +
 						"\t\"license\": \"CC0\",\n" +
 						"\t\"photoOwner\": true, \n" +
 						"\t\"link\": null,\n" +
 						"\t\"anonymous\": true\n" +
-						"}", "application/json"));
+						"}", headers), String.class);
+		assertThat(responsePostUpdate.getStatusCodeValue(), is(200));
+		assertThat(responsePostUpdate.getBody(), notNullValue());
 
-		assertThat(responsePostUpdate.getStatus(), is(200));
-		assertThat(responsePostUpdate.getEntity(), notNullValue());
-
-		final Response responseGetAfter = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
-				.header("Email", "storchp@example.com")
-				.get();
-
-		assertThat(responseGetAfter.getStatus(), is(200));
-		assertThat(responseGetAfter.getEntity(), notNullValue());
+		final ResponseEntity<String> responseGetAfter = restTemplate.exchange(String.format("http://localhost:%d%s", port, "/myProfile"), HttpMethod.GET, new HttpEntity<>(headers), String.class);
+		assertThat(responseGetAfter.getStatusCodeValue(), is(200));
+		assertThat(responseGetAfter.getBody(), notNullValue());
 		assertProfile(responseGetAfter, "storchp", "", "CC0 1.0 Universell (CC0 1.0)", true, "storchp@example.com");
 
-		final Response responseChangePassword = client.target(
-				String.format("http://localhost:%d%s", port, "/changePassword"))
-				.request()
-				.header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
-				.header("Email", "storchp@example.com")
-				.header("New-Password", URLEncoder.encode("\uD83D\uDE0E-1234567890", StandardCharsets.UTF_8.toString()))
-				.post(null);
-		assertThat(responseChangePassword.getStatus(), is(200));
+		headers.add("New-Password", URLEncoder.encode("\uD83D\uDE0E-1234567890", StandardCharsets.UTF_8.toString()));
+		final ResponseEntity<String> responseChangePassword = restTemplate.postForEntity(
+				String.format("http://localhost:%d%s", port, "/changePassword"), new HttpEntity<>(headers), String.class);
+		assertThat(responseChangePassword.getStatusCodeValue(), is(200));
 
-		final Response responseAfterChangedPassword = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Authorization", getBasicAuthentication("storchp@example.com", "\uD83D\uDE0E-1234567890"))
-				.get();
+		final ResponseEntity<String> responseAfterChangedPassword = restTemplate
+				.withBasicAuth("storchp@example.com", "\uD83D\uDE0E-1234567890")
+				.getForEntity(String.format("http://localhost:%d%s", port, "/myProfile"), String.class);
+		assertThat(responseAfterChangedPassword.getStatusCodeValue(), is(200));
 
-		assertThat(responseAfterChangedPassword.getStatus(), is(200));
-
-		final Response responseWithOldPassword = client.target(
-				String.format("http://localhost:%d%s", port, "/myProfile"))
-				.request()
-				.header("Upload-Token", "0ae7d6de822259da274581d9932052222b874016")
-				.header("Email", "storchp@example.com")
-				.get();
-
-		assertThat(responseWithOldPassword.getStatus(), is(401));
+		final ResponseEntity<String> responseWithOldPassword = restTemplate.exchange(String.format("http://localhost:%d%s", port, "/myProfile"), HttpMethod.GET, new HttpEntity<>(headers), String.class);
+		assertThat(responseWithOldPassword.getStatusCodeValue(), is(401));
 	}
 
 	@Test
 	public void countries() throws IOException {
-		final Response response = loadRaw("/countries", 200, String.class);
-		final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
+		final ResponseEntity<String> response = loadRaw("/countries", 200, String.class);
+		final JsonNode jsonNode = MAPPER.readTree(response.getBody());
 		assertThat(jsonNode, notNullValue());
 		assertThat(jsonNode.isArray(), is(true));
 		assertThat(jsonNode.size(), is(2));
@@ -573,48 +514,31 @@ class RsapiApplicationTests {
 
 	@Test
 	public void countriesAll() throws IOException {
-		final Response response = loadRaw("/countries?onlyActive=false", 200, String.class);
-		final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getEntity());
+		final ResponseEntity<String> response = loadRaw("/countries?onlyActive=false", 200, String.class);
+		final JsonNode jsonNode = MAPPER.readTree(response.getBody());
 		assertThat(jsonNode, notNullValue());
 		assertThat(jsonNode.isArray(), is(true));
 		assertThat(jsonNode.size(), is(4));
 	}
 
-	private void assertProviderApp(final JsonNode de, final int i, final String type, final String name, final String url) {
-		final JsonNode app = de.get("providerApps").get(i);
+	private void assertProviderApp(final JsonNode countryNode, final int i, final String type, final String name, final String url) {
+		final JsonNode app = countryNode.get("providerApps").get(i);
 		assertThat(app.get("type").asText(), is(type));
 		assertThat(app.get("name").asText(), is(name));
 		assertThat(app.get("url").asText(), is(url));
 	}
 
-	public static final class MySuite {
-		private static final String TMP_FILE = createTempFile();
-		private static final String TMP_WORK_DIR = createTempDir("workDir");
-		private static final String CONFIG_PATH = ResourceHelpers.resourceFilePath("test-config.yml");
+	@TestConfiguration
+	static class SpringConfig {
+		private final String TMP_WORK_DIR = createTempDir("workDir");
 
-		public static final DropwizardAppExtension<RsApiConfiguration> DROPWIZARD
-				= new DropwizardAppExtension<>(RsApiApp.class, CONFIG_PATH,
-				ConfigOverride.config("database.url", "jdbc:h2:" + TMP_FILE),
-				ConfigOverride.config("workDir", TMP_WORK_DIR));
-
-		static {
-			DROPWIZARD.addListener(new DropwizardAppExtension.ServiceListener<>() {
-				@Override
-				public void onRun(final RsApiConfiguration config, final Environment environment, final DropwizardAppExtension<RsApiConfiguration> rule) throws Exception {
-					rule.getApplication().run("db", "migrate", "-i", "junit", CONFIG_PATH);
-				}
-			});
+		@Bean("workDir")
+		@Primary
+		public String workDir() {
+            return TMP_WORK_DIR;
 		}
 
-		private static String createTempFile() {
-			try {
-				return File.createTempFile("rsapi-test", null).getAbsolutePath();
-			} catch (final IOException e) {
-				throw new IllegalStateException(e);
-			}
-		}
-
-		private static String createTempDir(final String name) {
+		private String createTempDir(final String name) {
 			try {
 				return Files.createTempDirectory(name + "-" + System.currentTimeMillis()).toFile().getAbsolutePath();
 			} catch (final IOException e) {

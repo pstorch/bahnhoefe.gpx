@@ -1,6 +1,5 @@
 package org.railwaystations.rsapi.resources;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.railwaystations.rsapi.db.CountryDao;
@@ -42,7 +41,6 @@ public class CountriesResourceTest {
         countries.forEach(this::assertCountry);
     }
 
-    @SuppressFBWarnings("DM_CONVERT_CASE")
     private void assertCountry(final Country country) {
         assertThat(country.getName(), equalTo("name" + country.getCode().toUpperCase()));
         assertThat(country.getEmail(), equalTo("email" + country.getCode().toUpperCase()));
