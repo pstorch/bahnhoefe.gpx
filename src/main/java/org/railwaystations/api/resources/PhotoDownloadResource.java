@@ -45,7 +45,7 @@ public class PhotoDownloadResource {
         if (!photo.exists() || !photo.canRead()) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-        return Response.ok(ImageUtil.scalePhoto(photo, width), ImageUtil.IMAGE_JPEG_MIME_TYPE).build();
+        return Response.ok(ImageUtil.scalePhoto(photo, width), ImageUtil.extensionToMimeType(ImageUtil.getExtension(photo.getName()))).build();
     }
 
     @GET

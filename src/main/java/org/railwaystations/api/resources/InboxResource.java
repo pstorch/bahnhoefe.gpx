@@ -11,6 +11,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.eclipse.jetty.util.URIUtil;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.railwaystations.api.ImageUtil;
 import org.railwaystations.api.MastodonBot;
 import org.railwaystations.api.PhotoImporter;
 import org.railwaystations.api.StationsRepository;
@@ -51,8 +52,6 @@ public class InboxResource {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final long MAX_SIZE = 20_000_000L;
-    private static final String IMAGE_PNG = "image/png";
-    private static final String IMAGE_JPEG = "image/jpeg";
 
     private final StationsRepository repository;
     private final File inboxDir;
@@ -129,7 +128,7 @@ public class InboxResource {
 
     @POST
     @Path("photoUpload")
-    @Consumes({IMAGE_PNG, IMAGE_JPEG})
+    @Consumes({ImageUtil.IMAGE_PNG, ImageUtil.IMAGE_JPEG})
     @Produces(MediaType.APPLICATION_JSON)
     public Response photoUpload(final InputStream body,
                                 @HeaderParam("User-Agent") final String userAgent,
@@ -515,7 +514,7 @@ public class InboxResource {
             }
         }
 
-        final String extension = mimeToExtension(contentType);
+        final String extension = ImageUtil.mimeToExtension(contentType);
         if (extension == null) {
             LOG.warn("Unknown contentType '{}'", contentType);
             return consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNSUPPORTED_CONTENT_TYPE, "unsupported content type (only jpg and png are supported)"));
@@ -613,17 +612,6 @@ public class InboxResource {
             }
         }
         return response;
-    }
-
-    private String mimeToExtension(final String contentType) {
-        switch (contentType) {
-            case IMAGE_PNG:
-                return "png";
-            case IMAGE_JPEG:
-                return "jpg";
-            default:
-                return null;
-        }
     }
 
     private static class InboxCountResponse {

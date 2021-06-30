@@ -357,7 +357,7 @@ public class RsApiAppTest {
                 .header("Latitude", "50.123")
                 .header("Longitude", "10.123")
                 .header("Comment", "Missing Station")
-                .post(Entity.entity(IMAGE, ImageUtil.IMAGE_JPEG_MIME_TYPE));
+                .post(Entity.entity(IMAGE, "image/jpeg"));
 
         assertThat(response.getStatus(), is(202));
         final JsonNode inboxResponse = MAPPER.readTree((InputStream) response.getEntity());

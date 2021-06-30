@@ -31,7 +31,6 @@ public class PhotoImporter {
     private static final Logger LOG = LoggerFactory.getLogger(PhotoImporter.class);
     private static final Pattern IMPORT_FILE_PATTERN = Pattern.compile("([^-]+)-([A-Z\\d]+).jpe?g", Pattern.CASE_INSENSITIVE);
     private static final Executor EXECUTOR = Executors.newSingleThreadExecutor();
-    public static final String JPG = "jpg";
 
     private final StationsRepository repository;
     private final UserDao userDao;
@@ -130,7 +129,7 @@ public class PhotoImporter {
                     report.add(new ReportEntry(true, countryCode, importFile.getAbsolutePath(), "Photographer " + photographerName + " not found"));
                     continue;
                 }
-                final Photo photo = createPhoto(countryCode, country.orElse(null), stationId, user.get(), JPG);
+                final Photo photo = createPhoto(countryCode, country.orElse(null), stationId, user.get(), ImageUtil.JPG);
                 photosToImport.put(importFile, photo);
             } catch (final Exception e) {
                 LOG.error("Error importing photo " + importFile, e);
@@ -164,7 +163,7 @@ public class PhotoImporter {
 
                 photoDao.insert(photo);
 
-                moveFile(importFile, countryDir, photo.getStationKey().getId(), JPG);
+                moveFile(importFile, countryDir, photo.getStationKey().getId(), ImageUtil.JPG);
                 LOG.info("Photo " + importFile.getAbsolutePath() + " imported");
                 importCount++;
 
