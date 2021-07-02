@@ -11,6 +11,7 @@ import org.railwaystations.rsapi.model.Photo;
 import org.railwaystations.rsapi.model.Station;
 import org.railwaystations.rsapi.model.User;
 import org.railwaystations.rsapi.monitoring.Monitor;
+import org.railwaystations.rsapi.utils.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

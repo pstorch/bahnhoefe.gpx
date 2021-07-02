@@ -88,7 +88,7 @@ public class MatrixMonitor implements Monitor {
 
     private void sendPhoto(final File photo) throws IOException {
         final HttpPost httpPost = new HttpPost(uploadUrl + "?filename" + photo.getName() + "&access_token=" + accessToken);
-        httpPost.setEntity(new ByteArrayEntity(ImageUtil.scalePhoto(photo, 300), ContentType.getByMimeType(ImageUtil.extensionToMimeType(ImageUtil.getExtension(photo.getName()))));
+        httpPost.setEntity(new ByteArrayEntity(ImageUtil.scalePhoto(photo, 300), ContentType.getByMimeType(ImageUtil.extensionToMimeType(ImageUtil.getExtension(photo.getName())))));
         final CloseableHttpResponse responseUpload = httpclient.execute(httpPost);
         final int statusUpload = responseUpload.getStatusLine().getStatusCode();
         final String contentUpload = EntityUtils.toString(responseUpload.getEntity());

@@ -1,4 +1,4 @@
-package org.railwaystations.api;
+package org.railwaystations.rsapi.utils;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

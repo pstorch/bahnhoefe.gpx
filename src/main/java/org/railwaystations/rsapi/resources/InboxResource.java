@@ -6,7 +6,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.railwaystations.api.ImageUtil;
+import org.railwaystations.rsapi.utils.ImageUtil;
 import org.railwaystations.rsapi.MastodonBot;
 import org.railwaystations.rsapi.PhotoImporter;
 import org.railwaystations.rsapi.StationsRepository;
