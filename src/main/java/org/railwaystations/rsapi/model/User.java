@@ -24,8 +24,8 @@ public class User {
     public static final String EMAIL_VERIFIED = "VERIFIED";
     public static final String EMAIL_VERIFIED_AT_NEXT_LOGIN = "NEXT_LOGIN";
     public static final String EMAIL_VERIFICATION_TOKEN = "TOKEN:";
-    public static final String ROLE_ADMIN = "ADMIN";
-    public static final String ROLE_USER = "USER";
+    public static final String ROLE_ADMIN = "ROLE_ADMIN";
+    public static final String ROLE_USER = "ROLE_USER";
 
     static {
         LICENSE_MAP.put("CC0", CC0);
@@ -323,6 +323,7 @@ public class User {
         this.sendNotifications = sendNotifications;
     }
 
+    @JsonIgnore
     public String getRole() {
         return isAdmin() ? ROLE_ADMIN : ROLE_USER;
     }

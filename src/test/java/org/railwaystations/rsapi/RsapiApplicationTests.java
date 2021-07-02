@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.railwaystations.rsapi.mail.Mailer;
 import org.railwaystations.rsapi.model.Station;
+import org.railwaystations.rsapi.monitoring.LoggingMonitor;
+import org.railwaystations.rsapi.monitoring.Monitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -14,6 +16,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.w3c.dom.Document;
@@ -532,10 +535,14 @@ class RsapiApplicationTests {
 	static class SpringConfig {
 		private final String TMP_WORK_DIR = createTempDir("workDir");
 
-		@Bean("workDir")
-		@Primary
-		public String workDir() {
-            return TMP_WORK_DIR;
+		@Bean
+		public WorkDir workDir() {
+            return new WorkDir(TMP_WORK_DIR);
+		}
+
+		@Bean
+		public Monitor monitor() {
+			return new LoggingMonitor();
 		}
 
 		private String createTempDir(final String name) {

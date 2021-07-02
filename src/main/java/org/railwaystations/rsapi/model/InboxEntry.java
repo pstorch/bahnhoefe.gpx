@@ -10,46 +10,46 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class InboxEntry extends PublicInboxEntry {
 
     @JsonProperty
-    private final int id;
+    private int id;
 
     @JsonIgnore
-    private final int photographerId;
+    private int photographerId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final String photographerNickname;
+    private String photographerNickname;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final String photographerEmail;
+    private String photographerEmail;
 
     @JsonIgnore
-    private final String extension;
+    private String extension;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final String comment;
+    private String comment;
 
     @JsonProperty
-    private final String rejectReason;
+    private String rejectReason;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final Long createdAt;
+    private Long createdAt;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private final boolean done;
+    private boolean done;
 
     @JsonProperty
-    private final Command command;
+    private Command command;
 
     @JsonProperty(value = "hasPhoto", access = JsonProperty.Access.READ_ONLY)
-    private final boolean hasPhoto;
+    private boolean hasPhoto;
 
     @JsonProperty(value = "crc32", access = JsonProperty.Access.READ_ONLY)
-    private final Long crc32;
+    private Long crc32;
 
     @JsonProperty(value = "hasConflict", access = JsonProperty.Access.READ_ONLY)
     private boolean conflict;
 
     @JsonProperty(value = "problemReportType", access = JsonProperty.Access.READ_ONLY)
-    private final ProblemReportType problemReportType;
+    private ProblemReportType problemReportType;
 
     @JsonProperty(value = "isProcessed", access = JsonProperty.Access.READ_ONLY)
     private boolean processed;
@@ -70,7 +70,7 @@ public class InboxEntry extends PublicInboxEntry {
     private Boolean createStation;
 
     @JsonIgnore
-    private final boolean notified;
+    private boolean notified;
 
     /**
      * Constructor with all values from database
@@ -131,6 +131,10 @@ public class InboxEntry extends PublicInboxEntry {
         this.ds100 = ds100;
         this.ignoreConflict = ignoreConflict;
         this.createStation = createStation;
+    }
+
+    public InboxEntry() {
+        super();
     }
 
     public int getId() {

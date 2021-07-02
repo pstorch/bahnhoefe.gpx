@@ -51,7 +51,7 @@ public class RSAuthenticationProvider implements AuthenticationProvider {
         // fallback to token
         final Long tokenSalt = user.getUser().getUploadTokenSalt();
         if (tokenSalt != null && tokenSalt > 0 &&
-                tokenGenerator.buildFor(String.valueOf(token.getPrincipal()), tokenSalt).equals(token.getCredentials())) {
+                tokenGenerator.buildFor(String.valueOf(user.getUser().getEmail()), tokenSalt).equals(token.getCredentials())) {
             LOG.info("User verified by UploadToken '{}'", user.getUsername());
             userDetailsService.updateEmailVerification(user.getUser());
             return new UsernamePasswordAuthenticationToken(

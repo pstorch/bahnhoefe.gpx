@@ -10,16 +10,19 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 public class PublicInboxEntry {
 
     @JsonProperty
-    protected final String countryCode;
+    protected String countryCode;
 
     @JsonProperty
-    protected final String stationId;
+    protected String stationId;
 
     @JsonProperty
-    protected final String title;
+    protected String title;
 
     @JsonUnwrapped
-    protected final Coordinates coordinates;
+    protected Coordinates coordinates;
+
+    public PublicInboxEntry() {
+    }
 
     public PublicInboxEntry(final String countryCode, final String stationId, final String title, final Coordinates coordinates) {
         this.countryCode = countryCode;
