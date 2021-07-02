@@ -79,8 +79,9 @@ public class ImageUtil {
             case JPEG:
             case JPG:
                 return IMAGE_JPEG;
+            default:
+                throw new IllegalArgumentException("Unsupported extension: " + extension);
         }
-        throw new IllegalArgumentException("Unsupported extension: " + extension);
     }
 
 }

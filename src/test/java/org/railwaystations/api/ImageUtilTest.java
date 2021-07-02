@@ -1,11 +1,14 @@
 package org.railwaystations.api;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +34,7 @@ public class ImageUtilTest {
         assertEquals(extension, ImageUtil.mimeToExtension(filename));
     }
 
-    static Stream<String> invalidContentTypes() {
+    public static Stream<String> invalidContentTypes() {
         return Stream.of("", "   ", null, "image/svg", "application/json");
     }
 
@@ -49,7 +52,7 @@ public class ImageUtilTest {
         assertEquals(mimeType, ImageUtil.extensionToMimeType(extension));
     }
 
-    static Stream<String> invalidExtensions() {
+    public static Stream<String> invalidExtensions() {
         return Stream.of("", "   ", null, "image/svg", "application/json");
     }
 
@@ -57,6 +60,19 @@ public class ImageUtilTest {
     @MethodSource("invalidExtensions")
     public void testExtensionToMimeTypeException(final String extension) {
         assertThrows(IllegalArgumentException.class, () -> ImageUtil.extensionToMimeType(extension));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "test.jpg, 100, 100",
+            "test.png, 150, 150",
+            "test.jpg,, 200",
+            "test.png,, 200"})
+    public void testScaleImage(final String filename, final Integer newWidth, final int expectedWidth) throws IOException {
+        final File photo = new File("src/test/resources/" + filename);
+        final byte[] scaledBytes = ImageUtil.scalePhoto(photo, newWidth);
+        final BufferedImage scaledImage = ImageIO.read(new ByteArrayInputStream(scaledBytes));
+        assertEquals(expectedWidth, scaledImage.getWidth());
+        assertEquals(expectedWidth, scaledImage.getHeight());
     }
 
 }
