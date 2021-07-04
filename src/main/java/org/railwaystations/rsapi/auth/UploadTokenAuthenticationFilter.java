@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 public class UploadTokenAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     public UploadTokenAuthenticationFilter () {
-        super("/");
+        super("/**");
     }
 
     @Override

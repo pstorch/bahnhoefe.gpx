@@ -46,4 +46,20 @@ public class PublicInboxEntry {
     public Coordinates getCoordinates() {
         return coordinates;
     }
+
+    public void setCountryCode(final String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    public void setStationId(final String stationId) {
+        this.stationId = stationId;
+    }
+
+    public void setTitle(final String title) {
+        this.title = title;
+    }
+
+    public void setCoordinates(final Coordinates coordinates) {
+        this.coordinates = coordinates;
+    }
 }

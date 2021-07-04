@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class InboxEntry extends PublicInboxEntry {
-
     @JsonProperty
     private int id;
 
@@ -135,6 +134,102 @@ public class InboxEntry extends PublicInboxEntry {
 
     public InboxEntry() {
         super();
+    }
+
+    public void setId(final int id) {
+        this.id = id;
+    }
+
+    public void setPhotographerId(final int photographerId) {
+        this.photographerId = photographerId;
+    }
+
+    public void setPhotographerNickname(final String photographerNickname) {
+        this.photographerNickname = photographerNickname;
+    }
+
+    public void setPhotographerEmail(final String photographerEmail) {
+        this.photographerEmail = photographerEmail;
+    }
+
+    public void setExtension(final String extension) {
+        this.extension = extension;
+    }
+
+    public void setComment(final String comment) {
+        this.comment = comment;
+    }
+
+    public void setRejectReason(final String rejectReason) {
+        this.rejectReason = rejectReason;
+    }
+
+    public void setCreatedAt(final Long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setDone(final boolean done) {
+        this.done = done;
+    }
+
+    public void setCommand(final Command command) {
+        this.command = command;
+    }
+
+    public boolean isHasPhoto() {
+        return hasPhoto;
+    }
+
+    public void setHasPhoto(final boolean hasPhoto) {
+        this.hasPhoto = hasPhoto;
+    }
+
+    public void setCrc32(final Long crc32) {
+        this.crc32 = crc32;
+    }
+
+    public boolean isConflict() {
+        return conflict;
+    }
+
+    public void setProblemReportType(final ProblemReportType problemReportType) {
+        this.problemReportType = problemReportType;
+    }
+
+    public void setProcessed(final boolean processed) {
+        this.processed = processed;
+    }
+
+    public String getDs100() {
+        return ds100;
+    }
+
+    public void setDs100(final String ds100) {
+        this.ds100 = ds100;
+    }
+
+    public void setActive(final Boolean active) {
+        this.active = active;
+    }
+
+    public Boolean getIgnoreConflict() {
+        return ignoreConflict;
+    }
+
+    public void setIgnoreConflict(final Boolean ignoreConflict) {
+        this.ignoreConflict = ignoreConflict;
+    }
+
+    public Boolean getCreateStation() {
+        return createStation;
+    }
+
+    public void setCreateStation(final Boolean createStation) {
+        this.createStation = createStation;
+    }
+
+    public void setNotified(final boolean notified) {
+        this.notified = notified;
     }
 
     public int getId() {

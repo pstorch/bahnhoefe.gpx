@@ -42,13 +42,13 @@ public class StationsResource {
 
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8", StationsGpxWriter.GPX_MEDIA_TYPE_VALUE,
             MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8"}, value = "/stations")
-    public List<Station> get(@RequestParam(StationsResource.COUNTRY) final Set<String> countries,
-                             @RequestParam(StationsResource.HAS_PHOTO) final Boolean hasPhoto,
-                             @RequestParam(StationsResource.PHOTOGRAPHER) final String photographer,
-                             @RequestParam(StationsResource.MAX_DISTANCE) final Integer maxDistance,
-                             @RequestParam(StationsResource.LAT) final Double lat,
-                             @RequestParam(StationsResource.LON) final Double lon,
-                             @RequestParam(StationsResource.ACTIVE) final Boolean active) {
+    public List<Station> get(@RequestParam(value = StationsResource.COUNTRY, required = false) final Set<String> countries,
+                             @RequestParam(value = StationsResource.HAS_PHOTO, required = false) final Boolean hasPhoto,
+                             @RequestParam(value = StationsResource.PHOTOGRAPHER, required = false) final String photographer,
+                             @RequestParam(value = StationsResource.MAX_DISTANCE, required = false) final Integer maxDistance,
+                             @RequestParam(value = StationsResource.LAT, required = false) final Double lat,
+                             @RequestParam(value = StationsResource.LON, required = false) final Double lon,
+                             @RequestParam(value = StationsResource.ACTIVE, required = false) final Boolean active) {
         // TODO: can we search this on the DB?
         return getStationsMap(countries)
                 .values().stream().filter(station -> station.appliesTo(hasPhoto, photographer, maxDistance, lat, lon, active)).collect(Collectors.toList());
@@ -57,12 +57,12 @@ public class StationsResource {
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8", StationsGpxWriter.GPX_MEDIA_TYPE_VALUE,
             MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8"}, value = "/{country}/stations")
     public List<Station> getWithCountry(@PathVariable(StationsResource.COUNTRY) final String country,
-                                        @RequestParam(StationsResource.HAS_PHOTO) final Boolean hasPhoto,
-                                        @RequestParam(StationsResource.PHOTOGRAPHER) final String photographer,
-                                        @RequestParam(StationsResource.MAX_DISTANCE) final Integer maxDistance,
-                                        @RequestParam(StationsResource.LAT) final Double lat,
-                                        @RequestParam(StationsResource.LON) final Double lon,
-                                        @RequestParam(StationsResource.ACTIVE) final Boolean active) {
+                                        @RequestParam(value = StationsResource.HAS_PHOTO, required = false) final Boolean hasPhoto,
+                                        @RequestParam(value = StationsResource.PHOTOGRAPHER, required = false) final String photographer,
+                                        @RequestParam(value = StationsResource.MAX_DISTANCE, required = false) final Integer maxDistance,
+                                        @RequestParam(value = StationsResource.LAT, required = false) final Double lat,
+                                        @RequestParam(value = StationsResource.LON, required = false) final Double lon,
+                                        @RequestParam(value = StationsResource.ACTIVE, required = false) final Boolean active) {
         return get(Collections.singleton(country), hasPhoto, photographer, maxDistance, lat, lon, active);
     }
 
@@ -77,7 +77,7 @@ public class StationsResource {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8", value = "/recentPhotoImports")
-    public List<Station> recentPhotoImports(@RequestParam(StationsResource.SINCE_HOURS)  @DefaultValue("10") final long sinceHours) {
+    public List<Station> recentPhotoImports(@RequestParam(value = StationsResource.SINCE_HOURS, required = false)  @DefaultValue("10") final long sinceHours) {
         return repository.findRecentImports(System.currentTimeMillis() - (HOURS_IN_MILLIS * sinceHours));
     }
 

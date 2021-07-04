@@ -16,11 +16,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ConfigurationPropertiesScan
 @EnableScheduling
 @EnableTransactionManagement
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(
-		prePostEnabled = true,
-		securedEnabled = true,
-		jsr250Enabled = true)
 public class RsapiApplication {
 
 	public static void main(final String[] args) {

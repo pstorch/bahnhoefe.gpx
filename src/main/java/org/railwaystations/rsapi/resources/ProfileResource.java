@@ -9,15 +9,20 @@ import org.railwaystations.rsapi.model.User;
 import org.railwaystations.rsapi.monitoring.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.NotNull;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -154,11 +159,15 @@ public class ProfileResource {
         user.setUploadToken(null);
     }
 
+    @Autowired
+    private UserDetailsService userDetailsService;
+
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/myProfile")
+    @RolesAllowed({"ROLE_USER","ROLE_ADMIN"})
     public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Get profile for '{}'", user.getEmail());
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, value = "/myProfile")
