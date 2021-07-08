@@ -139,8 +139,8 @@ class RsapiApplicationTests {
 
 	@Test
 	public void stationsJson() throws IOException {
-		final ResponseEntity<InputStream> response = loadRaw("/de/stations.json", 200, InputStream.class);
-		final JsonNode jsonNode = MAPPER.readTree((InputStream) response.getBody());
+		final ResponseEntity<String> response = loadRaw("/de/stations.json", 200, String.class);
+		final JsonNode jsonNode = MAPPER.readTree(response.getBody());
 		assertThat(jsonNode, notNullValue());
 		assertThat(jsonNode.isArray(), is(true));
 		assertThat(jsonNode.size(), is(729));
@@ -212,20 +212,19 @@ class RsapiApplicationTests {
 
 	@Test
 	public void photographersTxt() throws IOException {
-		final ResponseEntity<InputStream> response = loadRaw("/de/photographers.txt", 200, InputStream.class);
-		try (final BufferedReader br = new BufferedReader(new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
-			final String header = br.readLine();
-			assertThat(header, is("count\tphotographer"));
-			int count = 0;
-			final Pattern pattern = Pattern.compile("\\d[\\d]*\t[^\t]*");
-			while (br.ready()) {
-				final String line = br.readLine();
-				count++;
+		final ResponseEntity<String> response = loadRaw("/de/photographers.txt", 200, String.class);
+		int count = 0;
+		final Pattern pattern = Pattern.compile("\\d[\\d]*\t[^\t]*");
+		for (final String line : response.getBody().split("\n")) {
+			if (count == 0) {
+				assertThat(line, is("count\tphotographer"));
+			} else {
 				final Matcher matcher = pattern.matcher(line);
 				assertThat(matcher.matches(), is(true));
 			}
-			assertThat(count, is(4));
+			count++;
 		}
+		assertThat(count, is(4));
 	}
 
 	private Station getStation(final String url) {
@@ -243,20 +242,19 @@ class RsapiApplicationTests {
 
 	@Test
 	public void statisticTxt() throws IOException {
-		final ResponseEntity<InputStream> response = loadRaw("/de/stats.txt", 200, InputStream.class);
-		try (final BufferedReader br = new BufferedReader(new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
-			final String header = br.readLine();
-			assertThat(header, is("name\tvalue"));
-			int count = 0;
-			final Pattern pattern = Pattern.compile("[^\t]*\t\\d[\\d]*");
-			while (br.ready()) {
-				final String line = br.readLine();
-				count++;
+		final ResponseEntity<String> response = loadRaw("/de/stats.txt", 200, String.class);
+		final Pattern pattern = Pattern.compile("[^\t]*\t\\d[\\d]*");
+		int count = 0;
+		for (final String line : response.getBody().split("\n")) {
+			if (count == 0) {
+				assertThat(line, is("name\tvalue"));
+			} else {
 				final Matcher matcher = pattern.matcher(line);
 				assertThat(matcher.matches(), is(true));
 			}
-			assertThat(count, is(4));
+			count++;
 		}
+		assertThat(count, is(4));
 	}
 
 	@Test
@@ -304,13 +302,14 @@ class RsapiApplicationTests {
 
 	@Test
 	public void photoUploadForbidden() {
-		final HttpEntity<String> request = new HttpEntity<>("");
-		request.getHeaders().add("Upload-Token", "edbfc44727a6fd4f5b029aff21861a667a6b4195");
-		request.getHeaders().add("Nickname", "nickname");
-		request.getHeaders().add("Email", "nickname@example.com");
-		request.getHeaders().add("Station-Id", "4711");
-		request.getHeaders().add("Country", "de");
-		request.getHeaders().setContentType(MediaType.IMAGE_JPEG);
+		final HttpHeaders headers = new HttpHeaders();
+		headers.add("Upload-Token", "edbfc44727a6fd4f5b029aff21861a667a6b4195");
+		headers.add("Nickname", "nickname");
+		headers.add("Email", "nickname@example.com");
+		headers.add("Station-Id", "4711");
+		headers.add("Country", "de");
+		headers.setContentType(MediaType.IMAGE_JPEG);
+		final HttpEntity<String> request = new HttpEntity<>("", headers);
 		final ResponseEntity<String> response = restTemplate.postForEntity(
 				String.format("http://localhost:%d%s", port, "/photoUpload"), request, String.class);
 
@@ -321,13 +320,14 @@ class RsapiApplicationTests {
 
 	@Test
 	public void photoUploadUnknownStation() throws IOException {
-		final HttpEntity<String> request = new HttpEntity<>("");
-		request.getHeaders().setBasicAuth("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8");
-		request.getHeaders().add("Station-Title", URLEncoder.encode("Achères-Grand-Cormier", StandardCharsets.UTF_8.toString()));
-		request.getHeaders().add("Latitude", "50.123");
-		request.getHeaders().add("Longitude", "10.123");
-		request.getHeaders().add("Comment", "Missing Station");
-		request.getHeaders().setContentType(MediaType.IMAGE_JPEG);
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setBasicAuth("@khgdrn", "154a0dc31376d7620249fe089fb3ad417363f2f8");
+		headers.add("Station-Title", URLEncoder.encode("Achères-Grand-Cormier", StandardCharsets.UTF_8.toString()));
+		headers.add("Latitude", "50.123");
+		headers.add("Longitude", "10.123");
+		headers.add("Comment", "Missing Station");
+		headers.setContentType(MediaType.IMAGE_JPEG);
+		final HttpEntity<byte[]> request = new HttpEntity<>(IMAGE, headers);
 		final ResponseEntity<String> response = restTemplate.postForEntity(
 				String.format("http://localhost:%d%s", port, "/photoUpload"), request, String.class);
 
@@ -338,9 +338,9 @@ class RsapiApplicationTests {
 		assertThat(inboxResponse.get("crc32").asLong(), is(312729961L));
 
 		// download uploaded photo from inbox
-		final ResponseEntity<InputStream> photoResponse = restTemplate.getForEntity(
-				String.format("http://localhost:%d%s%s", port, "/inbox/", inboxResponse.get("filename").asText()), InputStream.class);
-		final BufferedImage inputImage = ImageIO.read(photoResponse.getBody());
+		final ResponseEntity<byte[]> photoResponse = restTemplate.getForEntity(
+				String.format("http://localhost:%d%s%s", port, "/inbox/", inboxResponse.get("filename").asText()), byte[].class);
+		final BufferedImage inputImage = ImageIO.read(new ByteArrayInputStream(photoResponse.getBody()));
 		assertThat(inputImage, notNullValue());
 		// we cannot binary compare the result anymore, the photos are re-encoded
 		// assertThat(IOUtils.readFully((InputStream)photoResponse.getEntity(), IMAGE.length), is(IMAGE));

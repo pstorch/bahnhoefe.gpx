@@ -23,6 +23,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,7 +86,7 @@ public class PhotoInboxEntryResourceTest {
         final InputStream is = new ByteArrayInputStream(inputBytes);
         final ResponseEntity<InboxResponse> response = resource.photoUpload(is, "UserAgent", stationId, country, "image/jpeg",
                 stationTitle, latitude, longitude, comment, null,
-                new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false, emailVerification, true), null));
+                new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false, emailVerification, true), Collections.EMPTY_LIST));
         return response.getBody();
     }
 
@@ -192,7 +193,7 @@ public class PhotoInboxEntryResourceTest {
         inboxStateQueries.add(new InboxStateQuery(3, "de", "5678", null, null, null));
         inboxStateQueries.add(new InboxStateQuery(4,"ch", "0815", null, null, null));
 
-        final List<InboxStateQuery> uploadStateQueriesResult = resource.userInbox(new AuthUser(user, null), inboxStateQueries);
+        final List<InboxStateQuery> uploadStateQueriesResult = resource.userInbox(new AuthUser(user, Collections.EMPTY_LIST), inboxStateQueries);
 
         assertThat(uploadStateQueriesResult.get(0).getState(), is(InboxStateQuery.InboxState.REVIEW));
         assertThat(uploadStateQueriesResult.get(0).getFilename(), is("1.jpg"));
@@ -233,7 +234,7 @@ public class PhotoInboxEntryResourceTest {
     public void testPostInvalidCountry() {
         final ResponseEntity<InboxResponse> response = resource.photoUpload(null, "UserAgent", "4711", "xy", "image/jpeg",
                 null, null, null, null, null,
-                new AuthUser(new User("nickname", null, "CC0", 0,  "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true), null));
+                new AuthUser(new User("nickname", null, "CC0", 0,  "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true), Collections.EMPTY_LIST));
         final InboxResponse inboxResponse = response.getBody();
         assertThat(inboxResponse.getState(), equalTo(InboxResponse.InboxResponseState.NOT_ENOUGH_DATA));
         assertThat(inboxResponse.getId(), nullValue());
@@ -244,7 +245,7 @@ public class PhotoInboxEntryResourceTest {
     public void testPostProblemReport() {
         when(inboxDao.insert(any())).thenReturn(6);
         final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong", null),
-                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true), null));
+                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true), Collections.EMPTY_LIST));
 
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.REVIEW));
         assertThat(response.getId(), equalTo(6));
@@ -255,7 +256,7 @@ public class PhotoInboxEntryResourceTest {
     @Test
     public void testPostProblemReportEmailNotVerified() {
         final InboxResponse response = resource.reportProblem("UserAgent", new ProblemReport("de", "1234", ProblemReportType.OTHER, "something is wrong", null),
-                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFICATION_TOKEN + "blah", true), null));
+                new AuthUser(new User("@nick name", null, "CC0", 42, "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFICATION_TOKEN + "blah", true), Collections.EMPTY_LIST));
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.UNAUTHORIZED));
     }
 

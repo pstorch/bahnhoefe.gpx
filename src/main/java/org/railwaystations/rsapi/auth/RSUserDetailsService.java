@@ -25,7 +25,7 @@ public class RSUserDetailsService implements UserDetailsService {
         final User user = userDao.findByEmail(User.normalizeEmail(username))
                 .orElse(userDao.findByNormalizedName(User.normalizeName(username)).orElse(null));
         if (user == null) {
-            return null;
+            throw new UsernameNotFoundException(String.format("User '%s' not found", username));
         }
         final GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(user.getRole());
         return new AuthUser(user, Collections.singletonList(grantedAuthority));

@@ -12,6 +12,7 @@ import org.railwaystations.rsapi.model.User;
 import org.railwaystations.rsapi.monitoring.MockMonitor;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -81,7 +82,7 @@ public class ProfileResourceTest {
     private void assertVerificationEmail() {
         Mockito.verify(mailer, Mockito.times(1))
                 .send(anyString(),
-                        anyString(),"Hello,\n\n" +
+                        anyString(),matches("Hello,\n\n" +
                 "please click on EMAIL_VERIFICATION_URL.* to verify your eMail-Address.\n\n" +
                 "Cheers\n" +
                 "Your Railway-Stations-Team\n" +
@@ -89,13 +90,13 @@ public class ProfileResourceTest {
                 "Hallo,\n\n" +
                 "bitte klicke auf EMAIL_VERIFICATION_URL.*, um Deine eMail-Adresse zu verifizieren\n\n" +
                 "Viele Grüße\n" +
-                "Dein Bahnhofsfoto-Team");
+                "Dein Bahnhofsfoto-Team"));
     }
 
     private void assertNewPasswordEmail() {
         Mockito.verify(mailer, Mockito.times(1))
                 .send(anyString(),
-                        anyString(),"Hello,\n\n" +
+                        anyString(),matches("Hello,\n\n" +
                 "your new password is: .*\n\n" +
                 "Cheers\n" +
                 "Your Railway-Stations-Team\n" +
@@ -103,7 +104,7 @@ public class ProfileResourceTest {
                 "Hallo,\n\n" +
                 "Dein neues Passwort lautet: .*\n\n" +
                 "Viele Grüße\n" +
-                "Dein Bahnhofsfoto-Team");
+                "Dein Bahnhofsfoto-Team"));
     }
 
     @Test
@@ -157,7 +158,7 @@ public class ProfileResourceTest {
     @Test
     public void testGetMyProfile() {
         final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
-        final ResponseEntity response = resource.getMyProfile(new AuthUser(user, null));
+        final ResponseEntity response = resource.getMyProfile(new AuthUser(user, Collections.EMPTY_LIST));
 
         assertThat(response.getStatusCodeValue(), equalTo(200));
         assertThat(response.getBody(), sameInstance(user));
@@ -166,7 +167,7 @@ public class ProfileResourceTest {
     @Test
     public void testChangePasswordTooShort() {
         final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
-        final ResponseEntity response = resource.changePassword(new AuthUser(user, null), "secret");
+        final ResponseEntity response = resource.changePassword(new AuthUser(user, Collections.EMPTY_LIST), "secret");
         verify(userDao, never()).updateCredentials(anyInt(), anyString());
 
         assertThat(response.getStatusCodeValue(), equalTo(400));
@@ -178,7 +179,7 @@ public class ProfileResourceTest {
         user.setId(4711);
         final ArgumentCaptor<Integer> idCaptor = ArgumentCaptor.forClass(Integer.class);
         final ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
-        final ResponseEntity response = resource.changePassword(new AuthUser(user, null), "secretlong");
+        final ResponseEntity response = resource.changePassword(new AuthUser(user, Collections.EMPTY_LIST), "secretlong");
         verify(userDao).updateCredentials(idCaptor.capture(), keyCaptor.capture());
 
         assertThat(response.getStatusCodeValue(), equalTo(200));
@@ -191,7 +192,7 @@ public class ProfileResourceTest {
         when(userDao.findByNormalizedName("newname")).thenReturn(Optional.empty());
         final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
         final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true, null, true);
-        final ResponseEntity response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user, null));
+        final ResponseEntity response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user, Collections.EMPTY_LIST));
 
         assertThat(response.getStatusCodeValue(), equalTo(200));
         verify(userDao).update(newProfile);
@@ -202,7 +203,7 @@ public class ProfileResourceTest {
         when(userDao.findByNormalizedName("newname")).thenReturn(Optional.of(new User("@New name", "newname@example.com", null, true, null, false, null, true)));
         final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
         final User newProfile = new User("new_name", "existing@example.com", "CC0", true, "http://twitter.com/", true, null, true);
-        final ResponseEntity response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user, null));
+        final ResponseEntity response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user, Collections.EMPTY_LIST));
 
         assertThat(response.getStatusCodeValue(), equalTo(409));
         verify(userDao, never()).update(newProfile);
@@ -213,7 +214,7 @@ public class ProfileResourceTest {
         when(userDao.findByEmail("newname@example.com")).thenReturn(Optional.empty());
         final User user = new User("existing", "existing@example.com", null, true, null, false, null, true);
         final User newProfile = new User("existing", "newname@example.com", "CC0", true, "http://twitter.com/", true, null, true);
-        final ResponseEntity response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user, null));
+        final ResponseEntity response = resource.updateMyProfile("UserAgent", newProfile, new AuthUser(user, Collections.EMPTY_LIST));
 
         assertThat(response.getStatusCodeValue(), equalTo(200));
         assertVerificationEmail();
@@ -289,7 +290,7 @@ public class ProfileResourceTest {
     public void testResendEmailVerification() {
         when(userDao.findByEmail("newname@example.com")).thenReturn(Optional.empty());
         final User user = new User("existing","https://link@example.com", "CC0", 42, "existing@example.com", true, false, null, null, false, User.EMAIL_VERIFIED_AT_NEXT_LOGIN, true);
-        final ResponseEntity response = resource.resendEmailVerification(new AuthUser(user, null));
+        final ResponseEntity response = resource.resendEmailVerification(new AuthUser(user, Collections.EMPTY_LIST));
 
         assertThat(response.getStatusCodeValue(), equalTo(200));
         assertThat(user.getEmailVerification().startsWith(User.EMAIL_VERIFICATION_TOKEN), is(true));
