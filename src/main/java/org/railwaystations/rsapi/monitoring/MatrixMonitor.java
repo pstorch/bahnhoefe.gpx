@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 
 @Service
+@Profile("prod")
 public class MatrixMonitor implements Monitor {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();

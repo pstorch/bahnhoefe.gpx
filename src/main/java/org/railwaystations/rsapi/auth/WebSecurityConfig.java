@@ -27,14 +27,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
-        http.httpBasic().disable();
+/*        http.httpBasic().disable();
 
         http.cors().and().csrf().disable()
                 .authorizeRequests()
                 .anyRequest().authenticated()
                 .and().formLogin().disable() // <-- this will disable the login route
                 .addFilterBefore(uploadTokenAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);*/
     }
 
     @Override

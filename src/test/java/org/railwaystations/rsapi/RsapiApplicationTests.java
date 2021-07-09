@@ -122,7 +122,9 @@ class RsapiApplicationTests {
 
 	@Test
 	public void stationsUnknownCountry() {
-		assertLoadStations("/jp/stations", 404);
+		final ResponseEntity<String> response = restTemplate.getForEntity(
+				String.format("http://localhost:%d/jp/stations", port), String.class);
+		assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
 	}
 
 	@Test
@@ -211,7 +213,7 @@ class RsapiApplicationTests {
 	}
 
 	@Test
-	public void photographersTxt() throws IOException {
+	public void photographersTxt() {
 		final ResponseEntity<String> response = loadRaw("/de/photographers.txt", 200, String.class);
 		int count = 0;
 		final Pattern pattern = Pattern.compile("\\d[\\d]*\t[^\t]*");
@@ -224,7 +226,7 @@ class RsapiApplicationTests {
 			}
 			count++;
 		}
-		assertThat(count, is(4));
+		assertThat(count, is(5));
 	}
 
 	private Station getStation(final String url) {
@@ -254,7 +256,7 @@ class RsapiApplicationTests {
 			}
 			count++;
 		}
-		assertThat(count, is(4));
+		assertThat(count, is(5));
 	}
 
 	@Test
