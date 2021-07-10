@@ -3,14 +3,20 @@ package org.railwaystations.rsapi.auth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -27,14 +33,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
-/*        http.httpBasic().disable();
-
-        http.cors().and().csrf().disable()
+        http.antMatcher("/adminInbox")
+                .antMatcher("/adminInboxCount")
+                .antMatcher("/userInbox")
+                .antMatcher("/myProfile")
+                .antMatcher("/photoUpload")
+                .antMatcher("/resendEmailVerification")
+                .antMatcher("/reportProblem")
+                .antMatcher("/changePassword")
+                .antMatcher("/resendEmailVerification")
                 .authorizeRequests()
                 .anyRequest().authenticated()
-                .and().formLogin().disable() // <-- this will disable the login route
-                .addFilterBefore(uploadTokenAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);*/
+                .and()
+                //.addFilterBefore(new BasicAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(uploadTokenAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override
@@ -47,6 +59,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         final UploadTokenAuthenticationFilter filter = new UploadTokenAuthenticationFilter();
         filter.setAuthenticationManager(authenticationManager);
         return filter;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        return new ProviderManager(Arrays.asList(authenticationProvider));
     }
 
 }

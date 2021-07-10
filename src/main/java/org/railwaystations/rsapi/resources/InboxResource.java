@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -120,6 +122,7 @@ public class InboxResource {
     }
 
     @PostMapping(consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE, value = "/photoUpload")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<InboxResponse> photoUpload(@RequestBody final InputStream body,
                                          @RequestHeader("User-Agent") final String userAgent,
                                          @RequestHeader("Station-Id") final String stationId,
@@ -146,6 +149,7 @@ public class InboxResource {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, value = "/reportProblem")
+    @PreAuthorize("isAuthenticated()")
     public InboxResponse reportProblem(@RequestHeader("User-Agent") final String userAgent,
                                        @RequestBody @NotNull() final ProblemReport problemReport,
                                        @AuthenticationPrincipal final AuthUser user) {
@@ -182,6 +186,7 @@ public class InboxResource {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, value = "/userInbox")
     @SuppressWarnings("PMD.UselessParentheses")
+    @PreAuthorize("isAuthenticated()")
     public List<InboxStateQuery> userInbox(@AuthenticationPrincipal final AuthUser user, @RequestBody @NotNull final List<InboxStateQuery> queries) {
         LOG.info("Query uploadStatus for Nickname: {}", user.getUsername());
 
@@ -226,8 +231,8 @@ public class InboxResource {
         return queries;
     }
 
-    @RolesAllowed("ADMIN")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/adminInbox")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<InboxEntry> adminInbox(@AuthenticationPrincipal final AuthUser user) {
         final List<InboxEntry> pendingInboxEntries = inboxDao.findPendingInboxEntries();
         for (final InboxEntry inboxEntry : pendingInboxEntries) {
@@ -251,8 +256,8 @@ public class InboxResource {
         return filename != null && new File(workDir.getInboxProcessedDir(), filename).exists();
     }
 
-    @RolesAllowed("ADMIN")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/adminInbox")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> adminInbox(@AuthenticationPrincipal final AuthUser user, @RequestBody final InboxEntry command) {
         final InboxEntry inboxEntry = inboxDao.findById(command.getId());
         if (inboxEntry == null || inboxEntry.isDone()) {
@@ -310,8 +315,8 @@ public class InboxResource {
         inboxDao.done(inboxEntry.getId());
     }
 
-    @RolesAllowed("ADMIN")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/adminInboxCount")
+    @PreAuthorize("hasRole('ADMIN')")
     public InboxCountResponse adminInboxCount(@AuthenticationPrincipal final AuthUser user) {
         return new InboxCountResponse(inboxDao.countPendingInboxEntries());
     }

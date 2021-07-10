@@ -324,7 +324,12 @@ public class User {
     }
 
     @JsonIgnore
-    public String getRole() {
-        return isAdmin() ? ROLE_ADMIN : ROLE_USER;
+    public Set<String> getRoles() {
+        final HashSet<String> roles = new HashSet<>();
+        roles.add(ROLE_USER);
+        if (isAdmin()) {
+            roles.add(ROLE_ADMIN);
+        };
+        return roles;
     }
 }

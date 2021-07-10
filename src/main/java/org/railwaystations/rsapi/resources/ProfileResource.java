@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -49,6 +51,7 @@ public class ProfileResource {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE,value = "/changePassword")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal final AuthUser authUser, @NotNull @RequestHeader("New-Password") final String newPassword) {
         final String decodedPassword = URLDecoder.decode(newPassword, StandardCharsets.UTF_8);
         final User user = authUser.getUser();
@@ -107,7 +110,7 @@ public class ProfileResource {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, value = "/registration")
-    public ResponseEntity<?> register(@RequestHeader("User-Agent") final String userAgent, @RequestBody @NotNull final User registration) {
+    public ResponseEntity<String> register(@RequestHeader("User-Agent") final String userAgent, @RequestBody @NotNull final User registration) {
         LOG.info("New registration for '{}' with '{}'", registration.getName(), registration.getEmail());
 
         if (!registration.isValidForRegistration()) {
@@ -163,7 +166,7 @@ public class ProfileResource {
     private UserDetailsService userDetailsService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/myProfile")
-    @RolesAllowed({"ROLE_USER","ROLE_ADMIN"})
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Get profile for '{}'", user.getEmail());
@@ -171,6 +174,7 @@ public class ProfileResource {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, value = "/myProfile")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateMyProfile(@RequestHeader("User-Agent") final String userAgent, @RequestBody @NotNull final User newProfile, @AuthenticationPrincipal final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Update profile for '{}'", user.getEmail());
@@ -211,6 +215,7 @@ public class ProfileResource {
     }
 
     @PostMapping("/resendEmailVerification")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> resendEmailVerification(@AuthenticationPrincipal final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Resend EmailVerification for '{}'", user.getEmail());

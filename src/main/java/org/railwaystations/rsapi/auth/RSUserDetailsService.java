@@ -8,7 +8,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,8 +29,11 @@ public class RSUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException(String.format("User '%s' not found", username));
         }
-        final GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(user.getRole());
-        return new AuthUser(user, Collections.singletonList(grantedAuthority));
+        final List<GrantedAuthority> authorities = new ArrayList<>();
+        for (final String role : user.getRoles()) {
+            authorities.add(new SimpleGrantedAuthority(role));
+        }
+        return new AuthUser(user, authorities);
     }
 
     public Optional<User> findById(final int id) {
