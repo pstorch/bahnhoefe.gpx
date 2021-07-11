@@ -2,7 +2,6 @@ package org.railwaystations.rsapi.resources;
 
 import org.railwaystations.rsapi.StationsRepository;
 import org.railwaystations.rsapi.model.Statistic;
-import org.railwaystations.rsapi.writer.StatisticTxtWriter;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

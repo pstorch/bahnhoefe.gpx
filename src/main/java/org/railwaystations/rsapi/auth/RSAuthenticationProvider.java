@@ -24,7 +24,7 @@ public class RSAuthenticationProvider implements AuthenticationProvider {
     private RSUserDetailsService userDetailsService;
 
     @Override
-    public boolean supports(final Class<?> authentication) {
+    public boolean supports(final Class<? extends Object> authentication) {
         return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
     }
 
@@ -44,7 +44,7 @@ public class RSAuthenticationProvider implements AuthenticationProvider {
             LOG.info("User verified by password '{}'", user.getUsername());
             userDetailsService.updateEmailVerification(user.getUser());
 
-            return new UsernamePasswordAuthenticationToken(user, user.getAuthorities());
+            return new UsernamePasswordAuthenticationToken(user, token.getCredentials(), user.getAuthorities());
         }
 
         // fallback to token
@@ -53,7 +53,7 @@ public class RSAuthenticationProvider implements AuthenticationProvider {
                 tokenGenerator.buildFor(String.valueOf(user.getUser().getEmail()), tokenSalt).equals(token.getCredentials())) {
             LOG.info("User verified by UploadToken '{}'", user.getUsername());
             userDetailsService.updateEmailVerification(user.getUser());
-            return new UsernamePasswordAuthenticationToken(user, user.getAuthorities());
+            return new UsernamePasswordAuthenticationToken(user, token.getCredentials(), user.getAuthorities());
         }
 
         LOG.info("Password failed and UploadToken doesn't fit to user '{}'", token.getPrincipal());

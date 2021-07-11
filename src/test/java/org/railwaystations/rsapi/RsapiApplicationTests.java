@@ -15,11 +15,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -31,7 +28,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -42,6 +41,8 @@ import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.matches;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -261,22 +262,25 @@ class RsapiApplicationTests {
 
 	@Test
 	public void register() {
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
 		final ResponseEntity<String> response = restTemplate.postForEntity(
-				String.format("http://localhost:%d%s", port, "/registration"), "{\n" +
+				String.format("http://localhost:%d%s", port, "/registration"), new HttpEntity<>("{\n" +
 						"\t\"nickname\": \"nickname \", \n" +
 						"\t\"email\": \"nick.name@example.com\", \n" +
 						"\t\"license\": \"CC0\",\n" +
 						"\t\"photoOwner\": true, \n" +
 						"\t\"linking\": \"linking\", \n" +
 						"\t\"link\": \"\"\n" +
-						"}", String.class);
+						"}", headers), String.class);
 
 		assertThat(response.getStatusCodeValue(), is(202));
 
 		Mockito.verify(mailer, Mockito.times(1))
-				.send("nick.name@example.com",
-						"Railway-Stations.org new password",
-						"Hello,\n\n" +
+				.send(eq("nick.name@example.com"),
+						eq("Railway-Stations.org new password"),
+						matches("Hello,\n\n" +
 				"your new password is: .*\n\n" +
 				"Cheers\n" +
 				"Your Railway-Stations-Team\n" +
@@ -284,7 +288,7 @@ class RsapiApplicationTests {
 				"Hallo,\n\n" +
 				"Dein neues Passwort lautet: .*\n\n" +
 				"Viele Grüße\n" +
-				"Dein Bahnhofsfoto-Team");
+				"Dein Bahnhofsfoto-Team"));
 	}
 
 	@Test
