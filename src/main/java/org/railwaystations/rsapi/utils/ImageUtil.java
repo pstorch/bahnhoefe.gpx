@@ -57,7 +57,7 @@ public class ImageUtil {
 
     public static String mimeToExtension(final String contentType) {
         if (StringUtils.isBlank(contentType)) {
-            throw new IllegalArgumentException("Unsupported null contentType");
+            return null;
         }
         switch (contentType) {
             case IMAGE_PNG:
@@ -65,7 +65,7 @@ public class ImageUtil {
             case IMAGE_JPEG:
                 return JPG;
             default:
-                throw new IllegalArgumentException("Unsupported contentType: " + contentType);
+                return null;
         }
     }
 

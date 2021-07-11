@@ -11,6 +11,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -30,8 +33,8 @@ public class ImageUtilTest {
     @ParameterizedTest
     @CsvSource({ "image/jpeg, jpg",
             "image/png, png"})
-    public void testMimeToExtension(final String filename, final String extension) {
-        assertEquals(extension, ImageUtil.mimeToExtension(filename));
+    public void testMimeToExtension(final String contentType, final String extension) {
+        assertThat(ImageUtil.mimeToExtension(contentType), is(extension));
     }
 
     public static Stream<String> invalidContentTypes() {
@@ -41,7 +44,7 @@ public class ImageUtilTest {
     @ParameterizedTest
     @MethodSource("invalidContentTypes")
     public void testMimeToExtensionException(final String contentType) {
-        assertThrows(IllegalArgumentException.class, () -> ImageUtil.mimeToExtension(contentType));
+        assertThat(ImageUtil.mimeToExtension(contentType), nullValue());
     }
 
     @ParameterizedTest

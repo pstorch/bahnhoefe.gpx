@@ -293,15 +293,17 @@ class RsapiApplicationTests {
 
 	@Test
 	public void registerDifferentEmail() {
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
 		final ResponseEntity<String> response = restTemplate.postForEntity(
-				String.format("http://localhost:%d%s", port, "/registration"),"{\n" +
+				String.format("http://localhost:%d%s", port, "/registration"),new HttpEntity<>("{\n" +
 						"\t\"nickname\": \"storchp\", \n" +
 						"\t\"email\": \"other@example.com\", \n" +
 						"\t\"license\": \"CC0\",\n" +
 						"\t\"photoOwner\": true, \n" +
 						"\t\"linking\": \"linking\", \n" +
 						"\t\"link\": \"link\"\n" +
-						"}", String.class);
+						"}", headers), String.class);
 
 		assertThat(response.getStatusCodeValue(), is(409));
 	}

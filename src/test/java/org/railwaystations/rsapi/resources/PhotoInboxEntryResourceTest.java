@@ -17,6 +17,7 @@ import org.railwaystations.rsapi.db.PhotoDao;
 import org.railwaystations.rsapi.db.UserDao;
 import org.railwaystations.rsapi.model.*;
 import org.railwaystations.rsapi.monitoring.MockMonitor;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 
 import java.io.*;
@@ -83,8 +84,7 @@ public class PhotoInboxEntryResourceTest {
     private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
                                         final String stationTitle, final Double latitude, final Double longitude, final String comment, final String emailVerification) {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
-        final InputStream is = new ByteArrayInputStream(inputBytes);
-        final ResponseEntity<InboxResponse> response = resource.photoUpload(is, "UserAgent", stationId, country, "image/jpeg",
+        final ResponseEntity<InboxResponse> response = resource.photoUpload(inputBytes, "UserAgent", stationId, country, "image/jpeg",
                 stationTitle, latitude, longitude, comment, null,
                 new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false, emailVerification, true), Collections.EMPTY_LIST));
         return response.getBody();

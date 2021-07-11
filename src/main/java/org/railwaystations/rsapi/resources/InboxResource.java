@@ -36,10 +36,7 @@ import org.springframework.web.util.UriUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.validation.constraints.NotNull;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -119,29 +116,30 @@ public class InboxResource {
         }
     }
 
-    @PostMapping(consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}, produces = MediaType.APPLICATION_JSON_VALUE, value = "/photoUpload")
+    @PostMapping(consumes = MediaType.ALL_VALUE ,produces = MediaType.APPLICATION_JSON_VALUE, value = "/photoUpload")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<InboxResponse> photoUpload(@RequestBody final InputStream body,
-                                         @RequestHeader("User-Agent") final String userAgent,
-                                         @RequestHeader("Station-Id") final String stationId,
-                                         @RequestHeader("Country") final String country,
-                                         @RequestHeader("Content-Type") final String contentType,
-                                         @RequestHeader("Station-Title") final String encStationTitle,
-                                         @RequestHeader("Latitude") final Double latitude,
-                                         @RequestHeader("Longitude") final Double longitude,
-                                         @RequestHeader("Comment") final String encComment,
-                                         @RequestHeader("Active") final Boolean active,
-                                         @AuthenticationPrincipal final AuthUser user) {
+    public ResponseEntity<InboxResponse> photoUpload(@RequestBody final byte[] body,
+                                                     @RequestHeader("User-Agent") final String userAgent,
+                                                     @RequestHeader("Station-Id") final String stationId,
+                                                     @RequestHeader("Country") final String country,
+                                                     @RequestHeader("Content-Type") final String contentType,
+                                                     @RequestHeader("Station-Title") final String encStationTitle,
+                                                     @RequestHeader("Latitude") final Double latitude,
+                                                     @RequestHeader("Longitude") final Double longitude,
+                                                     @RequestHeader("Comment") final String encComment,
+                                                     @RequestHeader("Active") final Boolean active,
+                                                     @AuthenticationPrincipal final AuthUser user) {
+        final InputStream is = new ByteArrayInputStream(body);
         if (!user.getUser().isEmailVerified()) {
             LOG.info("Photo upload failed for user {}, email not verified", user.getUsername());
-            final InboxResponse response = consumeBodyAndReturn(body, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED,"Email not verified"));
+            final InboxResponse response = consumeBodyAndReturn(is, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED,"Email not verified"));
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
         final String stationTitle = encStationTitle != null ? URLDecoder.decode(encStationTitle, StandardCharsets.UTF_8) : null;
         final String comment = encComment != null ? URLDecoder.decode(encComment, StandardCharsets.UTF_8) : null;
         LOG.info("Photo upload from Nickname: {}; Country: {}; Station-Id: {}; Coords: {},{}; Title: {}; Content-Type: {}",
                 user.getUsername(), country, stationId, latitude, longitude, stationTitle, contentType);
-        final InboxResponse inboxResponse = uploadPhoto(userAgent, body, StringUtils.trimToNull(stationId),
+        final InboxResponse inboxResponse = uploadPhoto(userAgent, is, StringUtils.trimToNull(stationId),
                 StringUtils.trimToNull(country), contentType, stationTitle, latitude, longitude, comment, active, user);
         return new ResponseEntity<>(inboxResponse, inboxResponse.getState().getResponseStatus());
     }
