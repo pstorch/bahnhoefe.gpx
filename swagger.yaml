@@ -561,7 +561,7 @@ paths:
           type: string
         - name: New-Password
           in: header
-          description: new password (needs to be URL-encoded with UTF-8 charset)
+          description: new password
           required: true
           type: string
       responses:
@@ -601,8 +601,6 @@ paths:
     post:
       summary: Update the users profile. In case the email has been changed, only the email is saved and a new password / Upload-Token is send.
       consumes:
-        - application/json
-      produces:
         - application/json
       parameters:
         - name: Authorization

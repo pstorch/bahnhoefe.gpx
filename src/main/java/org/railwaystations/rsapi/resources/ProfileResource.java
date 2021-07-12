@@ -48,18 +48,17 @@ public class ProfileResource {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE,value = "/changePassword")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> changePassword(@AuthenticationPrincipal final AuthUser authUser, @NotNull @RequestHeader("New-Password") final String newPassword) {
-        final String decodedPassword = URLDecoder.decode(newPassword, StandardCharsets.UTF_8);
+    public ResponseEntity<String> changePassword(@AuthenticationPrincipal final AuthUser authUser, @NotNull @RequestHeader("New-Password") final String newPassword) {
         final User user = authUser.getUser();
         LOG.info("Password change for '{}'", user.getEmail());
-        final String trimmedPassword = StringUtils.trimToEmpty(decodedPassword);
+        final String trimmedPassword = StringUtils.trimToEmpty(newPassword);
         if (trimmedPassword.length() < 8 ) {
             LOG.warn("Password too short");
             return new ResponseEntity<>("Password too short", HttpStatus.BAD_REQUEST);
         }
         final String key = passwordEncoder.encode(trimmedPassword);
         userDao.updateCredentials(user.getId(), key);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>("Password changed", HttpStatus.OK);
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE,value = "/newUploadToken")
@@ -169,9 +168,9 @@ public class ProfileResource {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE, value = "/myProfile")
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "/myProfile")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> updateMyProfile(@RequestHeader("User-Agent") final String userAgent, @RequestBody @NotNull final User newProfile, @AuthenticationPrincipal final AuthUser authUser) {
+    public ResponseEntity<String> updateMyProfile(@RequestHeader("User-Agent") final String userAgent, @RequestBody @NotNull final User newProfile, @AuthenticationPrincipal final AuthUser authUser) {
         final User user = authUser.getUser();
         LOG.info("Update profile for '{}'", user.getEmail());
 
@@ -207,7 +206,7 @@ public class ProfileResource {
 
         newProfile.setId(user.getId());
         userDao.update(newProfile);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>("Profile updated", HttpStatus.OK);
     }
 
     @PostMapping("/resendEmailVerification")

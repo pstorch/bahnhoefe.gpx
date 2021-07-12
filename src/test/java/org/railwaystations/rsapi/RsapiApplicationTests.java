@@ -476,13 +476,13 @@ class RsapiApplicationTests {
 		assertThat(responseGetAfter.getBody(), notNullValue());
 		assertProfile(responseGetAfter, "storchp", "", "CC0 1.0 Universell (CC0 1.0)", true, "storchp@example.com");
 
-		headers.add("New-Password", URLEncoder.encode("\uD83D\uDE0E-1234567890", StandardCharsets.UTF_8.toString()));
+		headers.add("New-Password", "!\"$%&/()=?-1234567890");
 		final ResponseEntity<String> responseChangePassword = restTemplate.postForEntity(
 				String.format("http://localhost:%d%s", port, "/changePassword"), new HttpEntity<>(headers), String.class);
 		assertThat(responseChangePassword.getStatusCodeValue(), is(200));
 
 		final ResponseEntity<String> responseAfterChangedPassword = restTemplate
-				.withBasicAuth("storchp@example.com", "\uD83D\uDE0E-1234567890")
+				.withBasicAuth("storchp@example.com", "!\"$%&/()=?-1234567890")
 				.getForEntity(String.format("http://localhost:%d%s", port, "/myProfile"), String.class);
 		assertThat(responseAfterChangedPassword.getStatusCodeValue(), is(200));
 
