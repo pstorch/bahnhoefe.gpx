@@ -38,10 +38,11 @@ public class StationsTxtWriter extends AbstractHttpMessageConverter<List<Station
 
     @Override
     protected void writeInternal(final List<Station> stations, final HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-        final PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputMessage.getBody(), StandardCharsets.UTF_8));
-        pw.println("lat	lon	title	description	icon	iconSize	iconOffset");
-        stations.forEach(station -> stationToTxt(pw, station));
-        pw.flush();
+        try (final PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputMessage.getBody(), StandardCharsets.UTF_8))) {
+            pw.println("lat	lon	title	description	icon	iconSize	iconOffset");
+            stations.forEach(station -> stationToTxt(pw, station));
+            pw.flush();
+        }
     }
 
 }

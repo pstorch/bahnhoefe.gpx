@@ -37,10 +37,11 @@ public class PhotographersTxtWriter extends AbstractHttpMessageConverter<Map<Str
     @Override
     protected void writeInternal(final Map<String, Long> stringLongMap, final HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
-        final PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputMessage.getBody(), StandardCharsets.UTF_8));
-        pw.println("count\tphotographer");
-        stringLongMap.entrySet().forEach(photographer -> photographerToCsv(pw, photographer));
-        pw.flush();
+        try (final PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputMessage.getBody(), StandardCharsets.UTF_8))) {
+            pw.println("count\tphotographer");
+            stringLongMap.entrySet().forEach(photographer -> photographerToCsv(pw, photographer));
+            pw.flush();
+        }
     }
 
 }

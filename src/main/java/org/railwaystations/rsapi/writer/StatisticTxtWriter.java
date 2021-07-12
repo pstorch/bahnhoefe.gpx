@@ -31,13 +31,14 @@ public class StatisticTxtWriter extends AbstractHttpMessageConverter<Statistic> 
 
     @Override
     protected void writeInternal(final Statistic statistic, final HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-        final PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputMessage.getBody(), StandardCharsets.UTF_8));
-        pw.println("name\tvalue");
-        statisticToCsv(pw, "total", statistic.getTotal());
-        statisticToCsv(pw, "withPhoto", statistic.getWithPhoto());
-        statisticToCsv(pw, "withoutPhoto", statistic.getWithoutPhoto());
-        statisticToCsv(pw, "photographers", statistic.getPhotographers());
-        pw.flush();
+        try (final PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputMessage.getBody(), StandardCharsets.UTF_8))) {
+            pw.println("name\tvalue");
+            statisticToCsv(pw, "total", statistic.getTotal());
+            statisticToCsv(pw, "withPhoto", statistic.getWithPhoto());
+            statisticToCsv(pw, "withoutPhoto", statistic.getWithoutPhoto());
+            statisticToCsv(pw, "photographers", statistic.getPhotographers());
+            pw.flush();
+        }
     }
 
     private static void statisticToCsv(final PrintWriter pw, final String name, final int value) {
