@@ -17,10 +17,12 @@ import org.railwaystations.rsapi.db.PhotoDao;
 import org.railwaystations.rsapi.db.UserDao;
 import org.railwaystations.rsapi.model.*;
 import org.railwaystations.rsapi.monitoring.MockMonitor;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -77,14 +79,16 @@ public class PhotoInboxEntryResourceTest {
     }
 
     private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
-                                        final String stationTitle, final Double latitude, final Double longitude, final String comment) {
+                                        final String stationTitle, final Double latitude, final Double longitude, final String comment) throws IOException {
         return whenPostImage(content, nickname, userId, email, stationId, country, stationTitle, latitude, longitude, comment, User.EMAIL_VERIFIED);
     }
 
     private InboxResponse whenPostImage(final String content, final String nickname, final int userId, final String email, final String stationId, final String country,
-                                        final String stationTitle, final Double latitude, final Double longitude, final String comment, final String emailVerification) {
+                                        final String stationTitle, final Double latitude, final Double longitude, final String comment, final String emailVerification) throws IOException {
         final byte[] inputBytes = content.getBytes(Charset.defaultCharset());
-        final ResponseEntity<InboxResponse> response = resource.photoUpload(inputBytes, "UserAgent", stationId, country, "image/jpeg",
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setContent(inputBytes);
+        final ResponseEntity<InboxResponse> response = resource.photoUpload(request, "UserAgent", stationId, country, "image/jpeg",
                 stationTitle, latitude, longitude, comment, null,
                 new AuthUser(new User(nickname, null, "CC0", userId, email, true, false, null, null, false, emailVerification, true), Collections.EMPTY_LIST));
         return response.getBody();
@@ -144,7 +148,7 @@ public class PhotoInboxEntryResourceTest {
                 "50.9876d, -181d",
                 "50.9876d, 181d",
     })
-    public void testPostMissingStationLatLonOutOfRange(final Double latitude, final Double longitude) {
+    public void testPostMissingStationLatLonOutOfRange(final Double latitude, final Double longitude) throws IOException {
         final InboxResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com",null, null, "Missing Station", latitude, longitude, null);
 
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.LAT_LON_OUT_OF_RANGE));
@@ -225,14 +229,14 @@ public class PhotoInboxEntryResourceTest {
     }
 
     @Test
-    public void testPostEmailNotVerified() {
+    public void testPostEmailNotVerified() throws IOException {
         final InboxResponse response = whenPostImage("image-content", "@nick name", 42, "nickname@example.com","1234", "de", null, null, null, null, User.EMAIL_VERIFICATION_TOKEN + "blahblah");
         assertThat(response.getState(), equalTo(InboxResponse.InboxResponseState.UNAUTHORIZED));
     }
 
     @Test
-    public void testPostInvalidCountry() {
-        final ResponseEntity<InboxResponse> response = resource.photoUpload(null, "UserAgent", "4711", "xy", "image/jpeg",
+    public void testPostInvalidCountry() throws IOException {
+        final ResponseEntity<InboxResponse> response = resource.photoUpload(new MockHttpServletRequest(), "UserAgent", "4711", "xy", "image/jpeg",
                 null, null, null, null, null,
                 new AuthUser(new User("nickname", null, "CC0", 0,  "nickname@example.com", true, false, null, null, false, User.EMAIL_VERIFIED, true), Collections.EMPTY_LIST));
         final InboxResponse inboxResponse = response.getBody();

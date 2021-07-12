@@ -35,8 +35,12 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriUtils;
 
 import javax.activation.MimetypesFileTypeMap;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -118,18 +122,18 @@ public class InboxResource {
 
     @PostMapping(consumes = MediaType.ALL_VALUE ,produces = MediaType.APPLICATION_JSON_VALUE, value = "/photoUpload")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<InboxResponse> photoUpload(@RequestBody final byte[] body,
-                                                     @RequestHeader("User-Agent") final String userAgent,
-                                                     @RequestHeader("Station-Id") final String stationId,
-                                                     @RequestHeader("Country") final String country,
-                                                     @RequestHeader("Content-Type") final String contentType,
-                                                     @RequestHeader("Station-Title") final String encStationTitle,
-                                                     @RequestHeader("Latitude") final Double latitude,
-                                                     @RequestHeader("Longitude") final Double longitude,
-                                                     @RequestHeader("Comment") final String encComment,
-                                                     @RequestHeader("Active") final Boolean active,
-                                                     @AuthenticationPrincipal final AuthUser user) {
-        final InputStream is = new ByteArrayInputStream(body);
+    public ResponseEntity<InboxResponse> photoUpload(final HttpServletRequest request,
+                                                     @RequestHeader(value = "User-Agent", required = false) final String userAgent,
+                                                     @RequestHeader(value = "Station-Id", required = false) final String stationId,
+                                                     @RequestHeader(value = "Country", required = false) final String country,
+                                                     @RequestHeader(value = "Content-Type") final String contentType,
+                                                     @RequestHeader(value = "Station-Title", required = false) final String encStationTitle,
+                                                     @RequestHeader(value = "Latitude", required = false) final Double latitude,
+                                                     @RequestHeader(value = "Longitude", required = false) final Double longitude,
+                                                     @RequestHeader(value = "Comment", required = false) final String encComment,
+                                                     @RequestHeader(value = "Active", required = false) final Boolean active,
+                                                     @AuthenticationPrincipal final AuthUser user) throws IOException {
+        final InputStream is = request.getInputStream();
         if (!user.getUser().isEmailVerified()) {
             LOG.info("Photo upload failed for user {}, email not verified", user.getUsername());
             final InboxResponse response = consumeBodyAndReturn(is, new InboxResponse(InboxResponse.InboxResponseState.UNAUTHORIZED,"Email not verified"));
