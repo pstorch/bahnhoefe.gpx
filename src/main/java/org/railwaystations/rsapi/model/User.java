@@ -329,7 +329,7 @@ public class User {
         roles.add(ROLE_USER);
         if (isAdmin()) {
             roles.add(ROLE_ADMIN);
-        };
+        }
         return roles;
     }
 }

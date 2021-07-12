@@ -38,13 +38,11 @@ public class NotifyUsersTask {
         final List<InboxEntry> entries = inboxDao.findInboxEntriesToNotify();
         final Map<Integer, List<InboxEntry>> entriesPerUser = entries.stream()
                 .collect(groupingBy(InboxEntry::getPhotographerId));
-        entriesPerUser.forEach((userId, entriesForUser) -> {
-            userDao.findById(userId).ifPresent(user -> {
-                if (user.getEmail() != null && user.isEmailVerified() && user.isSendNotifications()) {
-                    sendEmailNotification(user, entriesForUser);
-                }
-            });
-        });
+        entriesPerUser.forEach((userId, entriesForUser) -> userDao.findById(userId).ifPresent(user -> {
+            if (user.getEmail() != null && user.isEmailVerified() && user.isSendNotifications()) {
+                sendEmailNotification(user, entriesForUser);
+            }
+        }));
         final List<Integer> ids = entries.stream().map(InboxEntry::getId).collect(Collectors.toList());
         if (!ids.isEmpty()) {
             inboxDao.updateNotified(ids);
@@ -53,14 +51,12 @@ public class NotifyUsersTask {
 
     private void sendEmailNotification(@NotNull final User user, final List<InboxEntry> entriesForUser) {
         final StringBuilder report = new StringBuilder();
-        entriesForUser.forEach(entry -> {
-            report.append(entry.getId()).append(". ").append(entry.getTitle())
-                    .append(entry.isProblemReport() ? " (" + entry.getProblemReportType() + ")" : "")
-                    .append(": ")
-                    .append(entry.getRejectReason() == null ? "accepted" : "rejected")
-                    .append(entry.getRejectReason() == null ? "" : " - " + entry.getRejectReason())
-                    .append("\n");
-        });
+        entriesForUser.forEach(entry -> report.append(entry.getId()).append(". ").append(entry.getTitle())
+                .append(entry.isProblemReport() ? " (" + entry.getProblemReportType() + ")" : "")
+                .append(": ")
+                .append(entry.getRejectReason() == null ? "accepted" : "rejected")
+                .append(entry.getRejectReason() == null ? "" : " - " + entry.getRejectReason())
+                .append("\n"));
 
         final String text = String.format("Hello %1$s,%n%n" +
                 "thank you for your contributions.%n%n" +
@@ -71,7 +67,7 @@ public class NotifyUsersTask {
                 "vielen Dank für Deine Beiträge.%n%n" +
                 "Viele Grüße%n" +
                 "Dein Bahnhofsfoto-Team%n%n" +
-                "---------------------------------%n%n%2$s" , user.getName(), report.toString());
+                "---------------------------------%n%n%2$s" , user.getName(), report);
         mailer.send(user.getEmail(), "Railway-Stations.org review result", text);
         LOG.info("Email notification sent to {}", user.getEmail());
     }

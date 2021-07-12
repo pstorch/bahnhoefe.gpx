@@ -19,10 +19,9 @@ public class JdbiConfiguration {
     @Bean
     public Jdbi jdbi(final DataSource ds) {
         final TransactionAwareDataSourceProxy proxy = new TransactionAwareDataSourceProxy(ds);
-        final Jdbi jdbi = Jdbi.create(proxy)
+        return Jdbi.create(proxy)
                 .installPlugin(new H2DatabasePlugin())
                 .installPlugin(new SqlObjectPlugin());
-        return jdbi;
     }
 
     @Bean

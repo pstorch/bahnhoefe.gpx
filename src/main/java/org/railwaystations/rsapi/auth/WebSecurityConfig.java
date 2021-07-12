@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -57,13 +58,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     public RSAuthenticationFilter uploadTokenAuthenticationFilter(final AuthenticationManager authenticationManager) {
-        final RSAuthenticationFilter filter = new RSAuthenticationFilter();
-        return filter;
+        return new RSAuthenticationFilter();
     }
 
     @Bean
     public AuthenticationManager authenticationManager() {
-        return new ProviderManager(Arrays.asList(authenticationProvider));
+        return new ProviderManager(Collections.singletonList(authenticationProvider));
     }
 
     @Bean

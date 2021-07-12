@@ -40,7 +40,7 @@ public class StationsGpxWriter extends AbstractHttpMessageConverter<List<Station
     }
 
     @Override
-    protected List<Station> readInternal(final Class<? extends List<Station>> clazz, final HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+    protected List<Station> readInternal(final Class<? extends List<Station>> clazz, final HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
         return null;
     }
 

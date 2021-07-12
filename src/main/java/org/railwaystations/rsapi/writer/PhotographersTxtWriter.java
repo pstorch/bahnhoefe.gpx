@@ -30,7 +30,7 @@ public class PhotographersTxtWriter extends AbstractHttpMessageConverter<Map<Str
     }
 
     @Override
-    protected Map<String, Long> readInternal(final Class<? extends Map<String, Long>> clazz, final HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+    protected Map<String, Long> readInternal(final Class<? extends Map<String, Long>> clazz, final HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
         return null;
     }
 

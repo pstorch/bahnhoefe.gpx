@@ -25,7 +25,7 @@ public class StatisticTxtWriter extends AbstractHttpMessageConverter<Statistic> 
     }
 
     @Override
-    protected Statistic readInternal(final Class<? extends Statistic> clazz, final HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+    protected Statistic readInternal(final Class<? extends Statistic> clazz, final HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
         return null;
     }
 

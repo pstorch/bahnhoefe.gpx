@@ -15,7 +15,7 @@ import java.util.Optional;
 @Service
 public class RSUserDetailsService implements UserDetailsService {
 
-    private UserDao userDao;
+    private final UserDao userDao;
 
     public RSUserDetailsService(final UserDao userDao) {
         this.userDao = userDao;
