@@ -10,6 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
 @Component
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class RSAuthenticationProvider implements AuthenticationProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(RSAuthenticationProvider.class);

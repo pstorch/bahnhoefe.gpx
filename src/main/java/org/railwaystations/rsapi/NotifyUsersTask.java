@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.groupingBy;
 
 @Component
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class NotifyUsersTask {
 
     private static final Logger LOG = LoggerFactory.getLogger(NotifyUsersTask.class);

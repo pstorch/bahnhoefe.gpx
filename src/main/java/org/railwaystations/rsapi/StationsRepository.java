@@ -17,6 +17,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class StationsRepository {
 
     private final CountryDao countryDao;
@@ -65,6 +66,7 @@ public class StationsRepository {
         return stationDao.getStatistic(country);
     }
 
+    @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     public Station findByCountryAndId(final String country, final String stationId) {
         if (StringUtils.isBlank(stationId)) {
             return null;

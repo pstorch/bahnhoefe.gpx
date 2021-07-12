@@ -22,6 +22,7 @@ import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -29,9 +30,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserDetailsService userDetailsService;
-
-    @Autowired
-    private AuthenticationEntryPoint authenticationEntryPoint;
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
@@ -64,11 +62,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationManager authenticationManager() {
         return new ProviderManager(Collections.singletonList(authenticationProvider));
-    }
-
-    @Bean
-    public AuthenticationSuccessHandler appAuthenticationSuccessHandler(){
-        return new RSAuthenticationSuccessHandler();
     }
 
 }

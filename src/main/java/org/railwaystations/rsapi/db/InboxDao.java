@@ -29,10 +29,15 @@ public interface InboxDao {
                     + " from inbox u left join stations s on s.countryCode = u.countryCode and s.id = u.stationId "
                     + "     left join users p on p.id = u.photographerId "
                     + "     left join photos f on f.countryCode = u.countryCode and f.id = u.stationId";
+    String COUNTRY_CODE = "countryCode";
+    String STATION_ID = "stationId";
+    String ID = "id";
+    String PHOTOGRAPHER_ID = "photographerId";
+    String COORDS = "coords";
 
     @SqlQuery(JOIN_QUERY + " where u.id = :id")
     @RegisterRowMapper(InboxEntryMapper.class)
-    InboxEntry findById(@Bind("id") final int id);
+    InboxEntry findById(@Bind(ID) final int id);
 
     @SqlQuery(JOIN_QUERY + " where u.done = false order by id")
     @RegisterRowMapper(InboxEntryMapper.class)
@@ -45,17 +50,17 @@ public interface InboxDao {
     List<PublicInboxEntry> findPublicInboxEntries();
 
     @SqlUpdate("insert into inbox (countryCode, stationId, title, lat, lon, photographerId, extension, comment, done, createdAt, problemReportType, active) values (:countryCode, :stationId, :title, :coordinates?.lat, :coordinates?.lon, :photographerId, :extension, :comment, :done, :createdAt, :problemReportType, :active)")
-    @GetGeneratedKeys("id")
+    @GetGeneratedKeys(ID)
     Integer insert(@BindBean final InboxEntry inboxEntry);
 
     @SqlUpdate("update inbox set rejectReason = :rejectReason, done = true where id = :id")
-    void reject(@Bind("id") final int id, @Bind("rejectReason") final String rejectReason);
+    void reject(@Bind(ID) final int id, @Bind("rejectReason") final String rejectReason);
 
     @SqlUpdate("update inbox set done = true where id = :id")
-    void done(@Bind("id") int id);
+    void done(@Bind(ID) int id);
 
     @SqlQuery("select count(*) from inbox where countryCode = :countryCode and stationId = :stationId and done = false and (:id is null or id <> :id)")
-    int countPendingInboxEntriesForStation(@Bind("id") final Integer id, @Bind("countryCode") final String countryCode, @Bind("stationId") final String stationId);
+    int countPendingInboxEntriesForStation(@Bind(ID) final Integer id, @Bind(COUNTRY_CODE) final String countryCode, @Bind(STATION_ID) final String stationId);
 
     @SqlQuery("select count(*) from inbox where done = false")
     int countPendingInboxEntries();
@@ -64,14 +69,14 @@ public interface InboxDao {
      * Count nearby pending uploads using simple pythagoras (only valid for a few km)
      */
     @SqlQuery("select count(*) from inbox where sqrt(power(71.5 * (lon - :coords.lon),2) + power(111.3 * (lat - :coords.lat),2)) < 0.5 and done = false and (:id is null or id <> :id)")
-    int countPendingInboxEntriesForNearbyCoordinates(@Bind("id") final Integer id, @BindBean("coords") final Coordinates coordinates);
+    int countPendingInboxEntriesForNearbyCoordinates(@Bind(ID) final Integer id, @BindBean(COORDS) final Coordinates coordinates);
 
     @SqlUpdate("update inbox set crc32 = :crc32 where id = :id")
-    void updateCrc32(@Bind("id") Integer id, @Bind("crc32") Long crc32);
+    void updateCrc32(@Bind(ID) Integer id, @Bind("crc32") Long crc32);
 
     @SqlQuery(JOIN_QUERY + " where u.countryCode = :countryCode and u.stationId = stationId and u.photographerId = :photographerId and done = false order by id desc")
     @RegisterRowMapper(InboxEntryMapper.class)
-    InboxEntry findNewestPendingByCountryAndStationIdAndPhotographerId(@Bind("countryCode") String countryCode, @Bind("stationId") String stationId, @Bind("photographerId") int photographerId);
+    InboxEntry findNewestPendingByCountryAndStationIdAndPhotographerId(@Bind(COUNTRY_CODE) String countryCode, @Bind(STATION_ID) String stationId, @Bind(PHOTOGRAPHER_ID) int photographerId);
 
     @SqlQuery(JOIN_QUERY + " where u.done = true and u.notified = false")
     @RegisterRowMapper(InboxEntryMapper.class)
@@ -83,7 +88,7 @@ public interface InboxDao {
     class InboxEntryMapper implements RowMapper<InboxEntry> {
 
         public InboxEntry map(final ResultSet rs, final StatementContext ctx) throws SQLException {
-            final int id = rs.getInt("id");
+            final int id = rs.getInt(ID);
             final Coordinates coordinates = getCoordinates(rs);
             final String title = getTitle(rs);
             final boolean done = rs.getBoolean("done");
@@ -97,8 +102,8 @@ public interface InboxDao {
             if (rs.wasNull()) {
                 crc32 = null;
             }
-            return new InboxEntry(id, rs.getString("countryCode"), rs.getString("stationId"), title,
-                    coordinates, rs.getInt("photographerId"), rs.getString("photographerNickname"), rs.getString("photographerEmail"),
+            return new InboxEntry(id, rs.getString(COUNTRY_CODE), rs.getString(STATION_ID), title,
+                    coordinates, rs.getInt(PHOTOGRAPHER_ID), rs.getString("photographerNickname"), rs.getString("photographerEmail"),
                     extension, rs.getString("comment"), rs.getString("rejectReason"),
                     rs.getLong("createdAt"), done, null, rs.getString("url") != null,
                     rs.getInt("conflict") > 0,
@@ -113,7 +118,7 @@ public interface InboxDao {
         public PublicInboxEntry map(final ResultSet rs, final StatementContext ctx) throws SQLException {
             final String title = getTitle(rs);
             final Coordinates coordinates = getCoordinates(rs);
-            return new PublicInboxEntry(rs.getString("countryCode"), rs.getString("stationId"), title, coordinates);
+            return new PublicInboxEntry(rs.getString(COUNTRY_CODE), rs.getString(STATION_ID), title, coordinates);
         }
 
     }

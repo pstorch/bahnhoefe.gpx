@@ -20,25 +20,26 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class MastodonBot {
 
     private static final Logger LOG = LoggerFactory.getLogger(MastodonBot.class);
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    @Value("${mastodonBot.token}")
-    private String token;
+    private final String token;
 
-    @Value("${mastodonBot.stationUrl}")
-    private String stationUrl;
+    private final String stationUrl;
 
-    @Value("${mastodonBot.instanceUrl}")
-    private String instanceUrl;
+    private final String instanceUrl;
 
     private final CloseableHttpClient httpclient;
 
-    public MastodonBot() {
+    public MastodonBot(@Value("${mastodonBot.token}") final String token, @Value("${mastodonBot.stationUrl}") final String stationUrl, @Value("${mastodonBot.instanceUrl}") final String instanceUrl) {
         super();
+        this.token = token;
+        this.stationUrl = stationUrl;
+        this.instanceUrl = instanceUrl;
         this.httpclient = HttpClients.custom().setDefaultRequestConfig(
                 RequestConfig.custom()
                         .setSocketTimeout(5000)
@@ -48,8 +49,8 @@ public class MastodonBot {
     }
 
     public void tootNewPhoto(final Station station, final InboxEntry inboxEntry) {
-        if (StringUtils.isBlank(instanceUrl) || StringUtils.isBlank(token)) {
-            LOG.info("New photo for Station {} not tooted", station.getKey());
+        if (StringUtils.isBlank(instanceUrl) || StringUtils.isBlank(token) || StringUtils.isBlank(stationUrl)) {
+            LOG.info("New photo for Station {} not tooted, {}", station.getKey(), this);
             return;
         }
         LOG.info("Sending toot for new photo of : {}", station.getKey());
@@ -77,6 +78,15 @@ public class MastodonBot {
                 LOG.error("Error sending Toot", e);
             }
         }).start();
+    }
+
+    @Override
+    public String toString() {
+        return "MastodonBot{" +
+                "token='" + token + '\'' +
+                ", stationUrl='" + stationUrl + '\'' +
+                ", instanceUrl='" + instanceUrl + '\'' +
+                '}';
     }
 
     public static class Toot {

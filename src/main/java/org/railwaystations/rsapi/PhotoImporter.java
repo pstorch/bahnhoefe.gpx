@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Photo importer from legacy inbox directory, which is still being used by batch imports
  */
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class PhotoImporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(PhotoImporter.class);

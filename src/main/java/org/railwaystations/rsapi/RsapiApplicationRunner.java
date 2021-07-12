@@ -6,6 +6,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @Component
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class RsapiApplicationRunner implements CommandLineRunner {
 
     @Autowired

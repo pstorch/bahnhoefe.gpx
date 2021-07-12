@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class RSUserDetailsService implements UserDetailsService {
 
     private final UserDao userDao;

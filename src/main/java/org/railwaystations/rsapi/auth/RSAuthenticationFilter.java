@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class RSAuthenticationFilter extends OncePerRequestFilter {
 
     private final BasicAuthenticationConverter authenticationConverter = new BasicAuthenticationConverter();

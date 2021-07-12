@@ -14,6 +14,10 @@ repositories {
 	mavenCentral()
 }
 
+bootJar {
+	mainClass = 'org.railwaystations.rsapi.RsapiApplication'
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -43,4 +47,17 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+}
+
+pmd {
+	ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
+	ignoreFailures = true
+}
+
+spotbugs {
+	ignoreFailures.set(true)
+}
+
+spotbugsTest {
+	ignoreFailures = true
 }
